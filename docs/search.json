@@ -1,0 +1,243 @@
+[
+  {
+    "objectID": "index.html",
+    "href": "index.html",
+    "title": "Amelia Henry",
+    "section": "",
+    "text": "Welcome\nThis site is essentially a living lab notebook; a running collection of how I work with data over time. I like to think of this as a mix between a portfolio and a working record.\nIt brings together my approaches, projects, and things I have learned along the way. Everything here is built openly and documented as I go. The focus is on my approach and processes to conducting rigorous, transparent, and reproducible research, rather than on particular findings.\nFor prospective collaborators and employers, this serves as a transparent record of how I think through analytical problems and make decisions. For students and early career researchers, this can potentially serve as a learning resource. Most posts include comments/annotations outlining what I did, but more importantly why.\nIf you find something useful, have any questions, notice something is off/spotted an error, or just want to chat, feel free to reach out!\nYou can find me on LinkedIn or email.",
+    "crumbs": [
+      "Welcome"
+    ]
+  },
+  {
+    "objectID": "posts/aboutme.html",
+    "href": "posts/aboutme.html",
+    "title": "About Me",
+    "section": "",
+    "text": "I am a Postdoctoral Research Fellow at the University of Sydney, where I am part of the Matilda Centre for Research in Mental Health and Substance Use. My research sits at the intersection of Social Psychology and Epidemiology, with a particular focus on social identity and intergroup relations in relation to mental health, wellbeing, and co-occurring risk behaviours (e.g., alcohol use) and conditions. Currently, I am interested in co-occurring psychological distress and alcohol use problems in adults with ADHD, as well as how ADHD-related relationships and networks may shape these patterns.\nI received my PhD in Social Psychology from Western Sydney University in 2024, completed under the supervision of Professor Craig McGarty and Professor Nida Denson. My PhD examined how advantaged groups strategically use prejudice expression to undermine or demobilise collective action by disadvantaged groups. Across this work, I focused on how people maintain social hierarchies when their group identity is challenged or threatened, and how strategies typically framed as identity management can also function as forms of prejudice expression. This involved a series of studies, including large-scale online surveys, experimental designs, and computational analyses of social media data.\nIn 2022, I joined the Matilda Centre as a Project Coordinator, where I led the development, implementation, and evaluation of Stable Ground, a digital stepped-care intervention for alcohol and other drug use among Australian public safety personnel. Since then, I have worked on a series of epidemiological projects exploring co-occurring psychological distress and alcohol use problems across different groups in Australia, and am currently pursuing the development of my own research program on these comorbidities among adults with ADHD.",
+    "crumbs": [
+      "Introduction",
+      "About Me"
+    ]
+  },
+  {
+    "objectID": "posts/scripts_and_workflow.html",
+    "href": "posts/scripts_and_workflow.html",
+    "title": "Script Practices",
+    "section": "",
+    "text": "functions\nExample layout of script folder:",
+    "crumbs": [
+      "Notes",
+      "Script Practices"
+    ]
+  },
+  {
+    "objectID": "posts/scripts_and_workflow.html#functions",
+    "href": "posts/scripts_and_workflow.html#functions",
+    "title": "Script Practices",
+    "section": "",
+    "text": "any repeated logic gets moved to functions\nif repeated across different tasks -&gt; utilities.R\nif task-specific -&gt; functions_01_data_cleaning.R",
+    "crumbs": [
+      "Notes",
+      "Script Practices"
+    ]
+  },
+  {
+    "objectID": "posts/scripts_and_workflow.html#style-conventions",
+    "href": "posts/scripts_and_workflow.html#style-conventions",
+    "title": "Script Practices",
+    "section": "style conventions",
+    "text": "style conventions\n\nUse pipes: |&gt;\none step per line\n\n\ndf |&gt;\n    dplyr::filter(age &gt; 18) |&gt;  \n    dplyr::mutate(age_group = ifelse(age &lt; 30, \"young\", \"old\")) |&gt;\n    dplyr::group_by(age_group) |&gt;\n    dplyr::summarise(mean_income = mean(income))",
+    "crumbs": [
+      "Notes",
+      "Script Practices"
+    ]
+  },
+  {
+    "objectID": "posts/scripts_and_workflow.html#naming-conventions",
+    "href": "posts/scripts_and_workflow.html#naming-conventions",
+    "title": "Script Practices",
+    "section": "naming conventions",
+    "text": "naming conventions\n\nuse snake_case for everything\nobjects start with noun (e.g., df_* or mod_*)\nfunctions start with verb (e.g., clean_, fit_)",
+    "crumbs": [
+      "Notes",
+      "Script Practices"
+    ]
+  },
+  {
+    "objectID": "posts/scripts_and_workflow.html#ordering-and-flow",
+    "href": "posts/scripts_and_workflow.html#ordering-and-flow",
+    "title": "Script Practices",
+    "section": "ordering and flow",
+    "text": "ordering and flow\nif structure begins to exist (e.g., order of scripts) use targets to remove manual ordering/execution\n\nlist(\n  tar_target(raw, get_data()),\n  tar_target(cleaned, clean_data(raw)),\n  tar_target(model, fit_linear_model(cleaned)),\n  tar_target(plot, create_plot(model))\n)",
+    "crumbs": [
+      "Notes",
+      "Script Practices"
+    ]
+  },
+  {
+    "objectID": "posts/project_setup.html",
+    "href": "posts/project_setup.html",
+    "title": "Project Setup",
+    "section": "",
+    "text": "purpose",
+    "crumbs": [
+      "Notes",
+      "Project Setup"
+    ]
+  },
+  {
+    "objectID": "posts/project_setup.html#purpose",
+    "href": "posts/project_setup.html#purpose",
+    "title": "Project Setup",
+    "section": "",
+    "text": "keep everything organised\nreproducible and transparent structure\nclear workflow/file organisation",
+    "crumbs": [
+      "Notes",
+      "Project Setup"
+    ]
+  },
+  {
+    "objectID": "posts/project_setup.html#structure",
+    "href": "posts/project_setup.html#structure",
+    "title": "Project Setup",
+    "section": "structure",
+    "text": "structure\n\ncreate project root folder\nopen in software\n\nproject/\n\n├── R/\n├── data/\n│   ├── raw/        # source data (never edited)\n│   ├── versions/   # timestamped snapshots\n│   ├── processed/  # cleaned / merged\n│   └── final/      # datasets used for analysis / sharing\n├── outputs/        # figures, tables, model objects\n├── docs/           # protocols, codebooks, notes\n├── renv.lock\nnotes: - root folder always treated as root - no setwd() - all paths relative - never change raw data",
+    "crumbs": [
+      "Notes",
+      "Project Setup"
+    ]
+  },
+  {
+    "objectID": "posts/project_setup.html#environment",
+    "href": "posts/project_setup.html#environment",
+    "title": "Project Setup",
+    "section": "environment",
+    "text": "environment\ninitialise on first open:\n\n# create renv and lockfile in root folder \nrenv::init()\n\n# install packages \ninstall.packages(c(\"tidyverse\", \"here\", \"renv\", \"usethis\", \"devtools\"))\n\n# snapshot to save in lockfile for reproducibility and collaboration\nrenv::snapshot()\n\nnotes: - renv.lockfile tracks package versions - collaborators use renv::restore() to get same environment",
+    "crumbs": [
+      "Notes",
+      "Project Setup"
+    ]
+  },
+  {
+    "objectID": "posts/project_setup.html#paths",
+    "href": "posts/project_setup.html#paths",
+    "title": "Project Setup",
+    "section": "paths",
+    "text": "paths\n\nanchor scripts using here package\navoid using absolute paths\n\n\n# shows where file is saved relative to root \nhere::i_am(\"R/01_data_processing.R\")\n\n# import data using relative paths\nreadr::read_csv(here::here(\"data/raw/survey_data_raw.csv\"))",
+    "crumbs": [
+      "Notes",
+      "Project Setup"
+    ]
+  },
+  {
+    "objectID": "posts/project_setup.html#secrets",
+    "href": "posts/project_setup.html#secrets",
+    "title": "Project Setup",
+    "section": "secrets",
+    "text": "secrets\n\nuse usethis to create .Renviron file in root folder and add secrets in there\nfor example: API keys, database credentials etc.\ngithub will ignore this file so its not shared with collaborators\n\n\nusethis::edit_r_environ()\n\n\nafter running, edit .Renviron file\nformat specifically:\n\nAPI_KEY=\"your_api_key_here\"\nDB_USERNAME=\"your_db_username_here\"\nDB_PASSWORD=\"your_db_password_here\"\nafter saving the .Renviron file, access the secrets in your R code:\n\napi_key &lt;- Sys.getenv(\"API_KEY\")\ndb_username &lt;- Sys.getenv(\"DB_USERNAME\")\ndb_password &lt;- Sys.getenv(\"DB_PASSWORD\")",
+    "crumbs": [
+      "Notes",
+      "Project Setup"
+    ]
+  },
+  {
+    "objectID": "posts/icare.html",
+    "href": "posts/icare.html",
+    "title": "Negative Binomial Hurdle Models with Zero-Heavy Count Data",
+    "section": "",
+    "text": "Modelling Alcohol and Other Drug Use, Psychological Distress, and Occupational Functioning in Australian Public Safety Personnel\nslowly converting this into a doc from my analyses notes (full script at bottom of page to come)",
+    "crumbs": [
+      "Analyses",
+      "Negative Binomial Hurdle Models with Zero-Heavy Count Data"
+    ]
+  },
+  {
+    "objectID": "posts/icare.html#aims",
+    "href": "posts/icare.html#aims",
+    "title": "Negative Binomial Hurdle Models with Zero-Heavy Count Data",
+    "section": "Aims",
+    "text": "Aims\n\nExamine rates of severity of alcohol and other drug (AOD) use among public safety personnel (PSP)\nExamine associations between AOD use, psychological distress, and occupational functioning (absenteeism and presenteeism) among PSP\nExamine whether AOD use and psychological distress predict impairment to occupational function, both independently, and in combination",
+    "crumbs": [
+      "Analyses",
+      "Negative Binomial Hurdle Models with Zero-Heavy Count Data"
+    ]
+  },
+  {
+    "objectID": "posts/icare.html#key-variables",
+    "href": "posts/icare.html#key-variables",
+    "title": "Negative Binomial Hurdle Models with Zero-Heavy Count Data",
+    "section": "Key Variables",
+    "text": "Key Variables\n\nPsychological distress (K10): k10_total & k10_total_interpretation\nalcohol and other drug use (ASSIST): alcohol_use_scores & alcohol_use_interpretation / max_other_drug_score & max_drug_use_interpretation\nWorkplace Outcomes: k10_11_absenteeism & k10_12_presenteeism\n\nPotential covariates:\n\ngender\nage\nagency_years",
+    "crumbs": [
+      "Analyses",
+      "Negative Binomial Hurdle Models with Zero-Heavy Count Data"
+    ]
+  },
+  {
+    "objectID": "posts/icare.html#data-pre-processing",
+    "href": "posts/icare.html#data-pre-processing",
+    "title": "Negative Binomial Hurdle Models with Zero-Heavy Count Data",
+    "section": "Data Pre-processing",
+    "text": "Data Pre-processing\n\nexcluded cases with no response to the first assist item, assist1_string, as these cases did not complete the self-assessment\nparsed multi-response string items from assist1_string into binary indicators for each substance\ntreated non-endorsement of use as missing (NA) and not zero\ncalculated risk scores across for each ASSIST substance\nset total scores to NA for substances never used to avoid conflating with “low risk”\ncalculated interpretation for alcohol and other drug use seperately\ncalculated total k10 score\ncalculated k10 interpretation\nexclude responses prior to 11 march (pre-implementation/test responses)\nset implausible ages to NA\n\nDerived:\n\nbinary indicators of recent AOD use (past 3 months) (alcohol and other drug use seperately)\npoly-drug use indicator\ncount of substances used in past 3 months\nmaximum other drug (not alcohol) risk score (bc the self-assessment personalised feedback was based on that)\nother drug use interpretation\npsychological distress total score\npsychological distress interpretation\n\nKM and I decided that we don’t need the poly-drug use indicator, or counts of substances used. Rely on risk scores (only get risk score if used in last 3 months, otherwise 0 if used in lifetime, otherwise NA if never)",
+    "crumbs": [
+      "Analyses",
+      "Negative Binomial Hurdle Models with Zero-Heavy Count Data"
+    ]
+  },
+  {
+    "objectID": "posts/icare.html#screening",
+    "href": "posts/icare.html#screening",
+    "title": "Negative Binomial Hurdle Models with Zero-Heavy Count Data",
+    "section": "Screening",
+    "text": "Screening\n\ntested normality for all continuous outcomes and predictors (shapiro-wilk)\nuse non-parametric tests (kruskal wallis) for any group comparisons (risk category as group)\n\n\n\nVariableStatisticpAge0.9460.000Agency Years0.8830.000Alcohol Use Risk0.9330.000Other Drug Use Risk0.4520.000Psychological Distress0.6490.000Absenteeism0.9490.000Presenteeism0.8400.000\n\n\nAbsenteeism and presenteeism both have strong right skew and a large proportion of zeros\n\n\n\n\n\n\n\n\n\nnote: suggests standard linear models would be inappropriate. count-based better?",
+    "crumbs": [
+      "Analyses",
+      "Negative Binomial Hurdle Models with Zero-Heavy Count Data"
+    ]
+  },
+  {
+    "objectID": "posts/icare.html#prevalence-and-severity",
+    "href": "posts/icare.html#prevalence-and-severity",
+    "title": "Negative Binomial Hurdle Models with Zero-Heavy Count Data",
+    "section": "Prevalence and severity",
+    "text": "Prevalence and severity\n\nprevalence of recent use by substance\ncategorised ASSIST risk thresholds per substance\nexclude “other” and “smoking”\ncompare demographics, psych distress, and functioning across risk groups\n\nstratify by alcohol risk\nstratify by other drug risk\nkruskal wallis for continuous vars (have non-normal distributions)\nchi square or fisher’s exact for categorical vars\n\n\n\n\nASSIST scoresLow riskModerate riskHigh riskSubstanceTotal usingn%n%n%Alcohol216 (98.2%)7735.68338.45625.9Amphetamines23 (10.5%)521.71669.628.7Cannabis28 (12.7%)621.42071.427.1Cocaine27 (12.3%)1244.41348.127.4Hallucinogens18 (8.2%)422.21266.7211.1Inhalants14 (6.4%)642.9642.9214.3Opioids12 (5.5%)541.7650.018.3Sedatives26 (11.8%)726.91869.213.8\n\n\n\nalcohol use nearly everyone (substantial amount of spread across risk levels)\nother substances way lower, but still prevalent, and predominantly moderate risk (though it’s pretty hard to get low risk the way other drug use is scored)\nhigh risk for other drugs isn’t too common\nsome substances (cannabis, amphetamines, sedatives) show strong skew toward moderate rather than low risk\n\nfor modelling, use maximum other drug score rather than modelling each drug individually\nsummary based on alcohol risk:\n\n\nCharacteristicnLow Risk(n = 77)Moderate Risk(n = 83)High Risk(n = 56)pGender, n (%)197.027Man or male30 (26.8%)52 (46.4%)30 (26.8%)Woman or female35 (45.5%)21 (27.3%)21 (27.3%)Other1 (25.0%)2 (50.0%)1 (25.0%)Prefer not to answer1 (25.0%)0 (0.0%)3 (75.0%)Age, Mean (SD)18737.2 (11.2)42.8 (12.9)40.6 (9.7).024Agency years, Mean (SD)1968.0 (7.9)12.9 (9.7)10.8 (9.8).006Psychological distress, Mean (SD)20218.9 (7.7)20.9 (6.8)25.4 (7.2)&lt;.001Absenteeism, Mean (SD)2001.3 (4.3)1.4 (4.1)3.2 (5.7)&lt;.001Presenteeism, Mean (SD)2004.4 (8.5)2.0 (4.3)7.6 (9.0)&lt;.001\n\n\n\nhigher alcohol risk is associated with greater psychological distress and higher absenteeism and presenteeism\nage and years in the agency are higher in moderate/high risk groups\n\npost hoc dunn tests with bonferroni correction show:\n\ndifferences are mostly driven by low vs. moderate or high grps\nfew differences between moderate vs high (except for psychological distress and absenteeism/presenteeism)\n\nother drug use summary:\n\n\nCharacteristicnLow Risk(n = 17)Moderate Risk(n = 46)High Risk(n = 5)pGender, n (%)61.112Man or male8 (22.2%)26 (72.2%)2 (5.6%)Woman or female6 (30.0%)13 (65.0%)1 (5.0%)Other0 (0.0%)2 (66.7%)1 (33.3%)Prefer not to answer1 (50.0%)0 (0.0%)1 (50.0%)Age, Mean (SD)5941.2 (12.4)37.7 (12.1)32.6 (8.6).382Agency years, Mean (SD)6111.2 (11.9)8.5 (6.6)5.0 (3.0).501Psychological distress, Mean (SD)6119.7 (7.7)24.6 (8.4)34.2 (10.6).011Absenteeism, Mean (SD)610.7 (1.4)2.3 (3.6)10.2 (11.9).037Presenteeism, Mean (SD)613.6 (5.2)7.2 (9.0)8.4 (8.7).440Note. pvalues are from Kruskal-Wallis tests for continuous variables, and Chi-squared for categorical variables. Bolded values indicate statistically significant differences at p &lt; .05",
+    "crumbs": [
+      "Analyses",
+      "Negative Binomial Hurdle Models with Zero-Heavy Count Data"
+    ]
+  },
+  {
+    "objectID": "posts/icare.html#model-selection",
+    "href": "posts/icare.html#model-selection",
+    "title": "Negative Binomial Hurdle Models with Zero-Heavy Count Data",
+    "section": "Model selection",
+    "text": "Model selection\nGiven the distributional properties of absenteeism and presenteeism, I considered several candidate models:\n\nPoisson regression\nNegative binomial regression\nZero-inflated Poisson (ZIP)\nZero-inflated negative binomial models (ZINB)\nHurdle negative binomial models\n\n\nConsiderations:\nOverdispersion: Poisson models assume that the mean = variance. Preliminary checks indicated overdispersion, making Poisson models unsuitable.\nExcess zeros: The data contained more zeros than expected under standard count models. This raises 2 choices:\n\nZero inflated models: assume two latent groups (always-zero vs always at-risk)\nHurdle models: assume a two-stage process (zero vs positive counts)\n\nHere I made a function that ran a series of univariate models on each outcome to check dispersion This helped to evaluate which count model handled the outcome data the best. Univariate predictors included age, gender, years of employment, k10 total score, maximum alcohol use risk score, and maximum other drug use risk score.\nModels were compared using: AIC/BIC (fit), dispersion stats, vuong tests, predicted vs observed zeros.\nAlthough zero-inflated models and hurdle models were basically the same, MS and I discussed the choice from a conceptual angle, and we agreed that the zero-inflation was too rigid with the “always-zero” or “always at-risk” approach.\nGiven we are looking at absenteeism and presenteeism, days of each is unlikely to be always.\nSo we chose Hurdle Negative Binomial Models.\n\nReasons:\n\nthey count for overdispersion\nexplicitly model the probability of any absenteeism/presenteeism (logistic) and the frequency of absenteeism/presenteeism among those who didn’t have zero values (count)\nconceptually, they distinguish between whether someone is absent and how often they are absent.\nmore aligned with our aims/RQs",
+    "crumbs": [
+      "Analyses",
+      "Negative Binomial Hurdle Models with Zero-Heavy Count Data"
+    ]
+  },
+  {
+    "objectID": "posts/icare.html#modelling",
+    "href": "posts/icare.html#modelling",
+    "title": "Negative Binomial Hurdle Models with Zero-Heavy Count Data",
+    "section": "Modelling",
+    "text": "Modelling\n\nUnivariate models - Hurdle\nOnce Hurdle Models were chosen, each predictor was first examined in isolation to:\n\nidentify potential associations\nunderstand variable-specific effects\nidentify which covariates to include in multivariable analysis\n\n\nInsights:\nabsenteeism:",
+    "crumbs": [
+      "Analyses",
+      "Negative Binomial Hurdle Models with Zero-Heavy Count Data"
+    ]
+  },
+  {
+    "objectID": "posts/customflextable.html",
+    "href": "posts/customflextable.html",
+    "title": "Publication ready tables",
+    "section": "",
+    "text": "This is the code I use to make my tables ready for publication.\nPurpose: Styling functions for producing publication-ready tables. All tables follow APA-adjacent formatting\nUsage: Pipe any flextable into my_flextable() as the final styling step. Works with both native flextables, and gtsummary tables converted via as_flex_table()\nCall this function as the last step in a flextable pipeline.\n\n#' apply consistent styling to a flex table \n#' \n#' @param ft - a flextable object (either via `flextable()` or `gtsummary::as_flex_table()`)\n#' @param font_size - numeric. font size applied to all parts. default = 12\n#' @param spacing - numeric. line spacing multiplier applied to all parts. default = 1 \n#' @param font_name - character. font family applied to all parts. default = times new roman \n#' \n#' @return - styled flextable object \n#' \n\nmy_flextable &lt;- function(ft,\n                         font_size = 10,\n                         spacing   = 0.9,\n                         font_name = \"Times New Roman\") {\n    ft |&gt; \n        # clean academic style theme \n        flextable::theme_booktabs() |&gt; \n        # left align first col \n        flextable::align(j = 1, align = \"left\", part = \"all\") |&gt; \n        # centre align all other columns \n        flextable::align(j = -1, align = \"center\", part = \"all\") |&gt; \n        # tight padding for compact tables \n        flextable::padding(padding = 1, part = \"all\") |&gt; \n        # compact row height (default = 1) \n        flextable::line_spacing(space = spacing, part = \"all\") |&gt; \n        # uniform font size (default = 12) \n        flextable::fontsize(size = font_size, part = \"all\") |&gt;\n        # uniform font family (default = times new roman) \n        flextable::font(fontname = font_name, part = \"all\") |&gt;\n        # table layout/properties: \n        flextable::set_table_properties(\n          # stretch columns to fill available width \n          layout = \"autofit\", \n          # use 100% of text area width (0-1 scale)\n          width = 1\n        )\n      }\n\n\nExamples\n\n# Native flextable \nmtcars |&gt; head() |&gt; flextable() |&gt; my_flextable() \n\n# GT summary table \ngtsummary::tbl_summary(mtcars) |&gt; as_flex_table() |&gt; my_flextable()\n\n# Override defaults \nflextable(mtcars) |&gt; my_flextable(font_size = 9, font_name = \"Arial\")",
+    "crumbs": [
+      "Custom functions",
+      "Publication ready tables"
+    ]
+  }
+]

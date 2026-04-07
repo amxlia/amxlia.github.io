@@ -1,0 +1,62 @@
+# Publication ready tables {.unnumbered}
+This is the code I use to make my tables ready for publication. 
+
+*Purpose:* Styling functions for producing publication-ready tables. All tables follow APA-adjacent formatting
+
+*Usage:* Pipe any flextable into `my_flextable()` as the final styling step. Works with both native flextables, and gtsummary tables converted via `as_flex_table()`
+
+Call this function as the *last* step in a flextable pipeline. 
+
+```{r}
+#' apply consistent styling to a flex table 
+#' 
+#' @param ft - a flextable object (either via `flextable()` or `gtsummary::as_flex_table()`)
+#' @param font_size - numeric. font size applied to all parts. default = 12
+#' @param spacing - numeric. line spacing multiplier applied to all parts. default = 1 
+#' @param font_name - character. font family applied to all parts. default = times new roman 
+#' 
+#' @return - styled flextable object 
+#' 
+
+my_flextable <- function(ft,
+                         font_size = 10,
+                         spacing   = 0.9,
+                         font_name = "Times New Roman") {
+    ft |> 
+        # clean academic style theme 
+        flextable::theme_booktabs() |> 
+        # left align first col 
+        flextable::align(j = 1, align = "left", part = "all") |> 
+        # centre align all other columns 
+        flextable::align(j = -1, align = "center", part = "all") |> 
+        # tight padding for compact tables 
+        flextable::padding(padding = 1, part = "all") |> 
+        # compact row height (default = 1) 
+        flextable::line_spacing(space = spacing, part = "all") |> 
+        # uniform font size (default = 12) 
+        flextable::fontsize(size = font_size, part = "all") |>
+        # uniform font family (default = times new roman) 
+        flextable::font(fontname = font_name, part = "all") |>
+        # table layout/properties: 
+        flextable::set_table_properties(
+          # stretch columns to fill available width 
+          layout = "autofit", 
+          # use 100% of text area width (0-1 scale)
+          width = 1
+        )
+      }
+```
+
+### Examples 
+```{r}
+#| eval: false
+# Native flextable 
+mtcars |> head() |> flextable() |> my_flextable() 
+
+# GT summary table 
+gtsummary::tbl_summary(mtcars) |> as_flex_table() |> my_flextable()
+
+# Override defaults 
+flextable(mtcars) |> my_flextable(font_size = 9, font_name = "Arial") 
+```
+

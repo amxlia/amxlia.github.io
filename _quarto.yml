@@ -1,0 +1,54 @@
+project:
+  type: book
+  output-dir: docs
+toc: false
+book:
+  title: "Amelia Henry"
+  search: false
+  
+  # CHAPTERS/STRUCTURE 
+  chapters:
+  ## HOME 
+    - index.qmd
+    - part: "Introduction"
+      chapters: 
+      - posts/aboutme.qmd
+      #- more to come 
+
+  ## WORKFLOW
+    - part: "Notes"
+      chapters:
+      - posts/scripts_and_workflow.qmd
+      - posts/project_setup.qmd
+    - part: "Analyses"
+      chapters: 
+      - posts/icare.qmd
+    - part: "Custom functions"
+      chapters:
+      - posts/customflextable.qmd
+
+    #- more to come 
+   # - part: "Analyses"
+      #chapters:
+      #- regression models 
+      #- other 
+
+    # - part: "Plots"
+    # #chapters:
+    #   #- bar plotts
+    #   #- other 
+    # - part: "Tables"
+    # #-chapters:
+    # #apa tables 
+
+
+
+## APPEARANCE 
+syntax-highlighting: pygments
+
+format:
+  html:
+    theme: 
+      - minty
+    code-copy: true
+  

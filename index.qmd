@@ -1,0 +1,12 @@
+# Welcome {.unnumbered}
+
+This site is essentially a living lab notebook; a running collection of how I work with data over time.
+I like to think of this as a mix between a portfolio and a working record. 
+
+It brings together my approaches, projects, and things I have learned along the way. Everything here is built openly and documented as I go. The focus is on my **approach** and **processes** to conducting rigorous, transparent, and reproducible research, rather than on particular findings. 
+
+For **prospective collaborators and employers**, this serves as a transparent record of how I think through analytical problems and make decisions. For **students and early career researchers**, this can potentially serve as a learning resource. Most posts include comments/annotations outlining *what* I did, but more importantly *why*. 
+
+If you find something useful, have any questions, notice something is off/spotted an error, or just want to chat, feel free to reach out! 
+
+You can find me on [LinkedIn](https://www.linkedin.com/in/amelia-henry/) or [email](mailto:amelia.henry@sydney.edu.au).

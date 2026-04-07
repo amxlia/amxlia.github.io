@@ -1,0 +1,793 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en"><head>
+
+<meta charset="utf-8">
+<meta name="generator" content="quarto-1.9.36">
+
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+
+
+<title>Negative Binomial Hurdle Models with Zero-Heavy Count Data – Amelia Henry</title>
+<style>
+/* Default styles provided by pandoc.
+** See https://pandoc.org/MANUAL.html#variables-for-html for config info.
+*/
+code{white-space: pre-wrap;}
+span.smallcaps{font-variant: small-caps;}
+div.columns{display: flex; gap: min(4vw, 1.5em);}
+div.column{flex: auto; overflow-x: auto;}
+div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+ul.task-list{list-style: none;}
+ul.task-list li input[type="checkbox"] {
+  width: 0.8em;
+  margin: 0 0.8em 0.2em -1em; /* quarto-specific, see https://github.com/quarto-dev/quarto-cli/issues/4556 */ 
+  vertical-align: middle;
+}
+</style>
+
+
+<script src="../site_libs/quarto-nav/quarto-nav.js"></script>
+<script src="../site_libs/quarto-nav/headroom.min.js"></script>
+<link href="../posts/customflextable.html" rel="next">
+<link href="../posts/project_setup.html" rel="prev">
+<script src="../site_libs/clipboard/clipboard.min.js"></script>
+<script src="../site_libs/quarto-html/quarto.js" type="module"></script>
+<script src="../site_libs/quarto-html/tabsets/tabsets.js" type="module"></script>
+<script src="../site_libs/quarto-html/popper.min.js"></script>
+<script src="../site_libs/quarto-html/tippy.umd.min.js"></script>
+<script src="../site_libs/quarto-html/anchor.min.js"></script>
+<link href="../site_libs/quarto-html/tippy.css" rel="stylesheet">
+<link href="../site_libs/quarto-html/quarto-syntax-highlighting-176b38be48070efe3d434d0a95bef3fe.css" rel="stylesheet" id="quarto-text-highlighting-styles">
+<script src="../site_libs/bootstrap/bootstrap.min.js"></script>
+<link href="../site_libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
+<link href="../site_libs/bootstrap/bootstrap-77dc8a1ec4e78a3599593794a285cb7f.min.css" rel="stylesheet" append-hash="true" id="quarto-bootstrap" data-mode="light">
+<script id="quarto-search-options" type="application/json">{
+  "language": {
+    "search-no-results-text": "No results",
+    "search-matching-documents-text": "matching documents",
+    "search-copy-link-title": "Copy link to search",
+    "search-hide-matches-text": "Hide additional matches",
+    "search-more-match-text": "more match in this document",
+    "search-more-matches-text": "more matches in this document",
+    "search-clear-button-title": "Clear",
+    "search-text-placeholder": "",
+    "search-detached-cancel-button-title": "Cancel",
+    "search-submit-button-title": "Submit",
+    "search-label": "Search"
+  }
+}</script>
+<link href="../site_libs/tabwid-1.1.3/tabwid.css" rel="stylesheet">
+<script src="../site_libs/tabwid-1.1.3/tabwid.js"></script>
+
+
+</head>
+
+<body class="nav-sidebar floating fullcontent quarto-light">
+
+<div id="quarto-search-results"></div>
+  <header id="quarto-header" class="headroom fixed-top">
+  <nav class="quarto-secondary-nav">
+    <div class="container-fluid d-flex">
+      <button type="button" class="quarto-btn-toggle btn" data-bs-toggle="collapse" role="button" data-bs-target=".quarto-sidebar-collapse-item" aria-controls="quarto-sidebar" aria-expanded="false" aria-label="Toggle sidebar navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">
+        <i class="bi bi-layout-text-sidebar-reverse"></i>
+      </button>
+        <nav class="quarto-page-breadcrumbs" aria-label="breadcrumb"><ol class="breadcrumb"><li class="breadcrumb-item"><a href="../posts/icare.html">Analyses</a></li><li class="breadcrumb-item"><a href="../posts/icare.html">Negative Binomial Hurdle Models with Zero-Heavy Count Data</a></li></ol></nav>
+        <a class="flex-grow-1" role="navigation" data-bs-toggle="collapse" data-bs-target=".quarto-sidebar-collapse-item" aria-controls="quarto-sidebar" aria-expanded="false" aria-label="Toggle sidebar navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">      
+        </a>
+    </div>
+  </nav>
+</header>
+<!-- content -->
+<div id="quarto-content" class="quarto-container page-columns page-rows-contents page-layout-article">
+<!-- sidebar -->
+  <nav id="quarto-sidebar" class="sidebar collapse collapse-horizontal quarto-sidebar-collapse-item sidebar-navigation floating overflow-auto">
+    <div class="pt-lg-2 mt-2 text-left sidebar-header">
+    <div class="sidebar-title mb-0 py-0">
+      <a href="../">Amelia Henry</a> 
+    </div>
+      </div>
+    <div class="sidebar-menu-container"> 
+    <ul class="list-unstyled mt-1">
+        <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../index.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Welcome</span></a>
+  </div>
+</li>
+        <li class="sidebar-item sidebar-item-section">
+      <div class="sidebar-item-container"> 
+            <a class="sidebar-item-text sidebar-link text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-1" role="navigation" aria-expanded="true">
+ <span class="menu-text">Introduction</span></a>
+          <a class="sidebar-item-toggle text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-1" role="navigation" aria-expanded="true" aria-label="Toggle section">
+            <i class="bi bi-chevron-right ms-2"></i>
+          </a> 
+      </div>
+      <ul id="quarto-sidebar-section-1" class="collapse list-unstyled sidebar-section depth1 show">  
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../posts/aboutme.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">About Me</span></a>
+  </div>
+</li>
+      </ul>
+  </li>
+        <li class="sidebar-item sidebar-item-section">
+      <div class="sidebar-item-container"> 
+            <a class="sidebar-item-text sidebar-link text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-2" role="navigation" aria-expanded="true">
+ <span class="menu-text">Notes</span></a>
+          <a class="sidebar-item-toggle text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-2" role="navigation" aria-expanded="true" aria-label="Toggle section">
+            <i class="bi bi-chevron-right ms-2"></i>
+          </a> 
+      </div>
+      <ul id="quarto-sidebar-section-2" class="collapse list-unstyled sidebar-section depth1 show">  
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../posts/scripts_and_workflow.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Script Practices</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../posts/project_setup.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Project Setup</span></a>
+  </div>
+</li>
+      </ul>
+  </li>
+        <li class="sidebar-item sidebar-item-section">
+      <div class="sidebar-item-container"> 
+            <a class="sidebar-item-text sidebar-link text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-3" role="navigation" aria-expanded="true">
+ <span class="menu-text">Analyses</span></a>
+          <a class="sidebar-item-toggle text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-3" role="navigation" aria-expanded="true" aria-label="Toggle section">
+            <i class="bi bi-chevron-right ms-2"></i>
+          </a> 
+      </div>
+      <ul id="quarto-sidebar-section-3" class="collapse list-unstyled sidebar-section depth1 show">  
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../posts/icare.html" class="sidebar-item-text sidebar-link active">
+ <span class="menu-text">Negative Binomial Hurdle Models with Zero-Heavy Count Data</span></a>
+  </div>
+</li>
+      </ul>
+  </li>
+        <li class="sidebar-item sidebar-item-section">
+      <div class="sidebar-item-container"> 
+            <a class="sidebar-item-text sidebar-link text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-4" role="navigation" aria-expanded="true">
+ <span class="menu-text">Custom functions</span></a>
+          <a class="sidebar-item-toggle text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-4" role="navigation" aria-expanded="true" aria-label="Toggle section">
+            <i class="bi bi-chevron-right ms-2"></i>
+          </a> 
+      </div>
+      <ul id="quarto-sidebar-section-4" class="collapse list-unstyled sidebar-section depth1 show">  
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../posts/customflextable.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Publication ready tables</span></a>
+  </div>
+</li>
+      </ul>
+  </li>
+    </ul>
+    </div>
+</nav>
+<div id="quarto-sidebar-glass" class="quarto-sidebar-collapse-item" data-bs-toggle="collapse" data-bs-target=".quarto-sidebar-collapse-item"></div>
+<!-- margin-sidebar -->
+    
+<!-- main -->
+<main class="content" id="quarto-document-content">
+
+<header id="title-block-header" class="quarto-title-block default"><nav class="quarto-page-breadcrumbs quarto-title-breadcrumbs d-none d-lg-block" aria-label="breadcrumb"><ol class="breadcrumb"><li class="breadcrumb-item"><a href="../posts/icare.html">Analyses</a></li><li class="breadcrumb-item"><a href="../posts/icare.html">Negative Binomial Hurdle Models with Zero-Heavy Count Data</a></li></ol></nav>
+<div class="quarto-title">
+<h1 class="title">Negative Binomial Hurdle Models with Zero-Heavy Count Data</h1>
+</div>
+
+
+
+<div class="quarto-title-meta">
+
+    
+  
+    
+  </div>
+  
+
+
+</header>
+
+
+<section id="modelling-alcohol-and-other-drug-use-psychological-distress-and-occupational-functioning-in-australian-public-safety-personnel" class="level2">
+<h2 class="anchored" data-anchor-id="modelling-alcohol-and-other-drug-use-psychological-distress-and-occupational-functioning-in-australian-public-safety-personnel">Modelling Alcohol and Other Drug Use, Psychological Distress, and Occupational Functioning in Australian Public Safety Personnel</h2>
+<p><em>slowly converting this into a doc from my analyses notes</em> (full script at bottom of page to come)</p>
+</section>
+<section id="aims" class="level2">
+<h2 class="anchored" data-anchor-id="aims">Aims</h2>
+<ol type="1">
+<li>Examine rates of severity of alcohol and other drug (AOD) use among public safety personnel (PSP)</li>
+<li>Examine associations between AOD use, psychological distress, and occupational functioning (absenteeism and presenteeism) among PSP</li>
+<li>Examine whether AOD use and psychological distress predict impairment to occupational function, both independently, and in combination</li>
+</ol>
+</section>
+<section id="key-variables" class="level2">
+<h2 class="anchored" data-anchor-id="key-variables">Key Variables</h2>
+<ul>
+<li>Psychological distress (K10): <code>k10_total</code> &amp; <code>k10_total_interpretation</code></li>
+<li>alcohol and other drug use (ASSIST): <code>alcohol_use_scores</code> &amp; <code>alcohol_use_interpretation</code> / <code>max_other_drug_score</code> &amp; <code>max_drug_use_interpretation</code></li>
+<li>Workplace Outcomes: <code>k10_11_absenteeism</code> &amp; <code>k10_12_presenteeism</code></li>
+</ul>
+<p>Potential covariates:</p>
+<ul>
+<li><code>gender</code></li>
+<li><code>age</code></li>
+<li><code>agency_years</code></li>
+</ul>
+</section>
+<section id="data-pre-processing" class="level2">
+<h2 class="anchored" data-anchor-id="data-pre-processing">Data Pre-processing</h2>
+<ul>
+<li>excluded cases with no response to the first assist item, <code>assist1_string</code>, as these cases did not complete the self-assessment</li>
+<li>parsed multi-response string items from <code>assist1_string</code> into binary indicators for each substance</li>
+<li>treated non-endorsement of use as missing (<code>NA</code>) and <em>not</em> zero</li>
+<li>calculated risk scores across for each ASSIST substance</li>
+<li>set total scores to <code>NA</code> for substances never used to avoid conflating with “low risk”</li>
+<li>calculated interpretation for alcohol and other drug use seperately</li>
+<li>calculated total k10 score</li>
+<li>calculated k10 interpretation</li>
+<li>exclude responses prior to 11 march (pre-implementation/test responses)</li>
+<li>set implausible ages to NA</li>
+</ul>
+<p>Derived:</p>
+<ul>
+<li>binary indicators of recent AOD use (past 3 months) (alcohol and other drug use seperately)</li>
+<li>poly-drug use indicator</li>
+<li>count of substances used in past 3 months</li>
+<li>maximum other drug (not alcohol) risk score (bc the self-assessment personalised feedback was based on that)</li>
+<li>other drug use interpretation</li>
+<li>psychological distress total score</li>
+<li>psychological distress interpretation</li>
+</ul>
+<p><em>KM and I decided that we don’t need the poly-drug use indicator, or counts of substances used. Rely on risk scores (only get risk score if used in last 3 months, otherwise 0 if used in lifetime, otherwise NA if never)</em></p>
+</section>
+<section id="screening" class="level2">
+<h2 class="anchored" data-anchor-id="screening">Screening</h2>
+<ul>
+<li>tested normality for all continuous outcomes and predictors (shapiro-wilk)</li>
+<li>use non-parametric tests (kruskal wallis) for any group comparisons (risk category as group)</li>
+</ul>
+<div class="cell">
+<div class="cell-output-display">
+<div class="tabwid"><style>.cl-1a568234{table-layout:auto;width:100%;}.cl-1a51d5f4{font-family:'Times New Roman';font-size:10pt;font-weight:normal;font-style:normal;text-decoration:none;color:rgba(0, 0, 0, 1.00);background-color:transparent;}.cl-1a53f082{margin:0;text-align:left;border-bottom: 0 solid rgba(0, 0, 0, 1.00);border-top: 0 solid rgba(0, 0, 0, 1.00);border-left: 0 solid rgba(0, 0, 0, 1.00);border-right: 0 solid rgba(0, 0, 0, 1.00);padding-bottom:5pt;padding-top:5pt;padding-left:5pt;padding-right:5pt;line-height: 0.9;background-color:transparent;}.cl-1a540392{background-color:transparent;vertical-align: middle;border-bottom: 1.5pt solid rgba(102, 102, 102, 1.00);border-top: 1.5pt solid rgba(102, 102, 102, 1.00);border-left: 0 solid rgba(0, 0, 0, 1.00);border-right: 0 solid rgba(0, 0, 0, 1.00);margin-bottom:0;margin-top:0;margin-left:0;margin-right:0;}.cl-1a540393{background-color:transparent;vertical-align: middle;border-bottom: 1.5pt solid rgba(102, 102, 102, 1.00);border-top: 1.5pt solid rgba(102, 102, 102, 1.00);border-left: 0 solid rgba(0, 0, 0, 1.00);border-right: 0 solid rgba(0, 0, 0, 1.00);margin-bottom:0;margin-top:0;margin-left:0;margin-right:0;}.cl-1a54039c{background-color:transparent;vertical-align: middle;border-bottom: 1.5pt solid rgba(102, 102, 102, 1.00);border-top: 1.5pt solid rgba(102, 102, 102, 1.00);border-left: 0 solid rgba(0, 0, 0, 1.00);border-right: 0 solid rgba(0, 0, 0, 1.00);margin-bottom:0;margin-top:0;margin-left:0;margin-right:0;}.cl-1a54039d{background-color:transparent;vertical-align: middle;border-bottom: 0 solid rgba(0, 0, 0, 1.00);border-top: 0 solid rgba(0, 0, 0, 1.00);border-left: 0 solid rgba(0, 0, 0, 1.00);border-right: 0 solid rgba(0, 0, 0, 1.00);margin-bottom:0;margin-top:0;margin-left:0;margin-right:0;}.cl-1a5403a6{background-color:transparent;vertical-align: middle;border-bottom: 0 solid rgba(0, 0, 0, 1.00);border-top: 0 solid rgba(0, 0, 0, 1.00);border-left: 0 solid rgba(0, 0, 0, 1.00);border-right: 0 solid rgba(0, 0, 0, 1.00);margin-bottom:0;margin-top:0;margin-left:0;margin-right:0;}.cl-1a5403a7{background-color:transparent;vertical-align: middle;border-bottom: 0 solid rgba(0, 0, 0, 1.00);border-top: 0 solid rgba(0, 0, 0, 1.00);border-left: 0 solid rgba(0, 0, 0, 1.00);border-right: 0 solid rgba(0, 0, 0, 1.00);margin-bottom:0;margin-top:0;margin-left:0;margin-right:0;}.cl-1a5403a8{background-color:transparent;vertical-align: middle;border-bottom: 0 solid rgba(0, 0, 0, 1.00);border-top: 0 solid rgba(0, 0, 0, 1.00);border-left: 0 solid rgba(0, 0, 0, 1.00);border-right: 0 solid rgba(0, 0, 0, 1.00);margin-bottom:0;margin-top:0;margin-left:0;margin-right:0;}.cl-1a5403b0{background-color:transparent;vertical-align: middle;border-bottom: 0 solid rgba(0, 0, 0, 1.00);border-top: 0 solid rgba(0, 0, 0, 1.00);border-left: 0 solid rgba(0, 0, 0, 1.00);border-right: 0 solid rgba(0, 0, 0, 1.00);margin-bottom:0;margin-top:0;margin-left:0;margin-right:0;}.cl-1a5403ba{background-color:transparent;vertical-align: middle;border-bottom: 0 solid rgba(0, 0, 0, 1.00);border-top: 0 solid rgba(0, 0, 0, 1.00);border-left: 0 solid rgba(0, 0, 0, 1.00);border-right: 0 solid rgba(0, 0, 0, 1.00);margin-bottom:0;margin-top:0;margin-left:0;margin-right:0;}.cl-1a5403bb{background-color:transparent;vertical-align: middle;border-bottom: 0 solid rgba(0, 0, 0, 1.00);border-top: 0 solid rgba(0, 0, 0, 1.00);border-left: 0 solid rgba(0, 0, 0, 1.00);border-right: 0 solid rgba(0, 0, 0, 1.00);margin-bottom:0;margin-top:0;margin-left:0;margin-right:0;}.cl-1a5403bc{background-color:transparent;vertical-align: middle;border-bottom: 0 solid rgba(0, 0, 0, 1.00);border-top: 0 solid rgba(0, 0, 0, 1.00);border-left: 0 solid rgba(0, 0, 0, 1.00);border-right: 0 solid rgba(0, 0, 0, 1.00);margin-bottom:0;margin-top:0;margin-left:0;margin-right:0;}.cl-1a5403c4{background-color:transparent;vertical-align: middle;border-bottom: 0 solid rgba(0, 0, 0, 1.00);border-top: 0 solid rgba(0, 0, 0, 1.00);border-left: 0 solid rgba(0, 0, 0, 1.00);border-right: 0 solid rgba(0, 0, 0, 1.00);margin-bottom:0;margin-top:0;margin-left:0;margin-right:0;}.cl-1a5403c5{background-color:transparent;vertical-align: middle;border-bottom: 0 solid rgba(0, 0, 0, 1.00);border-top: 0 solid rgba(0, 0, 0, 1.00);border-left: 0 solid rgba(0, 0, 0, 1.00);border-right: 0 solid rgba(0, 0, 0, 1.00);margin-bottom:0;margin-top:0;margin-left:0;margin-right:0;}.cl-1a5403ce{background-color:transparent;vertical-align: middle;border-bottom: 0 solid rgba(0, 0, 0, 1.00);border-top: 0 solid rgba(0, 0, 0, 1.00);border-left: 0 solid rgba(0, 0, 0, 1.00);border-right: 0 solid rgba(0, 0, 0, 1.00);margin-bottom:0;margin-top:0;margin-left:0;margin-right:0;}.cl-1a5403cf{background-color:transparent;vertical-align: middle;border-bottom: 0 solid rgba(0, 0, 0, 1.00);border-top: 0 solid rgba(0, 0, 0, 1.00);border-left: 0 solid rgba(0, 0, 0, 1.00);border-right: 0 solid rgba(0, 0, 0, 1.00);margin-bottom:0;margin-top:0;margin-left:0;margin-right:0;}.cl-1a5403d0{background-color:transparent;vertical-align: middle;border-bottom: 1.5pt solid rgba(102, 102, 102, 1.00);border-top: 0 solid rgba(0, 0, 0, 1.00);border-left: 0 solid rgba(0, 0, 0, 1.00);border-right: 0 solid rgba(0, 0, 0, 1.00);margin-bottom:0;margin-top:0;margin-left:0;margin-right:0;}.cl-1a5403d8{background-color:transparent;vertical-align: middle;border-bottom: 1.5pt solid rgba(102, 102, 102, 1.00);border-top: 0 solid rgba(0, 0, 0, 1.00);border-left: 0 solid rgba(0, 0, 0, 1.00);border-right: 0 solid rgba(0, 0, 0, 1.00);margin-bottom:0;margin-top:0;margin-left:0;margin-right:0;}.cl-1a5403d9{background-color:transparent;vertical-align: middle;border-bottom: 1.5pt solid rgba(102, 102, 102, 1.00);border-top: 0 solid rgba(0, 0, 0, 1.00);border-left: 0 solid rgba(0, 0, 0, 1.00);border-right: 0 solid rgba(0, 0, 0, 1.00);margin-bottom:0;margin-top:0;margin-left:0;margin-right:0;}</style><table data-quarto-disable-processing="true" class="cl-1a568234"><thead><tr style="overflow-wrap:break-word;"><th class="cl-1a540392"><p class="cl-1a53f082"><span class="cl-1a51d5f4">Variable</span></p></th><th class="cl-1a540393"><p class="cl-1a53f082"><span class="cl-1a51d5f4">Statistic</span></p></th><th class="cl-1a54039c"><p class="cl-1a53f082"><span class="cl-1a51d5f4">p</span></p></th></tr></thead><tbody><tr style="overflow-wrap:break-word;"><td class="cl-1a54039d"><p class="cl-1a53f082"><span class="cl-1a51d5f4">Age</span></p></td><td class="cl-1a5403a6"><p class="cl-1a53f082"><span class="cl-1a51d5f4">0.946</span></p></td><td class="cl-1a5403a7"><p class="cl-1a53f082"><span class="cl-1a51d5f4">0.000</span></p></td></tr><tr style="overflow-wrap:break-word;"><td class="cl-1a54039d"><p class="cl-1a53f082"><span class="cl-1a51d5f4">Agency Years</span></p></td><td class="cl-1a5403a6"><p class="cl-1a53f082"><span class="cl-1a51d5f4">0.883</span></p></td><td class="cl-1a5403a7"><p class="cl-1a53f082"><span class="cl-1a51d5f4">0.000</span></p></td></tr><tr style="overflow-wrap:break-word;"><td class="cl-1a5403a8"><p class="cl-1a53f082"><span class="cl-1a51d5f4">Alcohol Use Risk</span></p></td><td class="cl-1a5403b0"><p class="cl-1a53f082"><span class="cl-1a51d5f4">0.933</span></p></td><td class="cl-1a5403ba"><p class="cl-1a53f082"><span class="cl-1a51d5f4">0.000</span></p></td></tr><tr style="overflow-wrap:break-word;"><td class="cl-1a5403bb"><p class="cl-1a53f082"><span class="cl-1a51d5f4">Other Drug Use Risk</span></p></td><td class="cl-1a5403bc"><p class="cl-1a53f082"><span class="cl-1a51d5f4">0.452</span></p></td><td class="cl-1a5403c4"><p class="cl-1a53f082"><span class="cl-1a51d5f4">0.000</span></p></td></tr><tr style="overflow-wrap:break-word;"><td class="cl-1a5403c5"><p class="cl-1a53f082"><span class="cl-1a51d5f4">Psychological Distress</span></p></td><td class="cl-1a5403ce"><p class="cl-1a53f082"><span class="cl-1a51d5f4">0.649</span></p></td><td class="cl-1a5403cf"><p class="cl-1a53f082"><span class="cl-1a51d5f4">0.000</span></p></td></tr><tr style="overflow-wrap:break-word;"><td class="cl-1a5403a8"><p class="cl-1a53f082"><span class="cl-1a51d5f4">Absenteeism</span></p></td><td class="cl-1a5403b0"><p class="cl-1a53f082"><span class="cl-1a51d5f4">0.949</span></p></td><td class="cl-1a5403ba"><p class="cl-1a53f082"><span class="cl-1a51d5f4">0.000</span></p></td></tr><tr style="overflow-wrap:break-word;"><td class="cl-1a5403d0"><p class="cl-1a53f082"><span class="cl-1a51d5f4">Presenteeism</span></p></td><td class="cl-1a5403d8"><p class="cl-1a53f082"><span class="cl-1a51d5f4">0.840</span></p></td><td class="cl-1a5403d9"><p class="cl-1a53f082"><span class="cl-1a51d5f4">0.000</span></p></td></tr></tbody></table></div>
+</div>
+</div>
+<p>Absenteeism and presenteeism both have strong right skew and a large proportion of zeros</p>
+<div class="cell">
+<div class="cell-output-display">
+<div>
+<figure class="figure">
+<p><img src="icare_files/figure-html/plot1-1.png" class="img-fluid figure-img" width="672"></p>
+</figure>
+</div>
+</div>
+</div>
+<p><strong>note: suggests standard linear models would be inappropriate. count-based better?</strong></p>
+</section>
+<section id="prevalence-and-severity" class="level2">
+<h2 class="anchored" data-anchor-id="prevalence-and-severity">Prevalence and severity</h2>
+<ul>
+<li>prevalence of recent use by substance</li>
+<li>categorised ASSIST risk thresholds per substance</li>
+<li>exclude “other” and “smoking”</li>
+<li>compare demographics, psych distress, and functioning across risk groups
+<ul>
+<li>stratify by alcohol risk</li>
+<li>stratify by other drug risk</li>
+<li>kruskal wallis for continuous vars (have non-normal distributions)</li>
+<li>chi square or fisher’s exact for categorical vars</li>
+</ul></li>
+</ul>
+<div class="cell">
+<div class="cell-output-display">
+<div class="tabwid tabwid_left"><style>.cl-1ac7acf2{table-layout:auto;width:100%;}.cl-1ac21ed6{font-family:'Times New Roman';font-size:10pt;font-weight:bold;font-style:normal;text-decoration:none;color:rgba(0, 0, 0, 1.00);background-color:transparent;}.cl-1ac21ee0{font-family:'Times New Roman';font-size:10pt;font-weight:normal;font-style:normal;text-decoration:none;color:rgba(0, 0, 0, 1.00);background-color:transparent;}.cl-1ac44576{margin:0;text-align:left;border-bottom: 0 solid rgba(0, 0, 0, 1.00);border-top: 0 solid rgba(0, 0, 0, 1.00);border-left: 0 solid rgba(0, 0, 0, 1.00);border-right: 0 solid rgba(0, 0, 0, 1.00);padding-bottom:1pt;padding-top:1pt;padding-left:1pt;padding-right:1pt;line-height: 0.9;background-color:transparent;}.cl-1ac44580{margin:0;text-align:center;border-bottom: 0 solid rgba(0, 0, 0, 1.00);border-top: 0 solid rgba(0, 0, 0, 1.00);border-left: 0 solid rgba(0, 0, 0, 1.00);border-right: 0 solid rgba(0, 0, 0, 1.00);padding-bottom:1pt;padding-top:1pt;padding-left:1pt;padding-right:1pt;line-height: 0.9;background-color:transparent;}.cl-1ac4543a{background-color:transparent;vertical-align: middle;border-bottom: 1pt solid rgba(0, 0, 0, 1.00);border-top: 1pt solid rgba(0, 0, 0, 1.00);border-left: 0 solid rgba(0, 0, 0, 1.00);border-right: 0 solid rgba(0, 0, 0, 1.00);margin-bottom:0;margin-top:0;margin-left:0;margin-right:0;}.cl-1ac45444{background-color:transparent;vertical-align: middle;border-bottom: 1pt solid rgba(0, 0, 0, 1.00);border-top: 1pt solid rgba(0, 0, 0, 1.00);border-left: 0 solid rgba(0, 0, 0, 1.00);border-right: 0 solid rgba(0, 0, 0, 1.00);margin-bottom:0;margin-top:0;margin-left:0;margin-right:0;}.cl-1ac45445{background-color:transparent;vertical-align: middle;border-bottom: 1pt solid rgba(0, 0, 0, 1.00);border-top: 1pt solid rgba(0, 0, 0, 1.00);border-left: 0 solid rgba(0, 0, 0, 1.00);border-right: 0 solid rgba(0, 0, 0, 1.00);margin-bottom:0;margin-top:0;margin-left:0;margin-right:0;}.cl-1ac4544e{background-color:transparent;vertical-align: middle;border-bottom: 1pt solid rgba(0, 0, 0, 1.00);border-top: 1pt solid rgba(0, 0, 0, 1.00);border-left: 0 solid rgba(0, 0, 0, 1.00);border-right: 0 solid rgba(0, 0, 0, 1.00);margin-bottom:0;margin-top:0;margin-left:0;margin-right:0;}.cl-1ac4544f{background-color:transparent;vertical-align: middle;border-bottom: 1pt solid rgba(0, 0, 0, 1.00);border-top: 1pt solid rgba(0, 0, 0, 1.00);border-left: 0 solid rgba(0, 0, 0, 1.00);border-right: 0 solid rgba(0, 0, 0, 1.00);margin-bottom:0;margin-top:0;margin-left:0;margin-right:0;}.cl-1ac45458{background-color:transparent;vertical-align: middle;border-bottom: 1pt solid rgba(0, 0, 0, 1.00);border-top: 1pt solid rgba(0, 0, 0, 1.00);border-left: 0 solid rgba(0, 0, 0, 1.00);border-right: 0 solid rgba(0, 0, 0, 1.00);margin-bottom:0;margin-top:0;margin-left:0;margin-right:0;}.cl-1ac45462{background-color:transparent;vertical-align: middle;border-bottom: 0 solid rgba(0, 0, 0, 1.00);border-top: 0 solid rgba(0, 0, 0, 1.00);border-left: 0 solid rgba(0, 0, 0, 1.00);border-right: 0 solid rgba(0, 0, 0, 1.00);margin-bottom:0;margin-top:0;margin-left:0;margin-right:0;}.cl-1ac45463{background-color:transparent;vertical-align: middle;border-bottom: 0 solid rgba(0, 0, 0, 1.00);border-top: 0 solid rgba(0, 0, 0, 1.00);border-left: 0 solid rgba(0, 0, 0, 1.00);border-right: 0 solid rgba(0, 0, 0, 1.00);margin-bottom:0;margin-top:0;margin-left:0;margin-right:0;}.cl-1ac45464{background-color:transparent;vertical-align: middle;border-bottom: 1pt solid rgba(0, 0, 0, 1.00);border-top: 0 solid rgba(0, 0, 0, 1.00);border-left: 0 solid rgba(0, 0, 0, 1.00);border-right: 0 solid rgba(0, 0, 0, 1.00);margin-bottom:0;margin-top:0;margin-left:0;margin-right:0;}.cl-1ac4546c{background-color:transparent;vertical-align: middle;border-bottom: 1pt solid rgba(0, 0, 0, 1.00);border-top: 0 solid rgba(0, 0, 0, 1.00);border-left: 0 solid rgba(0, 0, 0, 1.00);border-right: 0 solid rgba(0, 0, 0, 1.00);margin-bottom:0;margin-top:0;margin-left:0;margin-right:0;}</style><table data-quarto-disable-processing="true" class="cl-1ac7acf2"><thead><tr style="overflow-wrap:break-word;"><th colspan="2" class="cl-1ac4543a"><p class="cl-1ac44576"><span class="cl-1ac21ed6"></span></p></th><th colspan="6" class="cl-1ac45444"><p class="cl-1ac44580"><span class="cl-1ac21ed6">ASSIST scores</span></p></th></tr><tr style="overflow-wrap:break-word;"><th colspan="2" class="cl-1ac45445"><p class="cl-1ac44576"><span class="cl-1ac21ed6"></span></p></th><th colspan="2" class="cl-1ac4544e"><p class="cl-1ac44580"><span class="cl-1ac21ed6">Low risk</span></p></th><th colspan="2" class="cl-1ac4544e"><p class="cl-1ac44580"><span class="cl-1ac21ed6">Moderate risk</span></p></th><th colspan="2" class="cl-1ac4544e"><p class="cl-1ac44580"><span class="cl-1ac21ed6">High risk</span></p></th></tr><tr style="overflow-wrap:break-word;"><th class="cl-1ac4544f"><p class="cl-1ac44576"><span class="cl-1ac21ed6">Substance</span></p></th><th class="cl-1ac45458"><p class="cl-1ac44580"><span class="cl-1ac21ed6">Total using</span></p></th><th class="cl-1ac45458"><p class="cl-1ac44580"><span class="cl-1ac21ed6">n</span></p></th><th class="cl-1ac45458"><p class="cl-1ac44580"><span class="cl-1ac21ed6">%</span></p></th><th class="cl-1ac45458"><p class="cl-1ac44580"><span class="cl-1ac21ed6">n</span></p></th><th class="cl-1ac45458"><p class="cl-1ac44580"><span class="cl-1ac21ed6">%</span></p></th><th class="cl-1ac45458"><p class="cl-1ac44580"><span class="cl-1ac21ed6">n</span></p></th><th class="cl-1ac45458"><p class="cl-1ac44580"><span class="cl-1ac21ed6">%</span></p></th></tr></thead><tbody><tr style="overflow-wrap:break-word;"><td class="cl-1ac45462"><p class="cl-1ac44576"><span class="cl-1ac21ee0">Alcohol</span></p></td><td class="cl-1ac45463"><p class="cl-1ac44580"><span class="cl-1ac21ee0">216 (98.2%)</span></p></td><td class="cl-1ac45463"><p class="cl-1ac44580"><span class="cl-1ac21ee0">77</span></p></td><td class="cl-1ac45463"><p class="cl-1ac44580"><span class="cl-1ac21ee0">35.6</span></p></td><td class="cl-1ac45463"><p class="cl-1ac44580"><span class="cl-1ac21ee0">83</span></p></td><td class="cl-1ac45463"><p class="cl-1ac44580"><span class="cl-1ac21ee0">38.4</span></p></td><td class="cl-1ac45463"><p class="cl-1ac44580"><span class="cl-1ac21ee0">56</span></p></td><td class="cl-1ac45463"><p class="cl-1ac44580"><span class="cl-1ac21ee0">25.9</span></p></td></tr><tr style="overflow-wrap:break-word;"><td class="cl-1ac45462"><p class="cl-1ac44576"><span class="cl-1ac21ee0">Amphetamines</span></p></td><td class="cl-1ac45463"><p class="cl-1ac44580"><span class="cl-1ac21ee0">23 (10.5%)</span></p></td><td class="cl-1ac45463"><p class="cl-1ac44580"><span class="cl-1ac21ee0">5</span></p></td><td class="cl-1ac45463"><p class="cl-1ac44580"><span class="cl-1ac21ee0">21.7</span></p></td><td class="cl-1ac45463"><p class="cl-1ac44580"><span class="cl-1ac21ee0">16</span></p></td><td class="cl-1ac45463"><p class="cl-1ac44580"><span class="cl-1ac21ee0">69.6</span></p></td><td class="cl-1ac45463"><p class="cl-1ac44580"><span class="cl-1ac21ee0">2</span></p></td><td class="cl-1ac45463"><p class="cl-1ac44580"><span class="cl-1ac21ee0">8.7</span></p></td></tr><tr style="overflow-wrap:break-word;"><td class="cl-1ac45462"><p class="cl-1ac44576"><span class="cl-1ac21ee0">Cannabis</span></p></td><td class="cl-1ac45463"><p class="cl-1ac44580"><span class="cl-1ac21ee0">28 (12.7%)</span></p></td><td class="cl-1ac45463"><p class="cl-1ac44580"><span class="cl-1ac21ee0">6</span></p></td><td class="cl-1ac45463"><p class="cl-1ac44580"><span class="cl-1ac21ee0">21.4</span></p></td><td class="cl-1ac45463"><p class="cl-1ac44580"><span class="cl-1ac21ee0">20</span></p></td><td class="cl-1ac45463"><p class="cl-1ac44580"><span class="cl-1ac21ee0">71.4</span></p></td><td class="cl-1ac45463"><p class="cl-1ac44580"><span class="cl-1ac21ee0">2</span></p></td><td class="cl-1ac45463"><p class="cl-1ac44580"><span class="cl-1ac21ee0">7.1</span></p></td></tr><tr style="overflow-wrap:break-word;"><td class="cl-1ac45462"><p class="cl-1ac44576"><span class="cl-1ac21ee0">Cocaine</span></p></td><td class="cl-1ac45463"><p class="cl-1ac44580"><span class="cl-1ac21ee0">27 (12.3%)</span></p></td><td class="cl-1ac45463"><p class="cl-1ac44580"><span class="cl-1ac21ee0">12</span></p></td><td class="cl-1ac45463"><p class="cl-1ac44580"><span class="cl-1ac21ee0">44.4</span></p></td><td class="cl-1ac45463"><p class="cl-1ac44580"><span class="cl-1ac21ee0">13</span></p></td><td class="cl-1ac45463"><p class="cl-1ac44580"><span class="cl-1ac21ee0">48.1</span></p></td><td class="cl-1ac45463"><p class="cl-1ac44580"><span class="cl-1ac21ee0">2</span></p></td><td class="cl-1ac45463"><p class="cl-1ac44580"><span class="cl-1ac21ee0">7.4</span></p></td></tr><tr style="overflow-wrap:break-word;"><td class="cl-1ac45462"><p class="cl-1ac44576"><span class="cl-1ac21ee0">Hallucinogens</span></p></td><td class="cl-1ac45463"><p class="cl-1ac44580"><span class="cl-1ac21ee0">18 (8.2%)</span></p></td><td class="cl-1ac45463"><p class="cl-1ac44580"><span class="cl-1ac21ee0">4</span></p></td><td class="cl-1ac45463"><p class="cl-1ac44580"><span class="cl-1ac21ee0">22.2</span></p></td><td class="cl-1ac45463"><p class="cl-1ac44580"><span class="cl-1ac21ee0">12</span></p></td><td class="cl-1ac45463"><p class="cl-1ac44580"><span class="cl-1ac21ee0">66.7</span></p></td><td class="cl-1ac45463"><p class="cl-1ac44580"><span class="cl-1ac21ee0">2</span></p></td><td class="cl-1ac45463"><p class="cl-1ac44580"><span class="cl-1ac21ee0">11.1</span></p></td></tr><tr style="overflow-wrap:break-word;"><td class="cl-1ac45462"><p class="cl-1ac44576"><span class="cl-1ac21ee0">Inhalants</span></p></td><td class="cl-1ac45463"><p class="cl-1ac44580"><span class="cl-1ac21ee0">14 (6.4%)</span></p></td><td class="cl-1ac45463"><p class="cl-1ac44580"><span class="cl-1ac21ee0">6</span></p></td><td class="cl-1ac45463"><p class="cl-1ac44580"><span class="cl-1ac21ee0">42.9</span></p></td><td class="cl-1ac45463"><p class="cl-1ac44580"><span class="cl-1ac21ee0">6</span></p></td><td class="cl-1ac45463"><p class="cl-1ac44580"><span class="cl-1ac21ee0">42.9</span></p></td><td class="cl-1ac45463"><p class="cl-1ac44580"><span class="cl-1ac21ee0">2</span></p></td><td class="cl-1ac45463"><p class="cl-1ac44580"><span class="cl-1ac21ee0">14.3</span></p></td></tr><tr style="overflow-wrap:break-word;"><td class="cl-1ac45462"><p class="cl-1ac44576"><span class="cl-1ac21ee0">Opioids</span></p></td><td class="cl-1ac45463"><p class="cl-1ac44580"><span class="cl-1ac21ee0">12 (5.5%)</span></p></td><td class="cl-1ac45463"><p class="cl-1ac44580"><span class="cl-1ac21ee0">5</span></p></td><td class="cl-1ac45463"><p class="cl-1ac44580"><span class="cl-1ac21ee0">41.7</span></p></td><td class="cl-1ac45463"><p class="cl-1ac44580"><span class="cl-1ac21ee0">6</span></p></td><td class="cl-1ac45463"><p class="cl-1ac44580"><span class="cl-1ac21ee0">50.0</span></p></td><td class="cl-1ac45463"><p class="cl-1ac44580"><span class="cl-1ac21ee0">1</span></p></td><td class="cl-1ac45463"><p class="cl-1ac44580"><span class="cl-1ac21ee0">8.3</span></p></td></tr><tr style="overflow-wrap:break-word;"><td class="cl-1ac45464"><p class="cl-1ac44576"><span class="cl-1ac21ee0">Sedatives</span></p></td><td class="cl-1ac4546c"><p class="cl-1ac44580"><span class="cl-1ac21ee0">26 (11.8%)</span></p></td><td class="cl-1ac4546c"><p class="cl-1ac44580"><span class="cl-1ac21ee0">7</span></p></td><td class="cl-1ac4546c"><p class="cl-1ac44580"><span class="cl-1ac21ee0">26.9</span></p></td><td class="cl-1ac4546c"><p class="cl-1ac44580"><span class="cl-1ac21ee0">18</span></p></td><td class="cl-1ac4546c"><p class="cl-1ac44580"><span class="cl-1ac21ee0">69.2</span></p></td><td class="cl-1ac4546c"><p class="cl-1ac44580"><span class="cl-1ac21ee0">1</span></p></td><td class="cl-1ac4546c"><p class="cl-1ac44580"><span class="cl-1ac21ee0">3.8</span></p></td></tr></tbody></table></div>
+</div>
+</div>
+<ul>
+<li>alcohol use nearly everyone (substantial amount of spread across risk levels)</li>
+<li>other substances way lower, but still prevalent, and predominantly moderate risk (though it’s pretty hard to get low risk the way other drug use is scored)</li>
+<li>high risk for other drugs isn’t too common</li>
+<li>some substances (cannabis, amphetamines, sedatives) show strong skew toward moderate rather than low risk</li>
+</ul>
+<p><em>for modelling, use maximum other drug score rather than modelling each drug individually</em></p>
+<p>summary based on alcohol risk:</p>
+<div class="cell">
+<div class="cell-output-display">
+<div class="tabwid tabwid_left"><style>.cl-1bddf5ec{table-layout:auto;width:100%;}.cl-1bd87aa4{font-family:'Times New Roman';font-size:10pt;font-weight:normal;font-style:normal;text-decoration:none;color:rgba(0, 0, 0, 1.00);background-color:transparent;}.cl-1bdb2d08{margin:0;text-align:left;border-bottom: 0 solid rgba(0, 0, 0, 1.00);border-top: 0 solid rgba(0, 0, 0, 1.00);border-left: 0 solid rgba(0, 0, 0, 1.00);border-right: 0 solid rgba(0, 0, 0, 1.00);padding-bottom:1pt;padding-top:1pt;padding-left:1pt;padding-right:1pt;line-height: 0.9;background-color:transparent;}.cl-1bdb2d12{margin:0;text-align:center;border-bottom: 0 solid rgba(0, 0, 0, 1.00);border-top: 0 solid rgba(0, 0, 0, 1.00);border-left: 0 solid rgba(0, 0, 0, 1.00);border-right: 0 solid rgba(0, 0, 0, 1.00);padding-bottom:1pt;padding-top:1pt;padding-left:1pt;padding-right:1pt;line-height: 0.9;background-color:transparent;}.cl-1bdb2d1c{margin:0;text-align:left;border-bottom: 0 solid rgba(0, 0, 0, 1.00);border-top: 0 solid rgba(0, 0, 0, 1.00);border-left: 0 solid rgba(0, 0, 0, 1.00);border-right: 0 solid rgba(0, 0, 0, 1.00);padding-bottom:1pt;padding-top:1pt;padding-left:1pt;padding-right:1pt;line-height: 0.9;background-color:transparent;}.cl-1bdb2d1d{margin:0;text-align:center;border-bottom: 0 solid rgba(0, 0, 0, 1.00);border-top: 0 solid rgba(0, 0, 0, 1.00);border-left: 0 solid rgba(0, 0, 0, 1.00);border-right: 0 solid rgba(0, 0, 0, 1.00);padding-bottom:1pt;padding-top:1pt;padding-left:1pt;padding-right:1pt;line-height: 0.9;background-color:transparent;}.cl-1bdb481a{background-color:transparent;vertical-align: middle;border-bottom: 1pt solid rgba(0, 0, 0, 1.00);border-top: 1pt solid rgba(0, 0, 0, 1.00);border-left: 0 solid rgba(0, 0, 0, 1.00);border-right: 0 solid rgba(0, 0, 0, 1.00);margin-bottom:0;margin-top:0;margin-left:0;margin-right:0;}.cl-1bdb4824{background-color:transparent;vertical-align: middle;border-bottom: 1pt solid rgba(0, 0, 0, 1.00);border-top: 1pt solid rgba(0, 0, 0, 1.00);border-left: 0 solid rgba(0, 0, 0, 1.00);border-right: 0 solid rgba(0, 0, 0, 1.00);margin-bottom:0;margin-top:0;margin-left:0;margin-right:0;}.cl-1bdb4825{background-color:transparent;vertical-align: middle;border-bottom: 1pt solid rgba(0, 0, 0, 1.00);border-top: 1pt solid rgba(0, 0, 0, 1.00);border-left: 0 solid rgba(0, 0, 0, 1.00);border-right: 0 solid rgba(0, 0, 0, 1.00);margin-bottom:0;margin-top:0;margin-left:0;margin-right:0;}.cl-1bdb482e{background-color:transparent;vertical-align: middle;border-bottom: 1pt solid rgba(0, 0, 0, 1.00);border-top: 1pt solid rgba(0, 0, 0, 1.00);border-left: 0 solid rgba(0, 0, 0, 1.00);border-right: 0 solid rgba(0, 0, 0, 1.00);margin-bottom:0;margin-top:0;margin-left:0;margin-right:0;}.cl-1bdb482f{background-color:transparent;vertical-align: middle;border-bottom: 1pt solid rgba(0, 0, 0, 1.00);border-top: 1pt solid rgba(0, 0, 0, 1.00);border-left: 0 solid rgba(0, 0, 0, 1.00);border-right: 0 solid rgba(0, 0, 0, 1.00);margin-bottom:0;margin-top:0;margin-left:0;margin-right:0;}.cl-1bdb4838{background-color:transparent;vertical-align: top;border-bottom: 0 solid rgba(0, 0, 0, 1.00);border-top: 0 solid rgba(0, 0, 0, 1.00);border-left: 0 solid rgba(0, 0, 0, 1.00);border-right: 0 solid rgba(0, 0, 0, 1.00);margin-bottom:0;margin-top:0;margin-left:0;margin-right:0;}.cl-1bdb4839{background-color:transparent;vertical-align: top;border-bottom: 0 solid rgba(0, 0, 0, 1.00);border-top: 0 solid rgba(0, 0, 0, 1.00);border-left: 0 solid rgba(0, 0, 0, 1.00);border-right: 0 solid rgba(0, 0, 0, 1.00);margin-bottom:0;margin-top:0;margin-left:0;margin-right:0;}.cl-1bdb483a{background-color:transparent;vertical-align: top;border-bottom: 0 solid rgba(0, 0, 0, 1.00);border-top: 0 solid rgba(0, 0, 0, 1.00);border-left: 0 solid rgba(0, 0, 0, 1.00);border-right: 0 solid rgba(0, 0, 0, 1.00);margin-bottom:0;margin-top:0;margin-left:0;margin-right:0;}.cl-1bdb4842{background-color:transparent;vertical-align: top;border-bottom: 0 solid rgba(0, 0, 0, 1.00);border-top: 0 solid rgba(0, 0, 0, 1.00);border-left: 0 solid rgba(0, 0, 0, 1.00);border-right: 0 solid rgba(0, 0, 0, 1.00);margin-bottom:0;margin-top:0;margin-left:0;margin-right:0;}.cl-1bdb4843{background-color:transparent;vertical-align: top;border-bottom: 0 solid rgba(0, 0, 0, 1.00);border-top: 0 solid rgba(0, 0, 0, 1.00);border-left: 0 solid rgba(0, 0, 0, 1.00);border-right: 0 solid rgba(0, 0, 0, 1.00);margin-bottom:0;margin-top:0;margin-left:0;margin-right:0;}.cl-1bdb484c{background-color:transparent;vertical-align: top;border-bottom: 0 solid rgba(0, 0, 0, 1.00);border-top: 0 solid rgba(0, 0, 0, 1.00);border-left: 0 solid rgba(0, 0, 0, 1.00);border-right: 0 solid rgba(0, 0, 0, 1.00);margin-bottom:0;margin-top:0;margin-left:0;margin-right:0;}.cl-1bdb484d{background-color:transparent;vertical-align: top;border-bottom: 0 solid rgba(0, 0, 0, 1.00);border-top: 0 solid rgba(0, 0, 0, 1.00);border-left: 0 solid rgba(0, 0, 0, 1.00);border-right: 0 solid rgba(0, 0, 0, 1.00);margin-bottom:0;margin-top:0;margin-left:0;margin-right:0;}.cl-1bdb4856{background-color:transparent;vertical-align: top;border-bottom: 0 solid rgba(0, 0, 0, 1.00);border-top: 0 solid rgba(0, 0, 0, 1.00);border-left: 0 solid rgba(0, 0, 0, 1.00);border-right: 0 solid rgba(0, 0, 0, 1.00);margin-bottom:0;margin-top:0;margin-left:0;margin-right:0;}.cl-1bdb4857{background-color:transparent;vertical-align: top;border-bottom: 0 solid rgba(0, 0, 0, 1.00);border-top: 0 solid rgba(0, 0, 0, 1.00);border-left: 0 solid rgba(0, 0, 0, 1.00);border-right: 0 solid rgba(0, 0, 0, 1.00);margin-bottom:0;margin-top:0;margin-left:0;margin-right:0;}.cl-1bdb4860{background-color:transparent;vertical-align: top;border-bottom: 0 solid rgba(0, 0, 0, 1.00);border-top: 0 solid rgba(0, 0, 0, 1.00);border-left: 0 solid rgba(0, 0, 0, 1.00);border-right: 0 solid rgba(0, 0, 0, 1.00);margin-bottom:0;margin-top:0;margin-left:0;margin-right:0;}.cl-1bdb486a{background-color:transparent;vertical-align: top;border-bottom: 0 solid rgba(0, 0, 0, 1.00);border-top: 0 solid rgba(0, 0, 0, 1.00);border-left: 0 solid rgba(0, 0, 0, 1.00);border-right: 0 solid rgba(0, 0, 0, 1.00);margin-bottom:0;margin-top:0;margin-left:0;margin-right:0;}.cl-1bdb486b{background-color:transparent;vertical-align: top;border-bottom: 0 solid rgba(0, 0, 0, 1.00);border-top: 0 solid rgba(0, 0, 0, 1.00);border-left: 0 solid rgba(0, 0, 0, 1.00);border-right: 0 solid rgba(0, 0, 0, 1.00);margin-bottom:0;margin-top:0;margin-left:0;margin-right:0;}.cl-1bdb4874{background-color:transparent;vertical-align: top;border-bottom: 0 solid rgba(0, 0, 0, 1.00);border-top: 0 solid rgba(0, 0, 0, 1.00);border-left: 0 solid rgba(0, 0, 0, 1.00);border-right: 0 solid rgba(0, 0, 0, 1.00);margin-bottom:0;margin-top:0;margin-left:0;margin-right:0;}.cl-1bdb4875{background-color:transparent;vertical-align: top;border-bottom: 0 solid rgba(0, 0, 0, 1.00);border-top: 0 solid rgba(0, 0, 0, 1.00);border-left: 0 solid rgba(0, 0, 0, 1.00);border-right: 0 solid rgba(0, 0, 0, 1.00);margin-bottom:0;margin-top:0;margin-left:0;margin-right:0;}.cl-1bdb487e{background-color:transparent;vertical-align: top;border-bottom: 0 solid rgba(0, 0, 0, 1.00);border-top: 0 solid rgba(0, 0, 0, 1.00);border-left: 0 solid rgba(0, 0, 0, 1.00);border-right: 0 solid rgba(0, 0, 0, 1.00);margin-bottom:0;margin-top:0;margin-left:0;margin-right:0;}.cl-1bdb487f{background-color:transparent;vertical-align: top;border-bottom: 1pt solid rgba(0, 0, 0, 1.00);border-top: 0 solid rgba(0, 0, 0, 1.00);border-left: 0 solid rgba(0, 0, 0, 1.00);border-right: 0 solid rgba(0, 0, 0, 1.00);margin-bottom:0;margin-top:0;margin-left:0;margin-right:0;}.cl-1bdb4880{background-color:transparent;vertical-align: top;border-bottom: 1pt solid rgba(0, 0, 0, 1.00);border-top: 0 solid rgba(0, 0, 0, 1.00);border-left: 0 solid rgba(0, 0, 0, 1.00);border-right: 0 solid rgba(0, 0, 0, 1.00);margin-bottom:0;margin-top:0;margin-left:0;margin-right:0;}.cl-1bdb4881{background-color:transparent;vertical-align: top;border-bottom: 1pt solid rgba(0, 0, 0, 1.00);border-top: 0 solid rgba(0, 0, 0, 1.00);border-left: 0 solid rgba(0, 0, 0, 1.00);border-right: 0 solid rgba(0, 0, 0, 1.00);margin-bottom:0;margin-top:0;margin-left:0;margin-right:0;}.cl-1bdb4888{background-color:transparent;vertical-align: top;border-bottom: 1pt solid rgba(0, 0, 0, 1.00);border-top: 0 solid rgba(0, 0, 0, 1.00);border-left: 0 solid rgba(0, 0, 0, 1.00);border-right: 0 solid rgba(0, 0, 0, 1.00);margin-bottom:0;margin-top:0;margin-left:0;margin-right:0;}.cl-1bdb4889{background-color:transparent;vertical-align: top;border-bottom: 1pt solid rgba(0, 0, 0, 1.00);border-top: 0 solid rgba(0, 0, 0, 1.00);border-left: 0 solid rgba(0, 0, 0, 1.00);border-right: 0 solid rgba(0, 0, 0, 1.00);margin-bottom:0;margin-top:0;margin-left:0;margin-right:0;}</style><table data-quarto-disable-processing="true" class="cl-1bddf5ec"><thead><tr style="overflow-wrap:break-word;"><th class="cl-1bdb481a"><p class="cl-1bdb2d08"><span class="cl-1bd87aa4">Characteristic</span></p></th><th class="cl-1bdb4824"><p class="cl-1bdb2d12"><span class="cl-1bd87aa4">n</span></p></th><th class="cl-1bdb4825"><p class="cl-1bdb2d12"><span class="cl-1bd87aa4">Low Risk</span><br><span class="cl-1bd87aa4">(n = 77)</span></p></th><th class="cl-1bdb482e"><p class="cl-1bdb2d12"><span class="cl-1bd87aa4">Moderate Risk</span><br><span class="cl-1bd87aa4">(n = 83)</span></p></th><th class="cl-1bdb4825"><p class="cl-1bdb2d12"><span class="cl-1bd87aa4">High Risk</span><br><span class="cl-1bd87aa4">(n = 56)</span></p></th><th class="cl-1bdb482f"><p class="cl-1bdb2d12"><span class="cl-1bd87aa4">p</span></p></th></tr></thead><tbody><tr style="overflow-wrap:break-word;"><td class="cl-1bdb4838"><p class="cl-1bdb2d1c"><span class="cl-1bd87aa4">Gender, n (%)</span></p></td><td class="cl-1bdb4839"><p class="cl-1bdb2d1d"><span class="cl-1bd87aa4">197</span></p></td><td class="cl-1bdb483a"><p class="cl-1bdb2d1d"><span class="cl-1bd87aa4"></span></p></td><td class="cl-1bdb4842"><p class="cl-1bdb2d1d"><span class="cl-1bd87aa4"></span></p></td><td class="cl-1bdb483a"><p class="cl-1bdb2d1d"><span class="cl-1bd87aa4"></span></p></td><td class="cl-1bdb4843"><p class="cl-1bdb2d1d"><span class="cl-1bd87aa4">.027</span></p></td></tr><tr style="overflow-wrap:break-word;"><td class="cl-1bdb484c"><p class="cl-1bdb2d1c"><span class="cl-1bd87aa4">Man or male</span></p></td><td class="cl-1bdb484d"><p class="cl-1bdb2d1d"><span class="cl-1bd87aa4"></span></p></td><td class="cl-1bdb4856"><p class="cl-1bdb2d1d"><span class="cl-1bd87aa4">30 (26.8%)</span></p></td><td class="cl-1bdb4857"><p class="cl-1bdb2d1d"><span class="cl-1bd87aa4">52 (46.4%)</span></p></td><td class="cl-1bdb4856"><p class="cl-1bdb2d1d"><span class="cl-1bd87aa4">30 (26.8%)</span></p></td><td class="cl-1bdb4860"><p class="cl-1bdb2d1d"><span class="cl-1bd87aa4"></span></p></td></tr><tr style="overflow-wrap:break-word;"><td class="cl-1bdb484c"><p class="cl-1bdb2d1c"><span class="cl-1bd87aa4">Woman or female</span></p></td><td class="cl-1bdb484d"><p class="cl-1bdb2d1d"><span class="cl-1bd87aa4"></span></p></td><td class="cl-1bdb4856"><p class="cl-1bdb2d1d"><span class="cl-1bd87aa4">35 (45.5%)</span></p></td><td class="cl-1bdb4857"><p class="cl-1bdb2d1d"><span class="cl-1bd87aa4">21 (27.3%)</span></p></td><td class="cl-1bdb4856"><p class="cl-1bdb2d1d"><span class="cl-1bd87aa4">21 (27.3%)</span></p></td><td class="cl-1bdb4860"><p class="cl-1bdb2d1d"><span class="cl-1bd87aa4"></span></p></td></tr><tr style="overflow-wrap:break-word;"><td class="cl-1bdb484c"><p class="cl-1bdb2d1c"><span class="cl-1bd87aa4">Other</span></p></td><td class="cl-1bdb484d"><p class="cl-1bdb2d1d"><span class="cl-1bd87aa4"></span></p></td><td class="cl-1bdb4856"><p class="cl-1bdb2d1d"><span class="cl-1bd87aa4">1 (25.0%)</span></p></td><td class="cl-1bdb4857"><p class="cl-1bdb2d1d"><span class="cl-1bd87aa4">2 (50.0%)</span></p></td><td class="cl-1bdb4856"><p class="cl-1bdb2d1d"><span class="cl-1bd87aa4">1 (25.0%)</span></p></td><td class="cl-1bdb4860"><p class="cl-1bdb2d1d"><span class="cl-1bd87aa4"></span></p></td></tr><tr style="overflow-wrap:break-word;"><td class="cl-1bdb484c"><p class="cl-1bdb2d1c"><span class="cl-1bd87aa4">Prefer not to answer</span></p></td><td class="cl-1bdb484d"><p class="cl-1bdb2d1d"><span class="cl-1bd87aa4"></span></p></td><td class="cl-1bdb4856"><p class="cl-1bdb2d1d"><span class="cl-1bd87aa4">1 (25.0%)</span></p></td><td class="cl-1bdb4857"><p class="cl-1bdb2d1d"><span class="cl-1bd87aa4">0 (0.0%)</span></p></td><td class="cl-1bdb4856"><p class="cl-1bdb2d1d"><span class="cl-1bd87aa4">3 (75.0%)</span></p></td><td class="cl-1bdb4860"><p class="cl-1bdb2d1d"><span class="cl-1bd87aa4"></span></p></td></tr><tr style="overflow-wrap:break-word;"><td class="cl-1bdb486a"><p class="cl-1bdb2d1c"><span class="cl-1bd87aa4">Age, Mean (SD)</span></p></td><td class="cl-1bdb486b"><p class="cl-1bdb2d1d"><span class="cl-1bd87aa4">187</span></p></td><td class="cl-1bdb4874"><p class="cl-1bdb2d1d"><span class="cl-1bd87aa4">37.2 (11.2)</span></p></td><td class="cl-1bdb4875"><p class="cl-1bdb2d1d"><span class="cl-1bd87aa4">42.8 (12.9)</span></p></td><td class="cl-1bdb4874"><p class="cl-1bdb2d1d"><span class="cl-1bd87aa4">40.6 (9.7)</span></p></td><td class="cl-1bdb487e"><p class="cl-1bdb2d1d"><span class="cl-1bd87aa4">.024</span></p></td></tr><tr style="overflow-wrap:break-word;"><td class="cl-1bdb486a"><p class="cl-1bdb2d1c"><span class="cl-1bd87aa4">Agency years, Mean (SD)</span></p></td><td class="cl-1bdb486b"><p class="cl-1bdb2d1d"><span class="cl-1bd87aa4">196</span></p></td><td class="cl-1bdb4874"><p class="cl-1bdb2d1d"><span class="cl-1bd87aa4">8.0 (7.9)</span></p></td><td class="cl-1bdb4875"><p class="cl-1bdb2d1d"><span class="cl-1bd87aa4">12.9 (9.7)</span></p></td><td class="cl-1bdb4874"><p class="cl-1bdb2d1d"><span class="cl-1bd87aa4">10.8 (9.8)</span></p></td><td class="cl-1bdb487e"><p class="cl-1bdb2d1d"><span class="cl-1bd87aa4">.006</span></p></td></tr><tr style="overflow-wrap:break-word;"><td class="cl-1bdb486a"><p class="cl-1bdb2d1c"><span class="cl-1bd87aa4">Psychological distress, Mean (SD)</span></p></td><td class="cl-1bdb486b"><p class="cl-1bdb2d1d"><span class="cl-1bd87aa4">202</span></p></td><td class="cl-1bdb4874"><p class="cl-1bdb2d1d"><span class="cl-1bd87aa4">18.9 (7.7)</span></p></td><td class="cl-1bdb4875"><p class="cl-1bdb2d1d"><span class="cl-1bd87aa4">20.9 (6.8)</span></p></td><td class="cl-1bdb4874"><p class="cl-1bdb2d1d"><span class="cl-1bd87aa4">25.4 (7.2)</span></p></td><td class="cl-1bdb487e"><p class="cl-1bdb2d1d"><span class="cl-1bd87aa4">&lt;.001</span></p></td></tr><tr style="overflow-wrap:break-word;"><td class="cl-1bdb4838"><p class="cl-1bdb2d1c"><span class="cl-1bd87aa4">Absenteeism, Mean (SD)</span></p></td><td class="cl-1bdb4839"><p class="cl-1bdb2d1d"><span class="cl-1bd87aa4">200</span></p></td><td class="cl-1bdb483a"><p class="cl-1bdb2d1d"><span class="cl-1bd87aa4">1.3 (4.3)</span></p></td><td class="cl-1bdb4842"><p class="cl-1bdb2d1d"><span class="cl-1bd87aa4">1.4 (4.1)</span></p></td><td class="cl-1bdb483a"><p class="cl-1bdb2d1d"><span class="cl-1bd87aa4">3.2 (5.7)</span></p></td><td class="cl-1bdb4843"><p class="cl-1bdb2d1d"><span class="cl-1bd87aa4">&lt;.001</span></p></td></tr><tr style="overflow-wrap:break-word;"><td class="cl-1bdb487f"><p class="cl-1bdb2d1c"><span class="cl-1bd87aa4">Presenteeism, Mean (SD)</span></p></td><td class="cl-1bdb4880"><p class="cl-1bdb2d1d"><span class="cl-1bd87aa4">200</span></p></td><td class="cl-1bdb4881"><p class="cl-1bdb2d1d"><span class="cl-1bd87aa4">4.4 (8.5)</span></p></td><td class="cl-1bdb4888"><p class="cl-1bdb2d1d"><span class="cl-1bd87aa4">2.0 (4.3)</span></p></td><td class="cl-1bdb4881"><p class="cl-1bdb2d1d"><span class="cl-1bd87aa4">7.6 (9.0)</span></p></td><td class="cl-1bdb4889"><p class="cl-1bdb2d1d"><span class="cl-1bd87aa4">&lt;.001</span></p></td></tr></tbody></table></div>
+</div>
+</div>
+<ul>
+<li>higher alcohol risk is associated with greater psychological distress and higher absenteeism and presenteeism</li>
+<li>age and years in the agency are higher in moderate/high risk groups</li>
+</ul>
+<p>post hoc dunn tests with bonferroni correction show:</p>
+<ul>
+<li>differences are mostly driven by low vs.&nbsp;moderate or high grps</li>
+<li>few differences between moderate vs high (except for psychological distress and absenteeism/presenteeism)</li>
+</ul>
+<p>other drug use summary:</p>
+<div class="cell">
+<div class="cell-output-display">
+<div class="tabwid tabwid_left"><style>.cl-1d13dd96{table-layout:auto;width:100%;}.cl-1d0e87c4{font-family:'Times New Roman';font-size:10pt;font-weight:normal;font-style:normal;text-decoration:none;color:rgba(0, 0, 0, 1.00);background-color:transparent;}.cl-1d10c534{margin:0;text-align:left;border-bottom: 0 solid rgba(0, 0, 0, 1.00);border-top: 0 solid rgba(0, 0, 0, 1.00);border-left: 0 solid rgba(0, 0, 0, 1.00);border-right: 0 solid rgba(0, 0, 0, 1.00);padding-bottom:1pt;padding-top:1pt;padding-left:1pt;padding-right:1pt;line-height: 0.9;background-color:transparent;}.cl-1d10c53e{margin:0;text-align:center;border-bottom: 0 solid rgba(0, 0, 0, 1.00);border-top: 0 solid rgba(0, 0, 0, 1.00);border-left: 0 solid rgba(0, 0, 0, 1.00);border-right: 0 solid rgba(0, 0, 0, 1.00);padding-bottom:1pt;padding-top:1pt;padding-left:1pt;padding-right:1pt;line-height: 0.9;background-color:transparent;}.cl-1d10c548{margin:0;text-align:left;border-bottom: 0 solid rgba(0, 0, 0, 1.00);border-top: 0 solid rgba(0, 0, 0, 1.00);border-left: 0 solid rgba(0, 0, 0, 1.00);border-right: 0 solid rgba(0, 0, 0, 1.00);padding-bottom:1pt;padding-top:1pt;padding-left:1pt;padding-right:1pt;line-height: 0.9;background-color:transparent;}.cl-1d10c552{margin:0;text-align:center;border-bottom: 0 solid rgba(0, 0, 0, 1.00);border-top: 0 solid rgba(0, 0, 0, 1.00);border-left: 0 solid rgba(0, 0, 0, 1.00);border-right: 0 solid rgba(0, 0, 0, 1.00);padding-bottom:1pt;padding-top:1pt;padding-left:1pt;padding-right:1pt;line-height: 0.9;background-color:transparent;}.cl-1d10d84e{background-color:transparent;vertical-align: middle;border-bottom: 1pt solid rgba(0, 0, 0, 1.00);border-top: 1pt solid rgba(0, 0, 0, 1.00);border-left: 0 solid rgba(0, 0, 0, 1.00);border-right: 0 solid rgba(0, 0, 0, 1.00);margin-bottom:0;margin-top:0;margin-left:0;margin-right:0;}.cl-1d10d84f{background-color:transparent;vertical-align: middle;border-bottom: 1pt solid rgba(0, 0, 0, 1.00);border-top: 1pt solid rgba(0, 0, 0, 1.00);border-left: 0 solid rgba(0, 0, 0, 1.00);border-right: 0 solid rgba(0, 0, 0, 1.00);margin-bottom:0;margin-top:0;margin-left:0;margin-right:0;}.cl-1d10d858{background-color:transparent;vertical-align: middle;border-bottom: 1pt solid rgba(0, 0, 0, 1.00);border-top: 1pt solid rgba(0, 0, 0, 1.00);border-left: 0 solid rgba(0, 0, 0, 1.00);border-right: 0 solid rgba(0, 0, 0, 1.00);margin-bottom:0;margin-top:0;margin-left:0;margin-right:0;}.cl-1d10d859{background-color:transparent;vertical-align: middle;border-bottom: 1pt solid rgba(0, 0, 0, 1.00);border-top: 1pt solid rgba(0, 0, 0, 1.00);border-left: 0 solid rgba(0, 0, 0, 1.00);border-right: 0 solid rgba(0, 0, 0, 1.00);margin-bottom:0;margin-top:0;margin-left:0;margin-right:0;}.cl-1d10d85a{background-color:transparent;vertical-align: middle;border-bottom: 1pt solid rgba(0, 0, 0, 1.00);border-top: 1pt solid rgba(0, 0, 0, 1.00);border-left: 0 solid rgba(0, 0, 0, 1.00);border-right: 0 solid rgba(0, 0, 0, 1.00);margin-bottom:0;margin-top:0;margin-left:0;margin-right:0;}.cl-1d10d862{background-color:transparent;vertical-align: top;border-bottom: 0 solid rgba(0, 0, 0, 1.00);border-top: 0 solid rgba(0, 0, 0, 1.00);border-left: 0 solid rgba(0, 0, 0, 1.00);border-right: 0 solid rgba(0, 0, 0, 1.00);margin-bottom:0;margin-top:0;margin-left:0;margin-right:0;}.cl-1d10d863{background-color:transparent;vertical-align: top;border-bottom: 0 solid rgba(0, 0, 0, 1.00);border-top: 0 solid rgba(0, 0, 0, 1.00);border-left: 0 solid rgba(0, 0, 0, 1.00);border-right: 0 solid rgba(0, 0, 0, 1.00);margin-bottom:0;margin-top:0;margin-left:0;margin-right:0;}.cl-1d10d86c{background-color:transparent;vertical-align: top;border-bottom: 0 solid rgba(0, 0, 0, 1.00);border-top: 0 solid rgba(0, 0, 0, 1.00);border-left: 0 solid rgba(0, 0, 0, 1.00);border-right: 0 solid rgba(0, 0, 0, 1.00);margin-bottom:0;margin-top:0;margin-left:0;margin-right:0;}.cl-1d10d86d{background-color:transparent;vertical-align: top;border-bottom: 0 solid rgba(0, 0, 0, 1.00);border-top: 0 solid rgba(0, 0, 0, 1.00);border-left: 0 solid rgba(0, 0, 0, 1.00);border-right: 0 solid rgba(0, 0, 0, 1.00);margin-bottom:0;margin-top:0;margin-left:0;margin-right:0;}.cl-1d10d86e{background-color:transparent;vertical-align: top;border-bottom: 0 solid rgba(0, 0, 0, 1.00);border-top: 0 solid rgba(0, 0, 0, 1.00);border-left: 0 solid rgba(0, 0, 0, 1.00);border-right: 0 solid rgba(0, 0, 0, 1.00);margin-bottom:0;margin-top:0;margin-left:0;margin-right:0;}.cl-1d10d876{background-color:transparent;vertical-align: top;border-bottom: 0 solid rgba(0, 0, 0, 1.00);border-top: 0 solid rgba(0, 0, 0, 1.00);border-left: 0 solid rgba(0, 0, 0, 1.00);border-right: 0 solid rgba(0, 0, 0, 1.00);margin-bottom:0;margin-top:0;margin-left:0;margin-right:0;}.cl-1d10d877{background-color:transparent;vertical-align: top;border-bottom: 0 solid rgba(0, 0, 0, 1.00);border-top: 0 solid rgba(0, 0, 0, 1.00);border-left: 0 solid rgba(0, 0, 0, 1.00);border-right: 0 solid rgba(0, 0, 0, 1.00);margin-bottom:0;margin-top:0;margin-left:0;margin-right:0;}.cl-1d10d878{background-color:transparent;vertical-align: top;border-bottom: 0 solid rgba(0, 0, 0, 1.00);border-top: 0 solid rgba(0, 0, 0, 1.00);border-left: 0 solid rgba(0, 0, 0, 1.00);border-right: 0 solid rgba(0, 0, 0, 1.00);margin-bottom:0;margin-top:0;margin-left:0;margin-right:0;}.cl-1d10d880{background-color:transparent;vertical-align: top;border-bottom: 0 solid rgba(0, 0, 0, 1.00);border-top: 0 solid rgba(0, 0, 0, 1.00);border-left: 0 solid rgba(0, 0, 0, 1.00);border-right: 0 solid rgba(0, 0, 0, 1.00);margin-bottom:0;margin-top:0;margin-left:0;margin-right:0;}.cl-1d10d881{background-color:transparent;vertical-align: top;border-bottom: 0 solid rgba(0, 0, 0, 1.00);border-top: 0 solid rgba(0, 0, 0, 1.00);border-left: 0 solid rgba(0, 0, 0, 1.00);border-right: 0 solid rgba(0, 0, 0, 1.00);margin-bottom:0;margin-top:0;margin-left:0;margin-right:0;}.cl-1d10d88a{background-color:transparent;vertical-align: top;border-bottom: 0 solid rgba(0, 0, 0, 1.00);border-top: 0 solid rgba(0, 0, 0, 1.00);border-left: 0 solid rgba(0, 0, 0, 1.00);border-right: 0 solid rgba(0, 0, 0, 1.00);margin-bottom:0;margin-top:0;margin-left:0;margin-right:0;}.cl-1d10d88b{background-color:transparent;vertical-align: top;border-bottom: 0 solid rgba(0, 0, 0, 1.00);border-top: 0 solid rgba(0, 0, 0, 1.00);border-left: 0 solid rgba(0, 0, 0, 1.00);border-right: 0 solid rgba(0, 0, 0, 1.00);margin-bottom:0;margin-top:0;margin-left:0;margin-right:0;}.cl-1d10d894{background-color:transparent;vertical-align: top;border-bottom: 0 solid rgba(0, 0, 0, 1.00);border-top: 0 solid rgba(0, 0, 0, 1.00);border-left: 0 solid rgba(0, 0, 0, 1.00);border-right: 0 solid rgba(0, 0, 0, 1.00);margin-bottom:0;margin-top:0;margin-left:0;margin-right:0;}.cl-1d10d895{background-color:transparent;vertical-align: top;border-bottom: 0 solid rgba(0, 0, 0, 1.00);border-top: 0 solid rgba(0, 0, 0, 1.00);border-left: 0 solid rgba(0, 0, 0, 1.00);border-right: 0 solid rgba(0, 0, 0, 1.00);margin-bottom:0;margin-top:0;margin-left:0;margin-right:0;}.cl-1d10d896{background-color:transparent;vertical-align: top;border-bottom: 0 solid rgba(0, 0, 0, 1.00);border-top: 0 solid rgba(0, 0, 0, 1.00);border-left: 0 solid rgba(0, 0, 0, 1.00);border-right: 0 solid rgba(0, 0, 0, 1.00);margin-bottom:0;margin-top:0;margin-left:0;margin-right:0;}.cl-1d10d897{background-color:transparent;vertical-align: top;border-bottom: 1pt solid rgba(0, 0, 0, 1.00);border-top: 0 solid rgba(0, 0, 0, 1.00);border-left: 0 solid rgba(0, 0, 0, 1.00);border-right: 0 solid rgba(0, 0, 0, 1.00);margin-bottom:0;margin-top:0;margin-left:0;margin-right:0;}.cl-1d10d89e{background-color:transparent;vertical-align: top;border-bottom: 1pt solid rgba(0, 0, 0, 1.00);border-top: 0 solid rgba(0, 0, 0, 1.00);border-left: 0 solid rgba(0, 0, 0, 1.00);border-right: 0 solid rgba(0, 0, 0, 1.00);margin-bottom:0;margin-top:0;margin-left:0;margin-right:0;}.cl-1d10d89f{background-color:transparent;vertical-align: top;border-bottom: 1pt solid rgba(0, 0, 0, 1.00);border-top: 0 solid rgba(0, 0, 0, 1.00);border-left: 0 solid rgba(0, 0, 0, 1.00);border-right: 0 solid rgba(0, 0, 0, 1.00);margin-bottom:0;margin-top:0;margin-left:0;margin-right:0;}.cl-1d10d8a0{background-color:transparent;vertical-align: top;border-bottom: 1pt solid rgba(0, 0, 0, 1.00);border-top: 0 solid rgba(0, 0, 0, 1.00);border-left: 0 solid rgba(0, 0, 0, 1.00);border-right: 0 solid rgba(0, 0, 0, 1.00);margin-bottom:0;margin-top:0;margin-left:0;margin-right:0;}.cl-1d10d8a8{background-color:transparent;vertical-align: top;border-bottom: 1pt solid rgba(0, 0, 0, 1.00);border-top: 0 solid rgba(0, 0, 0, 1.00);border-left: 0 solid rgba(0, 0, 0, 1.00);border-right: 0 solid rgba(0, 0, 0, 1.00);margin-bottom:0;margin-top:0;margin-left:0;margin-right:0;}.cl-1d10d8a9{background-color:transparent;vertical-align: middle;border-bottom: 0 solid rgba(255, 255, 255, 0.00);border-top: 0 solid rgba(255, 255, 255, 0.00);border-left: 0 solid rgba(255, 255, 255, 0.00);border-right: 0 solid rgba(255, 255, 255, 0.00);margin-bottom:0;margin-top:0;margin-left:0;margin-right:0;}.cl-1d10d8aa{background-color:transparent;vertical-align: middle;border-bottom: 0 solid rgba(255, 255, 255, 0.00);border-top: 0 solid rgba(255, 255, 255, 0.00);border-left: 0 solid rgba(255, 255, 255, 0.00);border-right: 0 solid rgba(255, 255, 255, 0.00);margin-bottom:0;margin-top:0;margin-left:0;margin-right:0;}.cl-1d10d8b2{background-color:transparent;vertical-align: middle;border-bottom: 0 solid rgba(255, 255, 255, 0.00);border-top: 0 solid rgba(255, 255, 255, 0.00);border-left: 0 solid rgba(255, 255, 255, 0.00);border-right: 0 solid rgba(255, 255, 255, 0.00);margin-bottom:0;margin-top:0;margin-left:0;margin-right:0;}.cl-1d10d8b3{background-color:transparent;vertical-align: middle;border-bottom: 0 solid rgba(255, 255, 255, 0.00);border-top: 0 solid rgba(255, 255, 255, 0.00);border-left: 0 solid rgba(255, 255, 255, 0.00);border-right: 0 solid rgba(255, 255, 255, 0.00);margin-bottom:0;margin-top:0;margin-left:0;margin-right:0;}.cl-1d10d8b4{background-color:transparent;vertical-align: middle;border-bottom: 0 solid rgba(255, 255, 255, 0.00);border-top: 0 solid rgba(255, 255, 255, 0.00);border-left: 0 solid rgba(255, 255, 255, 0.00);border-right: 0 solid rgba(255, 255, 255, 0.00);margin-bottom:0;margin-top:0;margin-left:0;margin-right:0;}</style><table data-quarto-disable-processing="true" class="cl-1d13dd96"><thead><tr style="overflow-wrap:break-word;"><th class="cl-1d10d84e"><p class="cl-1d10c534"><span class="cl-1d0e87c4">Characteristic</span></p></th><th class="cl-1d10d84f"><p class="cl-1d10c53e"><span class="cl-1d0e87c4">n</span></p></th><th class="cl-1d10d858"><p class="cl-1d10c53e"><span class="cl-1d0e87c4">Low Risk</span><br><span class="cl-1d0e87c4">(n = 17)</span></p></th><th class="cl-1d10d859"><p class="cl-1d10c53e"><span class="cl-1d0e87c4">Moderate Risk</span><br><span class="cl-1d0e87c4">(n = 46)</span></p></th><th class="cl-1d10d858"><p class="cl-1d10c53e"><span class="cl-1d0e87c4">High Risk</span><br><span class="cl-1d0e87c4">(n = 5)</span></p></th><th class="cl-1d10d85a"><p class="cl-1d10c53e"><span class="cl-1d0e87c4">p</span></p></th></tr></thead><tbody><tr style="overflow-wrap:break-word;"><td class="cl-1d10d862"><p class="cl-1d10c548"><span class="cl-1d0e87c4">Gender, n (%)</span></p></td><td class="cl-1d10d863"><p class="cl-1d10c552"><span class="cl-1d0e87c4">61</span></p></td><td class="cl-1d10d86c"><p class="cl-1d10c552"><span class="cl-1d0e87c4"></span></p></td><td class="cl-1d10d86d"><p class="cl-1d10c552"><span class="cl-1d0e87c4"></span></p></td><td class="cl-1d10d86c"><p class="cl-1d10c552"><span class="cl-1d0e87c4"></span></p></td><td class="cl-1d10d86e"><p class="cl-1d10c552"><span class="cl-1d0e87c4">.112</span></p></td></tr><tr style="overflow-wrap:break-word;"><td class="cl-1d10d876"><p class="cl-1d10c548"><span class="cl-1d0e87c4">Man or male</span></p></td><td class="cl-1d10d877"><p class="cl-1d10c552"><span class="cl-1d0e87c4"></span></p></td><td class="cl-1d10d878"><p class="cl-1d10c552"><span class="cl-1d0e87c4">8 (22.2%)</span></p></td><td class="cl-1d10d880"><p class="cl-1d10c552"><span class="cl-1d0e87c4">26 (72.2%)</span></p></td><td class="cl-1d10d878"><p class="cl-1d10c552"><span class="cl-1d0e87c4">2 (5.6%)</span></p></td><td class="cl-1d10d881"><p class="cl-1d10c552"><span class="cl-1d0e87c4"></span></p></td></tr><tr style="overflow-wrap:break-word;"><td class="cl-1d10d876"><p class="cl-1d10c548"><span class="cl-1d0e87c4">Woman or female</span></p></td><td class="cl-1d10d877"><p class="cl-1d10c552"><span class="cl-1d0e87c4"></span></p></td><td class="cl-1d10d878"><p class="cl-1d10c552"><span class="cl-1d0e87c4">6 (30.0%)</span></p></td><td class="cl-1d10d880"><p class="cl-1d10c552"><span class="cl-1d0e87c4">13 (65.0%)</span></p></td><td class="cl-1d10d878"><p class="cl-1d10c552"><span class="cl-1d0e87c4">1 (5.0%)</span></p></td><td class="cl-1d10d881"><p class="cl-1d10c552"><span class="cl-1d0e87c4"></span></p></td></tr><tr style="overflow-wrap:break-word;"><td class="cl-1d10d876"><p class="cl-1d10c548"><span class="cl-1d0e87c4">Other</span></p></td><td class="cl-1d10d877"><p class="cl-1d10c552"><span class="cl-1d0e87c4"></span></p></td><td class="cl-1d10d878"><p class="cl-1d10c552"><span class="cl-1d0e87c4">0 (0.0%)</span></p></td><td class="cl-1d10d880"><p class="cl-1d10c552"><span class="cl-1d0e87c4">2 (66.7%)</span></p></td><td class="cl-1d10d878"><p class="cl-1d10c552"><span class="cl-1d0e87c4">1 (33.3%)</span></p></td><td class="cl-1d10d881"><p class="cl-1d10c552"><span class="cl-1d0e87c4"></span></p></td></tr><tr style="overflow-wrap:break-word;"><td class="cl-1d10d876"><p class="cl-1d10c548"><span class="cl-1d0e87c4">Prefer not to answer</span></p></td><td class="cl-1d10d877"><p class="cl-1d10c552"><span class="cl-1d0e87c4"></span></p></td><td class="cl-1d10d878"><p class="cl-1d10c552"><span class="cl-1d0e87c4">1 (50.0%)</span></p></td><td class="cl-1d10d880"><p class="cl-1d10c552"><span class="cl-1d0e87c4">0 (0.0%)</span></p></td><td class="cl-1d10d878"><p class="cl-1d10c552"><span class="cl-1d0e87c4">1 (50.0%)</span></p></td><td class="cl-1d10d881"><p class="cl-1d10c552"><span class="cl-1d0e87c4"></span></p></td></tr><tr style="overflow-wrap:break-word;"><td class="cl-1d10d88a"><p class="cl-1d10c548"><span class="cl-1d0e87c4">Age, Mean (SD)</span></p></td><td class="cl-1d10d88b"><p class="cl-1d10c552"><span class="cl-1d0e87c4">59</span></p></td><td class="cl-1d10d894"><p class="cl-1d10c552"><span class="cl-1d0e87c4">41.2 (12.4)</span></p></td><td class="cl-1d10d895"><p class="cl-1d10c552"><span class="cl-1d0e87c4">37.7 (12.1)</span></p></td><td class="cl-1d10d894"><p class="cl-1d10c552"><span class="cl-1d0e87c4">32.6 (8.6)</span></p></td><td class="cl-1d10d896"><p class="cl-1d10c552"><span class="cl-1d0e87c4">.382</span></p></td></tr><tr style="overflow-wrap:break-word;"><td class="cl-1d10d88a"><p class="cl-1d10c548"><span class="cl-1d0e87c4">Agency years, Mean (SD)</span></p></td><td class="cl-1d10d88b"><p class="cl-1d10c552"><span class="cl-1d0e87c4">61</span></p></td><td class="cl-1d10d894"><p class="cl-1d10c552"><span class="cl-1d0e87c4">11.2 (11.9)</span></p></td><td class="cl-1d10d895"><p class="cl-1d10c552"><span class="cl-1d0e87c4">8.5 (6.6)</span></p></td><td class="cl-1d10d894"><p class="cl-1d10c552"><span class="cl-1d0e87c4">5.0 (3.0)</span></p></td><td class="cl-1d10d896"><p class="cl-1d10c552"><span class="cl-1d0e87c4">.501</span></p></td></tr><tr style="overflow-wrap:break-word;"><td class="cl-1d10d88a"><p class="cl-1d10c548"><span class="cl-1d0e87c4">Psychological distress, Mean (SD)</span></p></td><td class="cl-1d10d88b"><p class="cl-1d10c552"><span class="cl-1d0e87c4">61</span></p></td><td class="cl-1d10d894"><p class="cl-1d10c552"><span class="cl-1d0e87c4">19.7 (7.7)</span></p></td><td class="cl-1d10d895"><p class="cl-1d10c552"><span class="cl-1d0e87c4">24.6 (8.4)</span></p></td><td class="cl-1d10d894"><p class="cl-1d10c552"><span class="cl-1d0e87c4">34.2 (10.6)</span></p></td><td class="cl-1d10d896"><p class="cl-1d10c552"><span class="cl-1d0e87c4">.011</span></p></td></tr><tr style="overflow-wrap:break-word;"><td class="cl-1d10d862"><p class="cl-1d10c548"><span class="cl-1d0e87c4">Absenteeism, Mean (SD)</span></p></td><td class="cl-1d10d863"><p class="cl-1d10c552"><span class="cl-1d0e87c4">61</span></p></td><td class="cl-1d10d86c"><p class="cl-1d10c552"><span class="cl-1d0e87c4">0.7 (1.4)</span></p></td><td class="cl-1d10d86d"><p class="cl-1d10c552"><span class="cl-1d0e87c4">2.3 (3.6)</span></p></td><td class="cl-1d10d86c"><p class="cl-1d10c552"><span class="cl-1d0e87c4">10.2 (11.9)</span></p></td><td class="cl-1d10d86e"><p class="cl-1d10c552"><span class="cl-1d0e87c4">.037</span></p></td></tr><tr style="overflow-wrap:break-word;"><td class="cl-1d10d897"><p class="cl-1d10c548"><span class="cl-1d0e87c4">Presenteeism, Mean (SD)</span></p></td><td class="cl-1d10d89e"><p class="cl-1d10c552"><span class="cl-1d0e87c4">61</span></p></td><td class="cl-1d10d89f"><p class="cl-1d10c552"><span class="cl-1d0e87c4">3.6 (5.2)</span></p></td><td class="cl-1d10d8a0"><p class="cl-1d10c552"><span class="cl-1d0e87c4">7.2 (9.0)</span></p></td><td class="cl-1d10d89f"><p class="cl-1d10c552"><span class="cl-1d0e87c4">8.4 (8.7)</span></p></td><td class="cl-1d10d8a8"><p class="cl-1d10c552"><span class="cl-1d0e87c4">.440</span></p></td></tr></tbody><tfoot><tr style="overflow-wrap:break-word;"><td colspan="6" class="cl-1d10d8a9"><p class="cl-1d10c534"><span class="cl-1d0e87c4">Note. pvalues are from Kruskal-Wallis tests for continuous variables, and Chi-squared for categorical variables. Bolded values indicate statistically significant differences at p &lt; .05</span></p></td></tr></tfoot></table></div>
+</div>
+</div>
+</section>
+<section id="model-selection" class="level2">
+<h2 class="anchored" data-anchor-id="model-selection">Model selection</h2>
+<p>Given the distributional properties of absenteeism and presenteeism, I considered several candidate models:</p>
+<ul>
+<li>Poisson regression</li>
+<li>Negative binomial regression</li>
+<li>Zero-inflated Poisson (ZIP)</li>
+<li>Zero-inflated negative binomial models (ZINB)</li>
+<li>Hurdle negative binomial models</li>
+</ul>
+<section id="considerations" class="level3">
+<h3 class="anchored" data-anchor-id="considerations">Considerations:</h3>
+<p><strong>Overdispersion</strong>: Poisson models assume that the mean = variance. Preliminary checks indicated overdispersion, making Poisson models unsuitable.</p>
+<p><strong>Excess zeros</strong>: The data contained more zeros than expected under standard count models. This raises 2 choices:</p>
+<ul>
+<li>Zero inflated models: assume two latent groups (always-zero vs always at-risk)</li>
+<li>Hurdle models: assume a two-stage process (zero vs positive counts)</li>
+</ul>
+<p><strong>Here I made a function that ran a series of univariate models on each outcome to check dispersion</strong> This helped to evaluate which count model handled the outcome data the best. Univariate predictors included age, gender, years of employment, k10 total score, maximum alcohol use risk score, and maximum other drug use risk score.</p>
+<p>Models were compared using: AIC/BIC (fit), dispersion stats, vuong tests, predicted vs observed zeros.</p>
+<p>Although zero-inflated models and hurdle models were basically the same, MS and I discussed the choice from a conceptual angle, and we agreed that the zero-inflation was too rigid with the “always-zero” or “always at-risk” approach.</p>
+<p>Given we are looking at <strong>absenteeism</strong> and <strong>presenteeism</strong>, days of each is unlikely to be <strong>always</strong>.</p>
+<p>So we chose <strong>Hurdle Negative Binomial Models.</strong></p>
+<section id="reasons" class="level4">
+<h4 class="anchored" data-anchor-id="reasons">Reasons:</h4>
+<ul>
+<li>they count for overdispersion</li>
+<li>explicitly model the probability of any absenteeism/presenteeism (logistic) and the frequency of absenteeism/presenteeism among those who didn’t have zero values (count)</li>
+<li>conceptually, they distinguish between whether someone is absent and how often they are absent.</li>
+<li>more aligned with our aims/RQs</li>
+</ul>
+</section>
+</section>
+</section>
+<section id="modelling" class="level2">
+<h2 class="anchored" data-anchor-id="modelling">Modelling</h2>
+<section id="univariate-models---hurdle" class="level3">
+<h3 class="anchored" data-anchor-id="univariate-models---hurdle">Univariate models - Hurdle</h3>
+<p>Once Hurdle Models were chosen, each predictor was first examined in isolation to:</p>
+<ul>
+<li>identify potential associations</li>
+<li>understand variable-specific effects</li>
+<li>identify which covariates to include in multivariable analysis</li>
+</ul>
+<section id="insights" class="level4">
+<h4 class="anchored" data-anchor-id="insights">Insights:</h4>
+<p><strong>absenteeism:</strong></p>
+
+
+</section>
+</section>
+</section>
+
+</main> <!-- /main -->
+<script id="quarto-html-after-body" type="application/javascript">
+  window.document.addEventListener("DOMContentLoaded", function (event) {
+    const icon = "";
+    const anchorJS = new window.AnchorJS();
+    anchorJS.options = {
+      placement: 'right',
+      icon: icon
+    };
+    anchorJS.add('.anchored');
+    const isCodeAnnotation = (el) => {
+      for (const clz of el.classList) {
+        if (clz.startsWith('code-annotation-')) {                     
+          return true;
+        }
+      }
+      return false;
+    }
+    const onCopySuccess = function(e) {
+      // button target
+      const button = e.trigger;
+      // don't keep focus
+      button.blur();
+      // flash "checked"
+      button.classList.add('code-copy-button-checked');
+      var currentTitle = button.getAttribute("title");
+      button.setAttribute("title", "Copied!");
+      let tooltip;
+      if (window.bootstrap) {
+        button.setAttribute("data-bs-toggle", "tooltip");
+        button.setAttribute("data-bs-placement", "left");
+        button.setAttribute("data-bs-title", "Copied!");
+        tooltip = new bootstrap.Tooltip(button, 
+          { trigger: "manual", 
+            customClass: "code-copy-button-tooltip",
+            offset: [0, -8]});
+        tooltip.show();    
+      }
+      setTimeout(function() {
+        if (tooltip) {
+          tooltip.hide();
+          button.removeAttribute("data-bs-title");
+          button.removeAttribute("data-bs-toggle");
+          button.removeAttribute("data-bs-placement");
+        }
+        button.setAttribute("title", currentTitle);
+        button.classList.remove('code-copy-button-checked');
+      }, 1000);
+      // clear code selection
+      e.clearSelection();
+    }
+    const getTextToCopy = function(trigger) {
+      const outerScaffold = trigger.parentElement.cloneNode(true);
+      const codeEl = outerScaffold.querySelector('code');
+      for (const childEl of codeEl.children) {
+        if (isCodeAnnotation(childEl)) {
+          childEl.remove();
+        }
+      }
+      return codeEl.innerText;
+    }
+    const clipboard = new window.ClipboardJS('.code-copy-button:not([data-in-quarto-modal])', {
+      text: getTextToCopy
+    });
+    clipboard.on('success', onCopySuccess);
+    if (window.document.getElementById('quarto-embedded-source-code-modal')) {
+      const clipboardModal = new window.ClipboardJS('.code-copy-button[data-in-quarto-modal]', {
+        text: getTextToCopy,
+        container: window.document.getElementById('quarto-embedded-source-code-modal')
+      });
+      clipboardModal.on('success', onCopySuccess);
+    }
+      var localhostRegex = new RegExp(/^(?:http|https):\/\/localhost\:?[0-9]*\//);
+      var mailtoRegex = new RegExp(/^mailto:/);
+        var filterRegex = new RegExp('/' + window.location.host + '/');
+      var isInternal = (href) => {
+          return filterRegex.test(href) || localhostRegex.test(href) || mailtoRegex.test(href);
+      }
+      // Inspect non-navigation links and adorn them if external
+     var links = window.document.querySelectorAll('a[href]:not(.nav-link):not(.navbar-brand):not(.toc-action):not(.sidebar-link):not(.sidebar-item-toggle):not(.pagination-link):not(.no-external):not([aria-hidden]):not(.dropdown-item):not(.quarto-navigation-tool):not(.about-link)');
+      for (var i=0; i<links.length; i++) {
+        const link = links[i];
+        if (!isInternal(link.href)) {
+          // undo the damage that might have been done by quarto-nav.js in the case of
+          // links that we want to consider external
+          if (link.dataset.originalHref !== undefined) {
+            link.href = link.dataset.originalHref;
+          }
+        }
+      }
+    function tippyHover(el, contentFn, onTriggerFn, onUntriggerFn) {
+      const config = {
+        allowHTML: true,
+        maxWidth: 500,
+        delay: 100,
+        arrow: false,
+        appendTo: function(el) {
+            return el.parentElement;
+        },
+        interactive: true,
+        interactiveBorder: 10,
+        theme: 'quarto',
+        placement: 'bottom-start',
+      };
+      if (contentFn) {
+        config.content = contentFn;
+      }
+      if (onTriggerFn) {
+        config.onTrigger = onTriggerFn;
+      }
+      if (onUntriggerFn) {
+        config.onUntrigger = onUntriggerFn;
+      }
+      window.tippy(el, config); 
+    }
+    const noterefs = window.document.querySelectorAll('a[role="doc-noteref"]');
+    for (var i=0; i<noterefs.length; i++) {
+      const ref = noterefs[i];
+      tippyHover(ref, function() {
+        // use id or data attribute instead here
+        let href = ref.getAttribute('data-footnote-href') || ref.getAttribute('href');
+        try { href = new URL(href).hash; } catch {}
+        const id = href.replace(/^#\/?/, "");
+        const note = window.document.getElementById(id);
+        if (note) {
+          return note.innerHTML;
+        } else {
+          return "";
+        }
+      });
+    }
+    const xrefs = window.document.querySelectorAll('a.quarto-xref');
+    const processXRef = (id, note) => {
+      // Strip column container classes
+      const stripColumnClz = (el) => {
+        el.classList.remove("page-full", "page-columns");
+        if (el.children) {
+          for (const child of el.children) {
+            stripColumnClz(child);
+          }
+        }
+      }
+      stripColumnClz(note)
+      if (id === null || id.startsWith('sec-')) {
+        // Special case sections, only their first couple elements
+        const container = document.createElement("div");
+        if (note.children && note.children.length > 2) {
+          container.appendChild(note.children[0].cloneNode(true));
+          for (let i = 1; i < note.children.length; i++) {
+            const child = note.children[i];
+            if (child.tagName === "P" && child.innerText === "") {
+              continue;
+            } else {
+              container.appendChild(child.cloneNode(true));
+              break;
+            }
+          }
+          if (window.Quarto?.typesetMath) {
+            window.Quarto.typesetMath(container);
+          }
+          return container.innerHTML
+        } else {
+          if (window.Quarto?.typesetMath) {
+            window.Quarto.typesetMath(note);
+          }
+          return note.innerHTML;
+        }
+      } else {
+        // Remove any anchor links if they are present
+        const anchorLink = note.querySelector('a.anchorjs-link');
+        if (anchorLink) {
+          anchorLink.remove();
+        }
+        if (window.Quarto?.typesetMath) {
+          window.Quarto.typesetMath(note);
+        }
+        if (note.classList.contains("callout")) {
+          return note.outerHTML;
+        } else {
+          return note.innerHTML;
+        }
+      }
+    }
+    for (var i=0; i<xrefs.length; i++) {
+      const xref = xrefs[i];
+      tippyHover(xref, undefined, function(instance) {
+        instance.disable();
+        let url = xref.getAttribute('href');
+        let hash = undefined; 
+        if (url.startsWith('#')) {
+          hash = url;
+        } else {
+          try { hash = new URL(url).hash; } catch {}
+        }
+        if (hash) {
+          const id = hash.replace(/^#\/?/, "");
+          const note = window.document.getElementById(id);
+          if (note !== null) {
+            try {
+              const html = processXRef(id, note.cloneNode(true));
+              instance.setContent(html);
+            } finally {
+              instance.enable();
+              instance.show();
+            }
+          } else {
+            // See if we can fetch this
+            fetch(url.split('#')[0])
+            .then(res => res.text())
+            .then(html => {
+              const parser = new DOMParser();
+              const htmlDoc = parser.parseFromString(html, "text/html");
+              const note = htmlDoc.getElementById(id);
+              if (note !== null) {
+                const html = processXRef(id, note);
+                instance.setContent(html);
+              } 
+            }).finally(() => {
+              instance.enable();
+              instance.show();
+            });
+          }
+        } else {
+          // See if we can fetch a full url (with no hash to target)
+          // This is a special case and we should probably do some content thinning / targeting
+          fetch(url)
+          .then(res => res.text())
+          .then(html => {
+            const parser = new DOMParser();
+            const htmlDoc = parser.parseFromString(html, "text/html");
+            const note = htmlDoc.querySelector('main.content');
+            if (note !== null) {
+              // This should only happen for chapter cross references
+              // (since there is no id in the URL)
+              // remove the first header
+              if (note.children.length > 0 && note.children[0].tagName === "HEADER") {
+                note.children[0].remove();
+              }
+              const html = processXRef(null, note);
+              instance.setContent(html);
+            } 
+          }).finally(() => {
+            instance.enable();
+            instance.show();
+          });
+        }
+      }, function(instance) {
+      });
+    }
+        let selectedAnnoteEl;
+        const selectorForAnnotation = ( cell, annotation) => {
+          let cellAttr = 'data-code-cell="' + cell + '"';
+          let lineAttr = 'data-code-annotation="' +  annotation + '"';
+          const selector = 'span[' + cellAttr + '][' + lineAttr + ']';
+          return selector;
+        }
+        const selectCodeLines = (annoteEl) => {
+          const doc = window.document;
+          const targetCell = annoteEl.getAttribute("data-target-cell");
+          const targetAnnotation = annoteEl.getAttribute("data-target-annotation");
+          const annoteSpan = window.document.querySelector(selectorForAnnotation(targetCell, targetAnnotation));
+          const lines = annoteSpan.getAttribute("data-code-lines").split(",");
+          const lineIds = lines.map((line) => {
+            return targetCell + "-" + line;
+          })
+          let top = null;
+          let height = null;
+          let parent = null;
+          if (lineIds.length > 0) {
+              //compute the position of the single el (top and bottom and make a div)
+              const el = window.document.getElementById(lineIds[0]);
+              top = el.offsetTop;
+              height = el.offsetHeight;
+              parent = el.parentElement.parentElement;
+            if (lineIds.length > 1) {
+              const lastEl = window.document.getElementById(lineIds[lineIds.length - 1]);
+              const bottom = lastEl.offsetTop + lastEl.offsetHeight;
+              height = bottom - top;
+            }
+            if (top !== null && height !== null && parent !== null) {
+              // cook up a div (if necessary) and position it 
+              let div = window.document.getElementById("code-annotation-line-highlight");
+              if (div === null) {
+                div = window.document.createElement("div");
+                div.setAttribute("id", "code-annotation-line-highlight");
+                div.style.position = 'absolute';
+                parent.appendChild(div);
+              }
+              div.style.top = top - 2 + "px";
+              div.style.height = height + 4 + "px";
+              div.style.left = 0;
+              let gutterDiv = window.document.getElementById("code-annotation-line-highlight-gutter");
+              if (gutterDiv === null) {
+                gutterDiv = window.document.createElement("div");
+                gutterDiv.setAttribute("id", "code-annotation-line-highlight-gutter");
+                gutterDiv.style.position = 'absolute';
+                const codeCell = window.document.getElementById(targetCell);
+                const gutter = codeCell.querySelector('.code-annotation-gutter');
+                gutter.appendChild(gutterDiv);
+              }
+              gutterDiv.style.top = top - 2 + "px";
+              gutterDiv.style.height = height + 4 + "px";
+            }
+            selectedAnnoteEl = annoteEl;
+          }
+        };
+        const unselectCodeLines = () => {
+          const elementsIds = ["code-annotation-line-highlight", "code-annotation-line-highlight-gutter"];
+          elementsIds.forEach((elId) => {
+            const div = window.document.getElementById(elId);
+            if (div) {
+              div.remove();
+            }
+          });
+          selectedAnnoteEl = undefined;
+        };
+          // Handle positioning of the toggle
+      window.addEventListener(
+        "resize",
+        throttle(() => {
+          elRect = undefined;
+          if (selectedAnnoteEl) {
+            selectCodeLines(selectedAnnoteEl);
+          }
+        }, 10)
+      );
+      function throttle(fn, ms) {
+      let throttle = false;
+      let timer;
+        return (...args) => {
+          if(!throttle) { // first call gets through
+              fn.apply(this, args);
+              throttle = true;
+          } else { // all the others get throttled
+              if(timer) clearTimeout(timer); // cancel #2
+              timer = setTimeout(() => {
+                fn.apply(this, args);
+                timer = throttle = false;
+              }, ms);
+          }
+        };
+      }
+        // Attach click handler to the DT
+        const annoteDls = window.document.querySelectorAll('dt[data-target-cell]');
+        for (const annoteDlNode of annoteDls) {
+          annoteDlNode.addEventListener('click', (event) => {
+            const clickedEl = event.target;
+            if (clickedEl !== selectedAnnoteEl) {
+              unselectCodeLines();
+              const activeEl = window.document.querySelector('dt[data-target-cell].code-annotation-active');
+              if (activeEl) {
+                activeEl.classList.remove('code-annotation-active');
+              }
+              selectCodeLines(clickedEl);
+              clickedEl.classList.add('code-annotation-active');
+            } else {
+              // Unselect the line
+              unselectCodeLines();
+              clickedEl.classList.remove('code-annotation-active');
+            }
+          });
+        }
+    const findCites = (el) => {
+      const parentEl = el.parentElement;
+      if (parentEl) {
+        const cites = parentEl.dataset.cites;
+        if (cites) {
+          return {
+            el,
+            cites: cites.split(' ')
+          };
+        } else {
+          return findCites(el.parentElement)
+        }
+      } else {
+        return undefined;
+      }
+    };
+    var bibliorefs = window.document.querySelectorAll('a[role="doc-biblioref"]');
+    for (var i=0; i<bibliorefs.length; i++) {
+      const ref = bibliorefs[i];
+      const citeInfo = findCites(ref);
+      if (citeInfo) {
+        tippyHover(citeInfo.el, function() {
+          var popup = window.document.createElement('div');
+          citeInfo.cites.forEach(function(cite) {
+            var citeDiv = window.document.createElement('div');
+            citeDiv.classList.add('hanging-indent');
+            citeDiv.classList.add('csl-entry');
+            var biblioDiv = window.document.getElementById('ref-' + cite);
+            if (biblioDiv) {
+              citeDiv.innerHTML = biblioDiv.innerHTML;
+            }
+            popup.appendChild(citeDiv);
+          });
+          return popup.innerHTML;
+        });
+      }
+    }
+  });
+  </script>
+<nav class="page-navigation">
+  <div class="nav-page nav-page-previous">
+      <a href="../posts/project_setup.html" class="pagination-link" aria-label="Project Setup">
+        <i class="bi bi-arrow-left-short"></i> <span class="nav-page-text">Project Setup</span>
+      </a>          
+  </div>
+  <div class="nav-page nav-page-next">
+      <a href="../posts/customflextable.html" class="pagination-link" aria-label="Publication ready tables">
+        <span class="nav-page-text">Publication ready tables</span> <i class="bi bi-arrow-right-short"></i>
+      </a>
+  </div>
+</nav>
+</div> <!-- /content -->
+
+
+
+
+</body></html>
