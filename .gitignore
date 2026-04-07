@@ -39,7 +39,8 @@ vignettes/*.pdf
 # R Environment Variables
 .Renviron
 
-
+# Random files 
+.DS_Store
 
 # translation temp files
 po/*~
