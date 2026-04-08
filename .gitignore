@@ -39,7 +39,7 @@ vignettes/*.pdf
 # R Environment Variables
 .Renviron
 
-# Random files 
+# Random files
 .DS_Store
 
 # translation temp files
@@ -48,3 +48,6 @@ po/*~
 # RStudio Connect folder
 rsconnect/
 R/
+
+/.quarto/
+**/*.quarto_ipynb

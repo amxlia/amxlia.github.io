@@ -4,7 +4,8 @@ knitr:
     ft.htmlscroll: false
 ---
 # Negative Binomial Hurdle Models with Zero-Heavy Count Data {.unnumbered}
-## Modelling Alcohol and Other Drug Use, Psychological Distress, and Occupational Functioning in Australian Public Safety Personnel
+
+Modelling Alcohol and Other Drug Use, Psychological Distress, and Occupational Functioning in Australian Public Safety Personnel
 
 *slowly converting this into a doc from my analyses notes* 
 (full script at bottom of page to come)
@@ -27,31 +28,49 @@ Potential covariates:
 
 
 ```{r set, include = FALSE}
-pacman::p_load(here, tidyverse, skimr, gtsummary, flextable, officer,
-       scales, rstatix, GGally, janitor, DataExplorer, sjmisc,
-       vtable, psych, car, lmtest, naniar, 
-       GGally, ggpubr, margins, cowplot,
-       MASS, pscl, AER, performance, apaTables, Hmisc, glmmTMB, margins, dplyr, SmartEDA, summarytools,
-       ggstatsplot, rcompanion, dunn.test)
+pacman::p_load(
+  here,
+  tidyverse,
+  skimr,
+  gtsummary,
+  flextable,
+  officer,
+  scales,
+  rstatix,
+  GGally,
+  janitor,
+  DataExplorer,
+  sjmisc,
+  vtable,
+  psych,
+  car,
+  lmtest,
+  naniar,
+  GGally,
+  ggpubr,
+  margins,
+  cowplot,
+  MASS,
+  pscl,
+  AER,
+  performance,
+  apaTables,
+  Hmisc,
+  glmmTMB,
+  margins,
+  dplyr,
+  SmartEDA,
+  summarytools,
+  ggstatsplot,
+  rcompanion,
+  dunn.test
+)
 
 here::i_am("posts/icare.qmd")
 df <- readRDS(here::here("R/clean_self_assessment.RData"))
 df <- df |> filter(assessment_time == "Time 1")
+source(here("R/customflextable.R"))
 
-my_flextable <- function(ft) {
-  ft |>
-    theme_booktabs() |>
-    #flextable::padding(padding = 1, part = "all") |>
-    flextable::line_spacing(space = 0.9, part = "all") |> 
-    flextable::fontsize(size = 10, part = "all") |> 
-    flextable::font(fontname = "Times New Roman", 
-         part = "all") |>
-    flextable::set_table_properties(
-      layout = "autofit",   # enables AutoFit to window
-      # align = "left",       # aligns table to left margin
-      width = 1             # 100% of page width
-    )
-}
 min_median_max <- function(data, variable, ...) {
   x <- data[[variable]]
   tibble(
@@ -113,8 +132,8 @@ key |>
     p = number(p, accuracy = .001)) |> 
     rename(Variable = var, Statistic = statistic) |> 
   flextable() |> 
-  autofit() |> 
-  fit_to_width(10) |> 
+  # autofit() |> 
+  # fit_to_width(10) |> 
   my_flextable()
 ```
 
@@ -245,43 +264,12 @@ typology <- data.frame(
     "Table X. Rates of substance use in the past three months by risk category (n = 220)",
     align_with_table = FALSE
   ) |>
-  fontsize(size = 10, part = "all") |>
-  align(j = 1, align = "left", part = "all") |>
-  align(j = -1, align = "center", part = "all") |>
-  #bold(i = NULL, j = NULL, bold = TRUE, part = "header") |>
-  padding(padding = 4, part = "all") |>
-  #bold(j = 1, part = "body", bold = TRUE) |>
-  border_remove() |>
-
-  #hline(border = fp_border(color = "black", width = 0.75), part = "body") |>
-  #vline(border = fp_border(color = "black", width = 0.5), part = "all") |>
-  set_table_properties(
-    layout = "autofit", # enables AutoFit to window
-    align = "left", # aligns table to left margin
-    width = 1 # 100% of page width
-  ) |>
-  theme_booktabs() |>
-  hline_top(border = fp_border(color = "black", width = 1), part = "all") |>
-  hline_bottom(border = fp_border(color = "black", width = 1), part = "all") |>
-  hline(
-    border = fp_border(color = "black", width = 1),
-    i = c(1, 2),
-    part = "header"
-  ) |>
-  bold(part = "header", bold = TRUE) |>
-  flextable::font(fontname = "Times New Roman", part = "all") |>
-  align(align = "center", part = "all", j = -1) |>
-  flextable::padding(padding = 1, part = "all") |>
-  flextable::line_spacing(space = 0.9, part = "all") |>
-  flextable::fontsize(size = 10, part = "all") |>
-  flextable::font(fontname = "Times New Roman", part = "all") |>
-  flextable::set_table_properties(
-    layout = "autofit", # enables AutoFit to window
-    align = "left", # aligns table to left margin
-    width = 1 # 100% of page width
-  ) |>
-  align(j = -1, align = "center", part = "all"))
-#bold(bold = TRUE, part = "header"))
+    my_flextable() |> 
+    hline(
+      border = fp_border(color = "black", width = 1),
+      i = c(1, 2),
+      part = "header"
+  ))
 ```
 - alcohol use nearly everyone (substantial amount of spread across risk levels) 
 - other substances way lower, but still prevalent, and predominantly moderate risk (though it's pretty hard to get low risk the way other drug use is scored) 
@@ -347,7 +335,7 @@ summary based on alcohol risk:
       recent_drug_count = "Number of drugs used in 3 months"
     )
   ) |>
-  #bold_labels() |>
+  bold_labels() |>
   add_n(statistic = "{N_nonmiss}", col_label = "n") |>
   modify_header(list(
     label ~ "Characteristic",
@@ -373,23 +361,13 @@ summary based on alcohol risk:
   modify_footnote(everything() ~ NA) |>
   modify_header(p.value ~ "p") |>
   gtsummary::as_flex_table() |>
-  flextable::set_table_properties(
-    layout = "autofit", # enables AutoFit to window
-    align = "left", # aligns table to left margin
-    width = 1 # 100% of page width
-  ) |>
-  align(j = 1, align = "left", part = "all") |>
-  align(j = -1, align = "center", part = "all") |>
   set_caption(
     caption = "Table X. Sample characteristics by alcohol use risk levels (n = 216)",
     align_with_table = "FALSE"
   ) |>
   #add_footer_lines(paste(c("Note. pvalues are from Kruskal-Wallis tests for continuous variables, and Chi-squared for categorical variables. Bolded values indicate statistically significant differences at p < .05"))) |>
   align(i = 1, align = "left", part = "footer") |>
-  flextable::padding(padding = 1, part = "all") |>
-  flextable::line_spacing(space = 0.9, part = "all") |>
-  flextable::fontsize(size = 10, part = "all") |>
-  flextable::font(fontname = "Times New Roman", part = "all"))
+  my_flextable())
 ```
 
 - higher alcohol risk is associated with greater psychological distress and higher absenteeism and presenteeism 
@@ -506,7 +484,7 @@ other drug use summary:
       recent_drug_count = "Number of drugs used in 3 months"
     )
   ) %>%
-  #bold_labels() %>%
+  bold_labels() %>%
   add_n(statistic = "{N_nonmiss}", col_label = "n") %>%
   modify_header(list(
     label ~ "Characteristic",
@@ -532,25 +510,14 @@ other drug use summary:
   modify_footnote(everything() ~ NA) %>%
   modify_header(p.value ~ "p") %>%
   gtsummary::as_flex_table() %>%
-  flextable::set_table_properties(
-    layout = "autofit", # enables AutoFit to window
-    align = "left", # aligns table to left margin
-    width = 1 # 100% of page width
-  ) %>%
-  align(j = 1, align = "left", part = "all") %>%
-  align(j = -1, align = "center", part = "all") %>%
   set_caption(
     caption = "Table X. Sample characteristics by other drug use risk levels (n = 68)",
     align_with_table = "FALSE"
   ) %>%
   add_footer_lines(paste(c(
-    "Note. pvalues are from Kruskal-Wallis tests for continuous variables, and Chi-squared for categorical variables. Bolded values indicate statistically significant differences at p < .05"
+    "Note. pvalues are from Kruskal-Wallis tests for continuous variables, and Chi-squared for categorical variables"
   ))) %>%
-  align(i = 1, align = "left", part = "footer") %>%
-  flextable::padding(padding = 1, part = "all") %>%
-  flextable::line_spacing(space = 0.9, part = "all") %>%
-  flextable::fontsize(size = 10, part = "all") %>%
-  flextable::font(fontname = "Times New Roman", part = "all"))
+  my_flextable())
 #bold(bold = T, i = 1, part = "header"))
 ```
 
@@ -565,16 +532,16 @@ Given the distributional properties of absenteeism and presenteeism, I considere
 - Hurdle negative binomial models 
 
 ### Considerations: 
-**Overdispersion**: Poisson models assume that the mean = variance. Preliminary checks indicated overdispersion, making Poisson models unsuitable. 
+**Overdispersion**: Preliminary checks indicated overdispersion, making Poisson models unsuitable. 
 
 **Excess zeros**: The data contained more zeros than expected under standard count models. This raises 2 choices:
 
 - Zero inflated models: assume two latent groups (always-zero vs always at-risk) 
 - Hurdle models: assume a two-stage process (zero vs positive counts) 
 
-**Here I made a function that ran a series of univariate models on each outcome to check dispersion**
-This helped to evaluate which count model handled the outcome data the best. 
-Univariate predictors included age, gender, years of employment, k10 total score, maximum alcohol use risk score, and maximum other drug use risk score. 
+**Here I made a function that ran a series of univariate models on each outcome to check dispersion** 
+
+This helped to evaluate which count model handled the outcome data the best. Univariate predictors included age, gender, years of employment, k10 total score, maximum alcohol use risk score, and maximum other drug use risk score. 
 
 Models were compared using: AIC/BIC (fit), dispersion stats, vuong tests, predicted vs observed zeros.
 

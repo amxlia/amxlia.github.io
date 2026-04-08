@@ -1,11 +1,11 @@
 # Welcome {.unnumbered}
 
-This site is essentially a living lab notebook; a running collection of how I work with data over time.
-I like to think of this as a mix between a portfolio and a working record. 
+This site is essentially a living lab notebook; a running collection of how I work with data over time. I like to think of this as a mix between a portfolio and a working record. 
 
-It brings together my approaches, projects, and things I have learned along the way. Everything here is built openly and documented as I go. The focus is on my **approach** and **processes** to conducting rigorous, transparent, and reproducible research, rather than on particular findings. 
+*I am slowly migrating all my existing work to this site - bear with me!*
 
-For **prospective collaborators and employers**, this serves as a transparent record of how I think through analytical problems and make decisions. For **students and early career researchers**, this can potentially serve as a learning resource. Most posts include comments/annotations outlining *what* I did, but more importantly *why*. 
+It brings together my approaches, projects, and things I have learned along the way. Everything here is built openly and documented as I go. The focus is on my **approach** and **processes** to conducting transparent and reproducible research, rather than on particular findings. 
+
 
 If you find something useful, have any questions, notice something is off/spotted an error, or just want to chat, feel free to reach out! 
 
