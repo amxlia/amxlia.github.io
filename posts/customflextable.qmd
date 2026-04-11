@@ -17,22 +17,29 @@ Call this function as the *last* step in a flextable pipeline.
 #'
 #' @return - styled flextable object
 #'
-
 my_flextable <- function(
   ft,
   font_size = 12,
   spacing = 1,
   font_name = "Times New Roman"
 ) {
+  n_cols <- ncol_keys(ft)
+
   ft |>
-    # clean academic style theme
-    flextable::theme_booktabs() |>
-    # left align first col
-    flextable::align(j = 1, align = "left", part = "all") |>
-    # centre align all other columns
-    flextable::align(j = -1, align = "center", part = "all") |>
+    # remove existing borders
+    border_remove() |>
+    # fix borders to black
+    hline_top(border = fp_border(color = "black", width = 1), part = "all") |>
+    hline_bottom(
+      border = fp_border(color = "black", width = 1),
+      part = "all"
+    ) |>
+    hline_bottom(
+      border = fp_border(color = "black", width = 1),
+      part = "header"
+    ) |>
     # tight padding for compact tables
-    flextable::padding(padding = 1, part = "all") |>
+    #flextable::padding(padding = 1, part = "all") |>
     # compact row height (default = 1)
     flextable::line_spacing(space = spacing, part = "all") |>
     # uniform font size (default = 12)

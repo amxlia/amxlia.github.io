@@ -1,0 +1,935 @@
+---
+format: 
+  html:
+    code-fold: true
+knitr:
+  opts_chunk:
+    ft.htmlscroll: false
+---
+# Negative Binomial Hurdle Models with Zero-Heavy Count Data {.unnumbered}
+**Modelling Alcohol and Other Drug Use, Psychological Distress, and Occupational Functioning in Australian Public Safety Personnel**
+```{r}
+#| label: setup
+#| include: false
+pacman::p_load(
+  here,
+  tidyverse,
+  skimr,
+  gtsummary,
+  flextable,
+  officer,
+  scales,
+  rstatix,
+  GGally,
+  janitor,
+  DataExplorer,
+  sjmisc,
+  vtable,
+  psych,
+  car,
+  lmtest,
+  naniar,
+  GGally,
+  ggpubr,
+  margins,
+  cowplot,
+  MASS,
+  pscl,
+  AER,
+  performance,
+  apaTables,
+  Hmisc,
+  glmmTMB,
+  margins,
+  dplyr,
+  SmartEDA,
+  summarytools,
+  ggstatsplot,
+  rcompanion,
+  dunn.test
+)
+
+here::i_am("posts/hurdles.qmd")
+df <- readRDS(here::here("R/clean_self_assessment.RData"))
+df <- df |> filter(assessment_time == "Time 1")
+df <- df |> filter(gender != "Other")
+df <- df |> filter(gender != "Prefer not to answer")
+source(here("R/customflextable.R"))
+knitr::opts_chunk$set(message = FALSE)
+min_median_max <- function(data, variable, ...) {
+  x <- data[[variable]]
+  tibble(
+    Min = min(x, na.rm = TRUE),
+    Median = median(x, na.rm = TRUE),
+    Max = max(x, na.rm = TRUE)
+  )
+}
+```
+::: {.callout-note}
+## Working notes 
+*converting analysis script into a documented notebook*
+:::
+
+## Aims
+1. Describe the rates and severity of alcohol and other drug (AOD) use in a sample of Australian public safety personnel (PSP)
+2. Examine associations between AOD use, psychological distress, and occupational functioning (absenteeism and presenteeism)
+3. Test whether AOD use and psychological distress, independently and together, predict occupational impairment
+
+## Key Variables
+| Role | Variable(s) |
+|---|---|
+| Psychological distress | `k10_total`, `k10_total_interpretation` |
+| Alcohol use | `alcohol_use_scores`, `alcohol_use_interpretation` |
+| Other drug use | `max_other_drug_score`, `max_drug_use_interpretation` |
+| Occupational functioning | `k10_11_absenteeism`, `k10_12_presenteeism` |
+| Potential covariates | `gender`, `age`, `agency_years` |
+
+## Data Pre-processing
+**exclusions:**
+
+- dropped cases with no response to `assist1_string` - non completion of self-assessment
+- excluded responses prior to march 11 (pre implementation / testing)
+- set implausible ages to `NA` 
+
+**ASSIST scoring:**
+
+- parsed multi-response items from `assist1_string` (substances _ever_ used) to binary indicators per substance 
+- non-endorsement of use treated as `NA` *not* zero (need the distinction for later models as never used ≠ low risk)
+- set total scores to `NA` for substances never used for same reason
+- chose each participants alcohol use score, and maximum other drug use score
+- calculated interpretation categories for alcohol and other drug use seperately 
+  - alcohol use: <10 = low risk, 10-26 = moderate risk, >26 = high risk
+  - other drug use: <4 = low risk, 4-26 = moderate risk, >26 = high risk
+
+**K10 scoring:**
+
+- caclulated total k10 scores using k10+ recommended scoring 
+- calculated interpretation category 
+  - psychological distress: <16 = low, 16-21 = moderate, 22-29 = high, >29 = very high
+
+**derived variables:**
+
+- binary indicators of recent AOD use (past 3 months) - alcohol and other drugs seperately 
+- poly-drug use indicator
+- count of substances used in past 3 months 
+- maximum other drug (non-alcohol) use risk score (self-assessment personalised feedback based on this score) 
+- psychological distress total and interpretation 
+
+::: {.callout-important} 
+## Decision - drop polydrug use and substance count vars
+KM and I agreed that these add little analytic value. Relying on risk scores instead. Participants only get risk score if they use in last 3 months; score = 0 if they have a life time use score; score = `NA` if they never used substance 
+:::
+
+## Screening 
+Before running models, i checked distributions of all continuous outcomes and predictors. 
+
+- Shapiro-wilk tests confirm violations of normality 
+- Non-parametric tests used for group comparisons (Kruskal-Wallis) that use risk categories as grouping variable 
+
+::: {.callout-tip}
+## use custom table function
+format tables automatically using [custom table function](https://amxlia.github.io/posts/customflextable.html)
+:::
+```{r}
+#| label: tbl-shapiro
+#| tbl-cap: "Shapiro tests of numeric variables"
+
+# Shapiro-Wilk for all relevant vars
+options(scipen = 999)
+tbl_shapiro <- df |>
+  # select vars 
+  dplyr::select(
+    age,
+    agency_years,
+    alcohol_use_scores,
+    max_other_drug_score,
+    k10_total,
+    k10_11_absenteeism,
+    k10_12_presenteeism
+  ) |>
+  # pivot longer so variable name is one col and shapiro stat is the other 
+  pivot_longer(everything(), names_to = "var", values_to = "value") |>
+  group_by(var) |>
+  shapiro_test(value) |>
+  # rename each var for the table 
+  mutate(
+    var = c(
+      "Age",
+      "Agency Years",
+      "Alcohol Use Risk",
+      "Other Drug Use Risk",
+      "Psychological Distress",
+      "Absenteeism",
+      "Presenteeism"
+    ),
+    variable = NULL,
+    # round numbers 
+    statistic = number(statistic, accuracy = .001),
+    p = number(p, accuracy = .001)
+  ) |>
+  rename(Variable = var, Statistic = statistic) |>
+  # convert to flextable 
+  flextable() |> 
+  my_flextable()
+
+tbl_shapiro
+```
+All variables are non-normally distributed. Not surprising given clin population and skew of outcome measures 
+
+```{r}
+#| label: fig-histograms
+#| fig-cap: "Histograms of absenteeism and presenteeism"
+#| warning: false
+# visualise absenteeism and presenteeism 
+fig_histograms <- df |>
+  dplyr::select(
+    Absenteeism = k10_11_absenteeism,
+    Presenteeism = k10_12_presenteeism
+  ) |>
+  pivot_longer(
+    cols = c(Absenteeism, Presenteeism),
+    names_to = "Variable",
+    values_to = "Days"
+  ) |>
+  filter(!is.na(Days)) |>
+  gghistogram(
+    x = "Days",
+    y = "count",
+    xlab = "Days",
+    ylab = FALSE,
+    add = "median",
+    facet.by = "Variable",
+    binwidth = 1
+  ) +
+  scale_x_continuous(breaks = seq(0, 30, by = 5))
+fig_histograms
+```
+::: {.callout-caution}
+## both outcomes have strong right skew and large proportion of zeros
+suggests standard linear models would be inappropriate. might be better to work with count based models?
+:::
+
+## Prevalence and severity of AOD use 
+- using ASSIST risk thresholds by substance
+- excluding other and smoking from substance breakdown. 
+
+
+```{r}
+#| label: tbl-rates
+#| tbl-cap: "Rates of substance use in past three months by risk category"
+
+# pivot assist vars to long 
+# apply risk categories 
+tbl_rates <- df |>
+  dplyr::select(starts_with("assist_total_"), -assist_total_scores_count) |>
+  pivot_longer(
+    cols = starts_with("assist_total_"),
+    names_to = "substance",
+    values_to = "score"
+  ) |>
+  mutate(score = case_when(score < 1 ~ NA, TRUE ~ score)) |>
+  filter(!is.na(score)) |>
+  mutate(
+    substance = str_remove(substance, "assist_total_") |> str_to_title()
+  ) |>
+  mutate(
+    `Risk` = case_when(
+      substance == "Alcohol" & score < 10 ~ "Low risk",
+      substance == "Alcohol" &
+        score >= 10 &
+        substance == "Alcohol" &
+        score <= 26 ~ "Moderate risk",
+      substance == "Alcohol" & score > 26 ~ "High risk",
+      substance != "Alcohol" & score < 4 ~ "Low risk",
+      substance != "Alcohol" &
+        score >= 4 &
+        substance != "Alcohol" &
+        score <= 26 ~ "Moderate risk",
+      substance != "Alcohol" & score > 26 ~ "High risk",
+      TRUE ~ "fix"
+    )
+  ) |>
+  group_by(substance, Risk) |>
+  group_by(substance, Risk) |>
+  summarise(
+    n = n()
+  ) |>
+  ungroup() |>
+  group_by(substance) |>
+  mutate(total = sum(n), percent = round(100 * n / sum(n), 1)) |>
+  group_by(substance, Risk) |>
+  ungroup() |>
+  dplyr::select(substance, total, Risk, n, percent) |>
+  pivot_wider(names_from = Risk, values_from = c(n, percent)) |>
+  dplyr::select(
+    Substance = substance,
+    total,
+    ends_with("Low risk"),
+    ends_with("Moderate risk"),
+    ends_with("High risk")
+  ) |>
+  mutate(
+    total = paste0(total, " (", number(total / 220 * 100, accuracy = .1), "%)")
+  ) |>
+  filter(Substance != 'Other') |>
+  filter(Substance != "Smoking") |>
+  flextable() 
+
+# change spanning headers to group n and % under each risk category 
+typology <- data.frame(
+  col_keys = c(
+    "Substance",
+    "total",
+    "n_Low risk",
+    "percent_Low risk",
+    "n_Moderate risk",
+    "percent_Moderate risk",
+    "n_High risk",
+    "percent_High risk"
+  ),
+  head = c("", "", rep("ASSIST scores", 6)),
+  risk = c(
+    "",
+    "",
+    rep("Low risk", 2),
+    rep("Moderate risk", 2),
+    rep("High risk", 2)
+  ),
+  names = c("Substance", "Total using", rep(c("n", "%"), 3))
+)
+
+# print and format rates table 
+tbl_rates <- tbl_rates |>
+  set_header_df(mapping = typology, key = "col_keys") |>
+  merge_h(part = "header") |>
+    my_flextable() |> 
+    hline(
+      border = fp_border(color = "black", width = 1),
+      i = c(1, 2),
+      part = "header"
+  ) |> 
+    hline_top(border = fp_border(color = "black", width = 1), part = "all")
+
+tbl_rates 
+```
+
+**observations:**
+
+- alcohol use = nearly everyone, meaningful spread across risk levels too 
+- other substance use is less prevalenct, but does seem to be more moderate risk (though the low-risk threshold is pretty low, so even occasional use is likely to be moderate??)
+- high risk drug use = uncommon, but evident 
+- cannabis, amphetamines, and sedatives more skewed to moderate, rather than low risk 
+
+::: {.callout-note} 
+## modelling decision
+rather than modelling each drug individually, use max other drug score as indicator. 
+:::
+
+### Summary based on alcohol risk: 
+- restrict to recent alcohol users (past 3 months) 
+- stratify by ASSIST risk
+- compare continuous with kruskal-wallis and gender with chi-squared 
+
+```{r}
+#| label: tbl-alc
+#| tbl-cap: "Sample characteristics by alcohol use risk levels"
+#| warning: false
+
+# Summary based on alcohol risk scores
+tbl_alc <- df |>
+  filter(recent_alcohol_user == 1) |>
+  dplyr::select(
+    gender,
+    age,
+    agency_years,
+    alcohol_use_interpretation,
+    k10_total,
+    absenteeism = k10_11_absenteeism,
+    presenteeism = k10_12_presenteeism
+  ) |>
+  tbl_summary(
+    by = alcohol_use_interpretation,
+    missing = "no",
+    missing_text = "Missing",
+    statistic = list(
+      all_continuous() ~ c("{mean} ({sd})"),
+      all_categorical() ~ "{n} ({p}%)"
+    ),
+    percent = "row",
+    digits = list(all_continuous() ~ c(1, 1), all_categorical() ~ c(0, 1)),
+    label = list(
+      gender = "Gender",
+      age = "Age",
+      k10_total = "Psychological distress",
+      absenteeism = "Absenteeism",
+      presenteeism = "Presenteeism",
+      agency_years = "Agency years",
+      alcohol_use_interpretation = "Alcohol use risk category"
+    )
+  ) |>
+  add_n(statistic = "{N_nonmiss}", col_label = "n") |>
+  modify_header(list(
+    label ~ "Characteristic",
+    stat_1 ~ "Low Risk\n(n = 77)",
+    stat_2 ~ "Moderate Risk\n(n = 83)",
+    stat_3 ~ "High Risk\n(n = 56)"
+  )) |>
+  add_p(
+    test = list(all_continuous() ~ "kruskal.test", gender ~ "chisq.test"),
+
+    #test.args = all_categorical() ~ list(simulate.p.value = TRUE),
+    pvalue_fun = function(x) {
+      formatted <- ifelse(x < 0.001, "<.001", sprintf("%.3f", x))
+      sub("^0\\.", ".", formatted)
+    }
+  ) |>
+  add_stat_label(
+    label = list(all_continuous() ~ "Mean (SD)", all_categorical() ~ "n (%)")
+  ) |>
+  modify_footnote(everything() ~ NA) |>
+  modify_header(p.value ~ "p") |>
+  gtsummary::as_flex_table() |> 
+  my_flextable()
+tbl_alc 
+```
+
+- higher alcohol risk is associated with greater psychological distress and higher absenteeism and presenteeism 
+- age and years in the agency are higher in moderate/high risk groups .. could be related to cumulative exposure to traumatic events etc. 
+- post hoc dunn tests with bonferroni correction show most differences are driven by low vs. moderate/high. moderate vs. high risk are pretty similar. 
+```{r}
+#| eval: false
+#| label: dunn-alcohol 
+
+# post hoc pairwise comparisons - included for completeness. 
+tests <- df |> filter(recent_alcohol_user == 1)
+dunn.test(tests$age, tests$alcohol_use_interpretation, kw = TRUE, method = "bonferroni")
+dunn.test(tests$agency_years, tests$alcohol_use_interpretation, kw = TRUE, method = "bonferroni")
+dunn.test(tests$k10_total, tests$alcohol_use_interpretation, kw = TRUE, method = "bonferroni")
+dunn.test(tests$k10_11_absenteeism, tests$alcohol_use_interpretation, kw = TRUE, method = "bonferroni")
+dunn.test(tests$k10_12_presenteeism, tests$alcohol_use_interpretation, kw = TRUE, method = "bonferroni")
+
+# gender - chi-squared then pairwise 
+report::report(stats::chisq.test(tests$gender, tests$alcohol_use_interpretation)) 
+
+gender_tbl <- table(tests$gender, tests$alcohol_use_interpretation)
+pairwiseNominalIndependence(gender_tbl, fisher = FALSE, gtest = FALSE, chisq = TRUE, method = "bonferroni")
+
+prop.table(table(tests$gender, tests$alcohol_use_interpretation), margin = 1)
+```
+### Summary based on other drug risk: 
+Same as above, but for recent other drug use
+
+- much smaller n here (especially high risk group, n = 5); interpret w caution 
+- fisher's exact test used for gender here given small cell sizes 
+```{r}
+#| label: tbl-drug
+#| tbl-cap: "Sample characteristics by other drug use risk levels"
+#| warning: false
+tbl_drug <- df |>
+  filter(recent_drug_user == 1) |>
+  dplyr::select(
+    gender,
+    age,
+    agency_years,
+    max_drug_use_interpretation,
+    k10_total,
+    absenteeism = k10_11_absenteeism,
+    presenteeism = k10_12_presenteeism
+  ) |>
+  tbl_summary(
+    by = max_drug_use_interpretation,
+    missing = "no",
+    missing_text = "Missing",
+    statistic = list(
+      all_continuous() ~ c("{mean} ({sd})"),
+      all_categorical() ~ "{n} ({p}%)"
+    ),
+    percent = "row",
+    digits = list(all_continuous() ~ c(1, 1), all_categorical() ~ c(0, 1)),
+    type = list(
+      recent_drug_count = "continuous",
+      #recent_alcohol_user = "categorical",
+      recent_drug_user = "categorical",
+      poly_drug_user = "categorical"
+    ),
+    label = list(
+      gender = "Gender",
+      age = "Age",
+      k10_total = "Psychological distress",
+      absenteeism = "Absenteeism",
+      presenteeism = "Presenteeism",
+      agency_years = "Agency years",
+      max_drug_use_interpretation = "Maximum other drug use risk category"
+    )
+  ) |>
+  add_n(statistic = "{N_nonmiss}", col_label = "n") |>
+  modify_header(list(
+    label ~ "Characteristic",
+    stat_1 ~ "Low Risk\n(n = 17)",
+    stat_2 ~ "Moderate Risk\n(n = 46)",
+    stat_3 ~ "High Risk\n(n = 5)"
+  )) |>
+  add_p(
+    test = list(all_continuous() ~ "kruskal.test", gender ~ "fisher.test"),
+
+    #test.args = all_categorical() ~ list(simulate.p.value = TRUE),
+    pvalue_fun = function(x) {
+      formatted <- ifelse(x < 0.001, "<.001", sprintf("%.3f", x))
+      sub("^0\\.", ".", formatted)
+    }
+  ) |>
+  add_stat_label(
+    label = list(all_continuous() ~ "Mean (SD)", all_categorical() ~ "n (%)")
+  ) |>
+
+  modify_footnote(everything() ~ NA) |>
+  modify_header(p.value ~ "p") |>
+  gtsummary::as_flex_table() |>
+  my_flextable()
+tbl_drug
+```
+- psychological distress and absenteeism seem to show a dose-reponse pattern across risk groups 
+- presenteeism the same direction, but not significant, possible power issues. 
+- age and agency years and gender = no differences, contrast with alcohol use results. 
+
+dunn tests aren't really reliable here (but post hoc tests w bonferroni correction code): 
+```{r}
+#| eval: false
+#| label: dunn-otherdrugs 
+
+# post hoc pairwise comparisons - included for completeness. 
+tests <- df |> filter(recent_drug_user == 1)
+dunn.test(tests$age, tests$max_drug_use_interpretation, kw = TRUE, method = "bonferroni")
+dunn.test(tests$agency_years, tests$max_drug_use_interpretation, kw = TRUE, method = "bonferroni")
+dunn.test(tests$k10_total, tests$max_drug_use_interpretation, kw = TRUE, method = "bonferroni")
+dunn.test(tests$k10_11_absenteeism, tests$max_drug_use_interpretation, kw = TRUE, method = "bonferroni")
+dunn.test(tests$k10_12_presenteeism, tests$max_drug_use_interpretation, kw = TRUE, method = "bonferroni")
+```
+
+## Associations 
+- pearson for continuous-continuous pairs (alcohol score, drug score, k10 score)
+- spearman for pairs involving absenteeism/presenteeism - count variables, zero inflated, rank based more appropriate (see Figure 1)
+
+```{r}
+#| label: tbl-cors 
+#| tbl-cap: "Correlation matrix of key variables"
+#| message: false 
+# select vars 
+cor_vars <- df |>
+  dplyr::select(
+    alcohol_use_scores, max_other_drug_score, 
+    k10_total, absenteeism = k10_11_absenteeism, presenteeism = k10_12_presenteeism
+  ) 
+
+# define variable types 
+continuous <- c("k10_total", "alcohol_use_scores", "max_other_drug_score")
+count <- c('presenteeism', 'absenteeism', 'recent_drug_count')
+
+# get all correlation pairs 
+cor_pairs <- combn(names(cor_vars), 2, simplify = FALSE)
+
+# create function to get correct correlation type automatically 
+get_cors <- function(x_name, y_name, data) {
+  x <- data[[x_name]]
+  y <- data[[y_name]]
+  
+  # define variable types 
+  is_x_count <- x_name %in% count
+  is_y_count <- y_name %in% count
+  is_x_continuous <- x_name %in% continuous
+  is_y_continuous <- y_name %in% continuous
+  
+  # define correlation method 
+  method <- case_when(
+    is_x_count & is_y_count ~ "spearman", # use spearman
+    is_x_count & is_y_continuous ~ "spearman", # use spearman
+    is_x_continuous & is_y_count ~ "spearman", # use spearman
+    is_x_continuous & is_y_continuous ~ "pearson",  # use pearson 
+    TRUE ~ "spearman"  # if else, use spearman 
+  )
+  
+  cor_type <- case_when(
+    is_x_continuous & is_y_continuous ~ "pearson",
+    TRUE ~ "spearman"
+  )
+  
+  # calculate correlations 
+  test <- suppressWarnings(cor.test(x, y, method = method))
+  
+  # return correlation coefficient, p-value, method used
+  list(r = unname(test$estimate), p = test$p.value, method = method, type = cor_type)
+}
+
+# compute correlations for all pairs 
+cor_results <- purrr::map_dfr(cor_pairs, function(vars) {
+  res <- get_cors(vars[1], vars[2], cor_vars)
+  tibble(
+    var1 = vars[1],
+    var2 = vars[2],
+    cor = res$r,
+    p = number(res$p, accuracy = .001),
+    method = res$method,
+    type = res$type#,
+    #p2 = res$p
+  )
+})
+
+# make symmetric by mirroring rows
+cor_long <- cor_results |>
+  bind_rows(
+    cor_results |>
+      rename(var1 = var2, var2 = var1)
+  ) |>
+  mutate(
+    cor = round(cor, 2),
+    sig = p <= 0.05,
+    stars = case_when(
+      p < .001 ~ "***",
+      p < .01 ~ "**", 
+      p < .05 ~ "*",
+      TRUE ~ ""),
+    cor_ch = paste0(formatC(cor, format = "f", digits = 2), stars))
+  
+# make wide 
+cor_matrix <- cor_long |>
+  dplyr::select(var1, var2, cor_ch) |>
+  pivot_wider(names_from = var2, values_from = cor_ch) |> 
+  dplyr::select(var1, alcohol_use_scores, max_other_drug_score, k10_total, absenteeism, presenteeism)
+
+# set cor labels 
+cor_labels <- c(
+  k10_total = "Psychological Distress",
+  presenteeism = "Presenteeism",
+  absenteeism = "Absenteeism",
+  alcohol_use_scores = "Alcohol Use Score",
+  max_other_drug_score = "Max Other Drug Score")
+
+colnames(cor_matrix) <- c(" " = "var1", cor_labels[colnames(cor_matrix)[-1]])
+cor_matrix[[1]] <- cor_labels[cor_matrix[[1]]]
+cor_matrix[upper.tri(cor_matrix)] <- NA
+
+# create ft 
+cor_tbl <- flextable(cor_matrix) |> 
+  my_flextable() |> 
+  set_header_labels("var1" = " ")
+
+cor_tbl
+```
+**observations:**
+Pretty much everything is highly correlated (ranging from .24 - .52) . Strongest associations are with psychological distress (particularly with absenteeism and presenteeism), but that makes conceptual sense. might be also that they come from the k10+? Questions specifically asks "due to the symptoms described" (in the k10), so naturally they would be correlatedexcept for alcohol use and other drug use.
+
+Weaker associations between alcohol use and other drug use which is sort of good for modelling - no collinearity
+ 
+::: {.callout-important}
+## flagging for later
+Low correlation between two AOD predictors suggests multicollinearity won't be an issue in models. 
+
+**REMEMBER**: check VIFs after fitting 
+:::
+
+## Model selection
+I considered several candidate models that fit the data for absenteeism and presenteeism: 
+
+- Poisson regression: baseline count model 
+- Negative binomial regression: relaxes the mean
+- Zero-inflated Poisson (ZIP): models excess zeros by latent *always zero* group
+- Zero-inflated negative binomial models (ZINB): combines zero-inflation with overdispersion
+- Hurdle negative binomial models: predicts first whether count is zero, then models positive counts 
+
+**checks:**
+rounded absenteeism and presenteeism to 1dp 
+```{r}
+#| label: prep
+# round absenteeism and presenteeism 
+df <- df |> mutate(
+  k10_11_absenteeism = round(k10_11_absenteeism, 1),
+  k10_12_presenteeism = round(k10_12_presenteeism, 1)
+) |> rename(absenteeism = k10_11_absenteeism, 
+             presenteeism = k10_12_presenteeism)
+# select vars 
+df_sub <- df |> dplyr::select(age, gender, agency_years, k10_total, rtc_3_readiness, 
+                               recent_drug_user, recent_alcohol_user, recent_any_user, poly_drug_user,
+                               alcohol_use_scores, max_other_drug_score, absenteeism, presenteeism)
+```
+
+**wrote function for comparing models**:
+instead of fitting each model manually for every predictor, function loops through all univariate predictors for a given outcome, and compares models across all 5 candidates 
+
+predictors:
+
+- age 
+- gender
+- agency years 
+- k10 total
+- alcohol use 
+- other drug use 
+
+each iteration returns: 
+
+- dispersion statistics 
+- AIC and BIC 
+- vuong tests 
+- observed vs predicted zero counts 
+
+saved results to file (lots of output) and its really only useful for diagnostic purposes 
+
+```{r}
+#| label: model-comparison-function
+#| eval: false
+predictors <- df_sub |> dplyr::select(-absenteeism, -presenteeism) |> names()
+
+# function to run series of univariate models and check dispersion. 
+compare_models <- function(var, data) {
+  fmla <- as.formula(paste(outcome, "~", var))
+
+  # print results:
+  cat("\n============================\n")
+  cat("Variable:", var, "\n")
+  cat("============================\n\n")
+  
+  # fit models 
+  # poisson
+  pois <- glm(fmla, data = data, family = poisson())
+  # negative binomial
+  nb <- glm.nb(fmla, data = data)
+  # zero inflated poisson
+  zip <- zeroinfl(fmla, data = data, dist = "poisson")
+  # zero inflated negative binomial
+  zinb <- zeroinfl(fmla, data = data, dist = "negbin")
+  # hurdle negative binomial 
+  hurdle_nb <- hurdle(fmla, data = data, dist = "negbin", zero.dist = "binomial")
+  
+  # dispersion:
+  disp_stat <- dispersiontest(pois)$statistic 
+  cat('Dispersion (Poisson):', round(disp_stat, 2), '\n')
+  
+  # compare AIC / BIC
+  aic_df <- AIC(pois, nb, zip, zinb, hurdle_nb)
+  bic_df <- BIC(pois, nb, zip, zinb, hurdle_nb)
+  
+  cat("\nAIC Comparison:\n")
+  print(aic_df)
+  cat("\nBIC Comparison:\n")
+  print(bic_df)
+  
+  # vuong tests
+  cat("\nVuong Test: ZIP vs Poisson\n")
+  print(vuong(pois, zip))
+  
+  cat("\nVuong Test: ZINB vs NB\n")
+  print(vuong(nb, zinb))
+  
+  cat("\nVuong Test: Hurdle vs NB\n")
+  print(vuong(nb, hurdle_nb))
+
+# get predicted vs observed zeros 
+obs_zeros <- sum(data[[outcome]] == 0)
+pred_zeros <- list(
+  Poisson = sum(predict(pois, type = "response") < 1e-6),
+  NB = sum(predict(nb, type = "response") < 1e-6),
+  ZIP = sum(predict(zip, type = "response") < 1e-6),
+  ZINB = sum(predict(zinb, type = "response") < 1e-6),
+  Hurdle = sum(predict(hurdle_nb, type = "response") < 1e-6)
+)
+
+cat("\nObserved Zeros:", obs_zeros, "\n")
+cat("Predicted Zeros:\n")
+print(pred_zeros)
+}
+
+# run and save externally 
+outcome <- "absenteeism"
+predictors <- df_sub |> dplyr::select(-presenteeism, -absenteeism) |> names()
+
+sink(here("R/model_comparisons_absenteeism.txt"))
+lapply(predictors, compare_models, data = df_sub |> filter(!is.na(absenteeism)))
+sink()
+
+outcome <- "presenteeism"
+sink(here("R/model_comparisons_presenteeism.txt"))
+lapply(predictors, compare_models, data = df_sub |> filter(!is.na(presenteeism)))
+sink()
+```
+- overdispersion confirmed across all predictors - poisson dispersion consistently >1 (not a good candidate)
+- zero-inflated and hurdle models outperformed NB on AIC/BIC and predicted zeros better 
+- vuong tests favoured hurdle and zero-inflated, though difference between ZINB and hurdle NB was small 
+
+
+fit statistics between ZINB and hurdle NB were similar enough. MS and I discussed this, and we think zero-inflation models were too rigid for our outcomes. 
+
+zero inflated models assume 2 groups: ppl structurally **always zero** (i.e., will never ever have any absenteeism/presenteeism) and people who are at risk. for occupational outcomes in this, employed sample, not the best assumption, anyone can have a day off or a bad day at work. 
+
+hurdle models seem more appropriate, because it models the likelihood of someone crossing into abscence/not, and then a seperate model to determine how many days are lost if they do.... this fits our research question better... 
+
+- part 1 (logit): what predicts whether someone reports absenteeism or presenteeism? 
+- part 2 (count): among those who do report, what predicts how many days they do so for? 
+
+::: {.callout-note}
+## Decision: Hurdle negative binomial models 
+They account for overdispersion, handle excess zeros in two stages, and align with our aims
+:::
+
+
+## Modelling  
+- converted missing AOD scores to zero
+- missing score means they didnt use it in the past 3 months, so zero is appriopriate for modelling rather than excluding the cases 
+
+```{r}
+#| label: model-prep 
+df_sub <- df |>
+  dplyr::select(
+    age, gender, agency_years,
+    alcohol_use_scores, max_other_drug_score,
+    k10_total, absenteeism, presenteeism
+  ) |>
+  mutate(
+    # NA = did not use in past 3 months; treat as zero risk for modelling
+    alcohol_use_scores = tidyr::replace_na(alcohol_use_scores, 0),
+    max_other_drug_score = tidyr::replace_na(max_other_drug_score, 0)
+  )
+
+
+  # variable labels used across all model tables:
+  var_labels <- c(
+  agency_years = "Years in agency",
+  age = "Age",
+  gender = "Gender",
+  alcohol_use_scores = "Alcohol use risk",
+  max_other_drug_score = "Maximum other drug use risk",
+  k10_total = "Psychological distress",
+  `max_other_drug_score:k10_total` = "Other drug use risk x Psychological distress"
+)
+
+```
+
+### Univariate models - Absenteeism 
+each predictor examined as univariate effect before building multivariable model to:
+
+- see variable-specific effects before adding covariates 
+- identify which predictors were worth using 
+- check that hurdle structure worked as expected 
+
+each univariate model produces two sets of estimates: odds ratio (OR) from the logit model ("any absenteeism"), and an incidence rate ratio (IRR) from the negative binomial part ("how many days in those with at least 1?")
+
+wrote a function to loop this across predictors and stack results in a table (probably only 4 supp materials in publication )
+
+```{r}
+#| label: fnction-uv
+#| warning: false 
+run_uv_hurdle <- function(outcome, predictors, 
+                          data, exponentiate = T) {
+  
+  # build both models seperately 
+  model_tables <- map(predictors, ~ {
+  fmla <- as.formula(paste0(outcome, " ~ ", .x, " | ", .x))
+  model <- hurdle(fmla, data = data, dist = "negbin", zero.dist = "binomial")
+    
+  # zero part 
+  zero_tbl <- tbl_regression(
+    model,
+    component = "zero_inflated",
+    exponentiate = TRUE,
+    estimate_fun = function(x) formatC(x, digits = 2, format = "f"),
+    pvalue_fun = function(x) {
+      p <- style_pvalue(x, digits = 3)
+      # remove leading zero from both "0.03" and "<0.001"
+      gsub("(?<=<)0\\.|^0\\.", ".", p, perl = TRUE)
+    }, 
+    tidy_fun = broom.helpers::tidy_zeroinfl
+  ) |> 
+    modify_header(label = "Variable", estimate = "OR") |> 
+    modify_table_body(~ .x |>
+                        mutate(
+                          label = ifelse(
+                            row_type == "label" & variable %in% names(var_labels),
+                            var_labels[variable],
+                            label
+                          ),
+                          ci = ifelse(
+                            !is.na(estimate) & (conf.high - conf.low > 50),
+                            ">50",
+                            ci
+                          )
+                        )
+    ) |> 
+    add_n() 
+  
+  # NB count part
+  count_tbl <- tbl_regression(
+    model,
+    component = "conditional",
+    exponentiate = T,
+    estimate_fun = function(x) formatC(x, digits = 2, format = "f"),
+    pvalue_fun = function(x) {
+      p <- style_pvalue(x, digits = 3)
+      # remove leading zero from both "0.03" and "<0.001"
+      gsub("(?<=<)0\\.|^0\\.", ".", p, perl = TRUE)
+    },
+    
+    tidy_fun = broom.helpers::tidy_zeroinfl
+  ) |> 
+    modify_header(label = "Variable", estimate = "IRR") |> 
+    modify_table_body(~ .x |>
+                        mutate(
+                          label = ifelse(
+                            row_type == "label" & variable %in% names(var_labels),
+                            var_labels[variable],
+                            label
+                          ),
+                          ci = ifelse(
+                            !is.na(estimate) & (conf.high - conf.low > 50),
+                            ">50",
+                            ci
+                          )
+                        )) 
+  
+  list(zero_tbl = zero_tbl, count_tbl = count_tbl)
+  })
+
+  # separate and flatten count and zero tables
+  zero_tbls  <- map(model_tables, "zero_tbl")
+  count_tbls <- map(model_tables, "count_tbl")
+  
+  tbl_merge(
+    tbls = list(
+      tbl_stack(zero_tbls),
+      tbl_stack(count_tbls) 
+      ),
+    tab_spanner = c("Hurdle model (logit)", "Count model (NB)")
+  )
+}
+```
+
+then i applied this first to absenteeism
+```{r}
+#| label: tbl-abs-uv 
+#| tbl-cap: "Univariable hurdle negative binomial regressions predicting absenteeism"
+#| warning: false
+
+outcome <- "absenteeism"
+predictors <- df_sub |> dplyr::select(-presenteeism, -absenteeism) |> names()
+
+tbl_abs_uv <- suppressMessages(
+  run_uv_hurdle(outcome, predictors, data = df_sub, exponentiate = TRUE)
+) 
+
+tbl_abs_uv <- tbl_abs_uv |> 
+  modify_table_body(~ .x |>
+    mutate(
+      estimate_1 = number(estimate_1, accuracy = .01),
+      estimate_1 = if_else(is.na(estimate_1), "—", estimate_1),
+      estimate_2 = number(estimate_2, accuracy = .01),
+      estimate_2 = if_else(is.na(estimate_2), "—", estimate_2),
+      label = case_when(label == "0" ~ "No", label == "1" ~ "Yes", TRUE ~ label),
+      groupname_col_1 = NULL,
+      groupname_col_2 = NULL
+    )
+  ) |>
+  as_flex_table() |>
+  bold(part = "all", bold = FALSE) |> 
+  delete_part("footer") |> 
+  my_flextable()
+
+
+tbl_abs_uv
+```

@@ -1,1 +1,5 @@
 /* css styles */
+/* left align captions */
+.quarto-table-caption {
+    text-align: left;
+}

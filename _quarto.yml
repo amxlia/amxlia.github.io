@@ -2,6 +2,8 @@ project:
   type: book
   output-dir: docs
 toc: false
+
+
 book:
   title: "Amelia Henry"
   search: false
@@ -16,16 +18,16 @@ book:
       #- more to come 
 
   ## WORKFLOW
+    - part: "Analyses"
+      chapters: 
+      - posts/hurdles.qmd
+    - part: "Custom functions"
+      chapters:
+      - posts/customflextable.qmd
     - part: "Notes"
       chapters:
       - posts/scripts_and_workflow.qmd
       - posts/project_setup.qmd
-    - part: "Analyses"
-      chapters: 
-      - posts/icare.qmd
-    - part: "Custom functions"
-      chapters:
-      - posts/customflextable.qmd
 
     #- more to come 
    # - part: "Analyses"
