@@ -256,7 +256,7 @@
     "href": "posts/hurdles.html#approach",
     "title": "Negative Binomial Hurdle Models with Zero-Heavy Count Data",
     "section": "Approach",
-    "text": "Approach\n\nRan a series of negative binomial hurdle regressions due to excess zeros using two different outcomes: 1) absenteeism; and 2) presenteeism\nKey predictors of each model included:\n\nPsychological distress\nAlcohol use risk\nOther drug use risk\n\nCovariates included: age, gender, years employed at the agency\nRan univariate models first to find potential covariates for each outcome\nRan multivariable models that included all predictors and significant covariates from the univariate models\nRan for each outcome:\n\nalcohol use x psychological distress interaction model\nother drug use x psychological distress interaction model",
+    "text": "Approach\n\nRan a series of negative binomial hurdle regressions due to excess zeros using two different outcomes: 1) absenteeism; and 2) presenteeism\nKey predictors of each model included:\n\nPsychological distress\nAlcohol use risk\nOther drug use risk\n\nCovariates included: age, gender, years employed at the agency",
     "crumbs": [
       "Analyses",
       "Negative Binomial Hurdle Models with Zero-Heavy Count Data"
