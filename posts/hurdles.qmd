@@ -32,6 +32,9 @@ pacman::p_load(
   GGally,
   ggpubr,
   margins,
+  emmeans,
+  ggeffects,
+  marginaleffects,
   cowplot,
   MASS,
   pscl,
@@ -52,8 +55,7 @@ pacman::p_load(
 here::i_am("posts/hurdles.qmd")
 df <- readRDS(here::here("R/clean_self_assessment.RData"))
 df <- df |> filter(assessment_time == "Time 1")
-df <- df |> filter(gender != "Other")
-df <- df |> filter(gender != "Prefer not to answer")
+
 source(here("R/customflextable.R"))
 knitr::opts_chunk$set(message = FALSE)
 min_median_max <- function(data, variable, ...) {
@@ -65,35 +67,41 @@ min_median_max <- function(data, variable, ...) {
   )
 }
 ```
+
 ::: {.callout-note}
 ## Working notes 
 *converting analysis script into a documented notebook*
 :::
 
-## Aims
+## Summary 
+### Aims
 1. Describe the rates and severity of alcohol and other drug (AOD) use in a sample of Australian public safety personnel (PSP)
 2. Examine associations between AOD use, psychological distress, and occupational functioning (absenteeism and presenteeism)
 3. Test whether AOD use and psychological distress, independently and together, predict occupational impairment
 
-## Approach 
-- Ran a series of negative binomial hurdle regressions due to excess zeros using two different outcomes: 1) absenteeism; and 2) presenteeism 
-- Key predictors of each model included:
-  - Psychological distress
-  - Alcohol use risk 
-  - Other drug use risk 
-- Covariates included: age, gender, years employed at the agency 
+### Approach 
+Used data from an online self-assessment of AOD use risk completed by PSP as part of a pilot implementation trial of a PSP-tailored AOD use intervention. Rates and severity of AOD use risk and psychological distress were examined, and a series of hurdle negative binomial regressions were used to examine their associations with absenteeism and presenteeism. 
 
 
-## Key findings 
-- Risky levels of alcohol use, drug use, and psychological distress were prevalent in the sample 
-- Alcohol use, other drug use, and psychological distress predicted the odds of absenteeism, and other drug use predicted the odds of presenteeism (particularly when psychological distress was low)
-- Psychological distress was the most consistent predictor of the odds and frequency of both absenteeism and presenteeism 
+### Key findings 
+Risky levels of alcohol use, drug use, and psychological distress were prevalent in the sample. Alcohol use, other drug use, and psychological distress predicted the odds of absenteeism, and other drug use predicted the odds of presenteeism (particularly when psychological distress was low).Psychological distress was the most consistent predictor of the odds and frequency of both absenteeism and presenteeism 
 
-## Interpretation 
-- Psychological distress is the primary driver of occupational impairment in PSP
-- AOD use contributes to occupational impairment, but in ways that differ across contexts (absenteeism/presenteeism), and substance classes (alcohol vs other drugs)
+### Interpretation 
+Psychological distress is the primary driver of occupational impairment in PSP. AOD use contributes to occupational impairment, but in ways that differ across contexts (absenteeism/presenteeism), and substance classes (alcohol vs other drugs)
 
----
+## Analysis 
+### Analysis outline 
+After data cleaning, descriptive statistics were calculated to summarise baseline demographic characteristics, AOD use risk (ASSIST scores), psychological distress (K10+ scores), and occupational functioning outcomes (absenteeism/presenteeism). Distributions were examined and appropriate measures of central tendency and variability are reported (i.e., means, SDs, medians and ranges, or proportions). 
+
+Group comparisons were conducted across AOD risk groups. Non-parametric Kruskal-Wallis tests and post hoc Dunn tests with Bonferonni correction were used for continuous variables due to skewness and outliers. Categorical comparisons used chi-square tests with Bonferonni-adjusted pairwise comparisons; and Fisher's exact tests were applied when cell counts were small. 
+
+Correlations were examined using pearson coefficients for continuous-continuous pairs (AOD risk & psychological distress), and Spearman correlations were used for pairs involving count data (absenteeism & presenteeism). 
+
+Because absenteeism and presenteeism were zero-inflated and over dispersed, a series of univariable count models were compared for each predictor using poisson, negative binomial, zero-inflated poisson, zero-inflated negative binomial, and hurdle negative binomial models. Model selection considered overdispersion indices, AIC, BIC, and vuong tests. Final models employed hurdle negative binomial regression, which seperately modelled 1) the odds of any absenteeism or presenteeism (logit) and 2) the frequency of absenteeism or presenteeism among those with non-zero values (negative binomial count model). 
+
+Multivariable analyses of main effects for each occupational outcome incorporated alcohol use risk, other drug use risk, and psychological distress as predictors and all significant univariable predictors as covariates. In addition to main effects, interaction terms between alcohol use and psychological distress, then other drug use and psychological distress, were tested for each occupational functioning outcome. The interaction models were compared against main effects models using likelihood ratio tests, and the best fitting model was retained and reported. 
+
+Coefficients were exponentiated to reflect odds ratios (ORs) for the logit component of the model, and incidence rate ratios (IRRs) for the count part of the model. Average marginal effects were assessed for interaction terms. All tests used a significance threshold of p < .05. 
 
 ## Full Analysis 
 ### Key Variables
@@ -105,7 +113,7 @@ min_median_max <- function(data, variable, ...) {
 | Occupational functioning | `k10_11_absenteeism`, `k10_12_presenteeism` |
 | Potential covariates | `gender`, `age`, `agency_years` |
 
-## Data Pre-processing
+### Data Pre-processing
 **exclusions:**
 
 - dropped cases with no response to `assist1_string` - non completion of self-assessment
@@ -137,20 +145,21 @@ min_median_max <- function(data, variable, ...) {
 - psychological distress total and interpretation 
 
 ::: {.callout-important} 
-## Decision - drop polydrug use and substance count vars
+### Decision - drop polydrug use and substance count vars
 KM and I agreed that these add little analytic value. Relying on risk scores instead. Participants only get risk score if they use in last 3 months; score = 0 if they have a life time use score; score = `NA` if they never used substance 
 :::
 
-## Screening 
+### Screening 
 Before running models, i checked distributions of all continuous outcomes and predictors. 
 
 - Shapiro-wilk tests confirm violations of normality 
 - Non-parametric tests used for group comparisons (Kruskal-Wallis) that use risk categories as grouping variable 
 
 ::: {.callout-tip}
-## use custom table function
+### use custom table function
 format tables automatically using [custom table function](https://amxlia.github.io/posts/customflextable.html)
 :::
+
 ```{r}
 #| label: tbl-shapiro
 #| tbl-cap: "Shapiro tests of numeric variables"
@@ -225,15 +234,16 @@ fig_histograms <- df |>
   scale_x_continuous(breaks = seq(0, 30, by = 5))
 fig_histograms
 ```
+
 ::: {.callout-caution}
-## both outcomes have strong right skew and large proportion of zeros
+### both outcomes have strong right skew and large proportion of zeros
 suggests standard linear models would be inappropriate. might be better to work with count based models?
 :::
 
-## Prevalence and severity of AOD use 
+
+### Prevalence and severity of AOD use 
 - using ASSIST risk thresholds by substance
 - excluding other and smoking from substance breakdown. 
-
 
 ```{r}
 #| label: tbl-rates
@@ -270,7 +280,6 @@ tbl_rates <- df |>
       TRUE ~ "fix"
     )
   ) |>
-  group_by(substance, Risk) |>
   group_by(substance, Risk) |>
   summarise(
     n = n()
@@ -342,7 +351,7 @@ tbl_rates
 - cannabis, amphetamines, and sedatives more skewed to moderate, rather than low risk 
 
 ::: {.callout-note} 
-## modelling decision
+### modelling decision
 rather than modelling each drug individually, use max other drug score as indicator. 
 :::
 
@@ -350,12 +359,15 @@ rather than modelling each drug individually, use max other drug score as indica
 - restrict to recent alcohol users (past 3 months) 
 - stratify by ASSIST risk
 - compare continuous with kruskal-wallis and gender with chi-squared 
-
+- turned small cell counts for gender ("prefer not to answer" and "other" to NA)
 ```{r}
 #| label: tbl-alc
 #| tbl-cap: "Sample characteristics by alcohol use risk levels"
 #| warning: false
-
+df <- df %>% mutate(gender = case_when(gender == "Prefer not to answer" ~ NA,
+                                       gender == "Other" ~ NA,
+                                       TRUE ~ gender),
+                    gender = factor(gender))
 # Summary based on alcohol risk scores
 tbl_alc <- df |>
   filter(recent_alcohol_user == 1) |>
@@ -513,7 +525,7 @@ tbl_drug
 - presenteeism the same direction, but not significant, possible power issues. 
 - age and agency years and gender = no differences, contrast with alcohol use results. 
 
-dunn tests aren't really reliable here (but post hoc tests w bonferroni correction code): 
+**dunn tests aren't really reliable here (but post hoc tests w bonferroni correction code): **
 ```{r}
 #| eval: false
 #| label: dunn-otherdrugs 
@@ -527,7 +539,7 @@ dunn.test(tests$k10_11_absenteeism, tests$max_drug_use_interpretation, kw = TRUE
 dunn.test(tests$k10_12_presenteeism, tests$max_drug_use_interpretation, kw = TRUE, method = "bonferroni")
 ```
 
-## Associations 
+### Associations 
 - pearson for continuous-continuous pairs (alcohol score, drug score, k10 score)
 - spearman for pairs involving absenteeism/presenteeism - count variables, zero inflated, rank based more appropriate (see Figure 1)
 
@@ -636,6 +648,7 @@ tbl_cors <- flextable(matrix_cor) |>
 
 tbl_cors
 ```
+
 **observations:**
 Pretty much everything is highly correlated (ranging from .24 - .52) . Strongest associations are with psychological distress (particularly with absenteeism and presenteeism), but that makes conceptual sense. might be also that they come from the k10+? Questions specifically asks "due to the symptoms described" (in the k10), so naturally they would be correlatedexcept for alcohol use and other drug use.
 
@@ -648,7 +661,7 @@ Low correlation between two AOD predictors suggests multicollinearity won't be a
 **REMEMBER**: check VIFs after fitting 
 :::
 
-## Model selection
+### Model selection
 I considered several candidate models that fit the data for absenteeism and presenteeism: 
 
 - Poisson regression: baseline count model 
@@ -674,6 +687,7 @@ df_sub <- df |> dplyr::select(age, gender, agency_years, k10_total, rtc_3_readin
 ```
 
 **wrote function for comparing models**:
+
 instead of fitting each model manually for every predictor, function loops through all univariate predictors for a given outcome, and compares models across all 5 candidates 
 
 predictors:
@@ -771,6 +785,7 @@ sink(here("R/model_comparisons_presenteeism.txt"))
 lapply(predictors, compare_models, data = df_sub |> filter(!is.na(presenteeism)))
 sink()
 ```
+
 - overdispersion confirmed across all predictors - poisson dispersion consistently >1 (not a good candidate)
 - zero-inflated and hurdle models outperformed NB on AIC/BIC and predicted zeros better 
 - vuong tests favoured hurdle and zero-inflated, though difference between ZINB and hurdle NB was small 
@@ -786,12 +801,12 @@ hurdle models seem more appropriate, because it models the likelihood of someone
 - part 2 (count): among those who do report, what predicts how many days they do so for? 
 
 ::: {.callout-note}
-## Decision: Hurdle negative binomial models 
+### Decision: Hurdle negative binomial models 
 They account for overdispersion, handle excess zeros in two stages, and align with our aims
 :::
 
 
-## Modelling  
+### Modelling  
 - converted missing AOD scores to zero
 - missing score means they didnt use it in the past 3 months, so zero is appriopriate for modelling rather than excluding the cases 
 
@@ -805,8 +820,10 @@ df_sub <- df |>
   ) |>
   mutate(
     # NA = did not use in past 3 months; treat as zero risk for modelling
-    alcohol_use_scores = tidyr::replace_na(alcohol_use_scores, 0),
-    max_other_drug_score = tidyr::replace_na(max_other_drug_score, 0)
+     alcohol_use_scores = case_when(is.na(alcohol_use_scores) ~ 0, TRUE ~ alcohol_use_scores),
+     max_other_drug_score = case_when(is.na(max_other_drug_score) ~ 0, TRUE ~ max_other_drug_score)
+    # alcohol_use_scores = tidyr::replace_na(alcohol_use_scores, 0),
+    # max_other_drug_score = tidyr::replace_na(max_other_drug_score, 0)
   )
 
 
@@ -823,8 +840,8 @@ df_sub <- df |>
 
 ```
 
-### Absenteeism 
-#### Univariate models 
+#### Absenteeism 
+##### Univariate models 
 each predictor examined as univariate effect before building multivariable model to:
 
 - see variable-specific effects before adding covariates 
@@ -980,11 +997,11 @@ for those reporting any absenteeism, psychological distress and gender were asso
 
 
 ::: {.callout-important}
-## !!!
-substance use vars were associated with odds of any absenteeism, but not number of days absent; psychological distress was associated with both components
+### !!!
+substance use vars were associated with odds of any absenteeism, but not number of days absent; psychological distress was associated with both components, and gender was associated with frequency 
 :::
 
-## Multivariable model 
+##### Multivariable model 
 predictors showing evidence of association in either component for the univariate models were retained for multivariable modelling.
 
 all vifs were below 5 (ranging from 1.04-1.16)
@@ -1095,8 +1112,409 @@ tbl_abs_mv
 
 **count component** (frequency of absenteeism among those with ≥1 day): psychological distress was associated with higher counts. no other predictors were associated with frequency once any absence had occurred. 
 
-:::{.callout-tip}
-## !!!
+::: {.callout-tip}
+### !!!
 results indicate substance use vars are associated with occurrence of absenteeism; whereas psychological distress is associated with both the occurrence and extent of absenteeism
 :::
+
 attenuation of gender and no effects of substance use in count component suggest that these things influence whether absenteeism occurs, not its severity
+
+##### Interactions 
+ran two interactions looking at psychological distress x alcohol use risk, and psychological distress x other drug use risk. 
+
+- `mod_mod_abs_alc_k10 <- absenteeism ~ gender + alcohol_use_scores*k10_total + max_other_drug_score`
+- `mod_mod_abs_drug_k10 <- absenteeism ~ gender + max_other_drug_score*k10_total + alcohol_use_scores`
+
+Interactions were not significant and likelihood ratio tests showed adding the interactions added no extra value. 
+```{r}
+#| label: abs-interactions 
+#| results: hide
+mod_abs_alc_k10 <- absenteeism ~ gender + alcohol_use_scores*k10_total + max_other_drug_score
+mod_abs_drug_k10 <- absenteeism ~ gender + max_other_drug_score*k10_total + alcohol_use_scores
+
+mod_abs_alc_k10_mod <- hurdle(mod_abs_alc_k10, data = df_sub, 
+                          dist = "negbin", zero.dist = "binomial")
+mod_abs_drug_k10_mod <- hurdle(mod_abs_drug_k10, data = df_sub, 
+                           dist = "negbin", zero.dist = "binomial")
+
+
+# lrt 
+lrtest(mod_abs_mv, mod_abs_alc_k10_mod)
+lrtest(mod_abs_mv, mod_abs_drug_k10_mod)
+```
+
+#### Presenteeism 
+##### Univariate models 
+repeated the method on presenteeism outcomes. 
+first, each predictor examined as univariate effect before building multivariable model
+
+applied the univariate model function to presenteeism : 
+```{r}
+#| label: tbl-pres-uv 
+#| tbl-cap: "Univariable hurdle negative binomial regressions predicting presenteeism"
+#| warning: false
+
+outcome <- "presenteeism"
+predictors <- df_sub |> dplyr::select(-presenteeism, -absenteeism) |> names()
+
+tbl_pres_uv <- suppressMessages(
+  run_uv_hurdle(outcome, predictors, data = df_sub, exponentiate = TRUE)
+) 
+
+tbl_pres_uv <- tbl_pres_uv |> 
+  modify_table_body(~ .x |>
+    mutate(
+      estimate_1 = number(estimate_1, accuracy = .01),
+      estimate_1 = if_else(is.na(estimate_1), "—", estimate_1),
+      estimate_2 = number(estimate_2, accuracy = .01),
+      estimate_2 = if_else(is.na(estimate_2), "—", estimate_2),
+      label = case_when(label == "0" ~ "No", label == "1" ~ "Yes", TRUE ~ label),
+      groupname_col_1 = NULL,
+      groupname_col_2 = NULL
+    )
+  ) |>
+  as_flex_table() |>
+  delete_part("footer") 
+
+
+# change spanning headers
+typology <- data.frame(
+  col_keys = tbl_pres_uv$col_keys,
+  head1 = c("", "", rep("Hurdle Model (logit)", 3), rep("Count Model (NB)", 3)),
+  head2 = c("Variable", "N", "OR", "95% CI", "p", "IRR", "95% CI", "p"),
+  stringsAsFactors = FALSE
+)
+
+# print and format 
+tbl_pres_uv <- tbl_pres_uv |>
+  set_header_df(mapping = typology, key = "col_keys") |> 
+  merge_h(part = "header") |>
+  my_flextable()
+
+# fix NA
+tbl_pres_uv <- flextable::compose(tbl_pres_uv, i = 2, j = c(3, 4, 6, 7), value = flextable::as_paragraph(" "))
+tbl_pres_uv <- flextable::compose(tbl_pres_uv, i = 3, j = c(3, 4, 6, 7), value = flextable::as_paragraph("\u2014"))
+
+
+
+tbl_pres_uv
+```
+
+univariate models showed that age, years in the agency, higher alcohol use risk, greater other drug use risk, and higher psychological distress were all associated with increased odds of reporting any presenteeism; for those reporting any presenteeism, only psychological distress was associated with the frequency of presenteeism. 
+
+
+::: {.callout-important}
+## !!!
+substance use vars were associated with odds of any presenteeism, but not number of days present; psychological distress was associated with both components
+:::
+
+##### Multivariable model 
+predictors showing evidence of association in either component for the univariate models were retained for multivariable modelling.
+
+```{r}
+#| label: vifs2
+#| warning: false
+#| results: hide
+#| echo: true
+formula_pres <- presenteeism ~ age + agency_years + alcohol_use_scores + max_other_drug_score + k10_total
+mod_pres_mv <- hurdle(formula_pres, data = df_sub, dist = "negbin", zero.dist = "binomial")
+
+# check multicollinearity 
+car::vif(lm(formula_pres, data = df_sub))
+```
+all vifs were below 5 (ranging from 1.12-2.11)
+
+```{r}
+#| label: tbl-pres-mv 
+#| tbl-cap: "Multivariable hurdle negative binomial model predicting presenteeism"
+#| warning: false
+
+# define merged table with both components
+tbl_pres_mv <- list(
+  
+  # logit component 
+  logit = suppressMessages(tbl_regression(
+    mod_pres_mv,
+    component = "zero_inflated",
+    exponentiate = TRUE,
+    estimate_fun = function(x) formatC(x, digits = 2, format = "f"),
+    pvalue_fun = function(x) {
+      p <- style_pvalue(x, digits = 3)
+      gsub("(?<=<)0\\.|^0\\.", ".", p, perl = TRUE)
+    },
+    tidy_fun = broom.helpers::tidy_zeroinfl)) |> 
+    modify_header(label = "Variable", estimate = "OR") |>
+    modify_table_body(~ .x |>
+      mutate(
+        label = if_else(row_type == "label" & variable %in% names(labs_vars), labs_vars[variable], label)
+       )) |> 
+        add_n(),
+
+  # count component 
+  count = suppressMessages(tbl_regression(
+    mod_pres_mv,
+    component = "conditional",
+    exponentiate = TRUE,
+    estimate_fun = function(x) formatC(x, digits = 2, format = "f"),
+    pvalue_fun = function(x) {
+      p <- style_pvalue(x, digits = 3)
+      gsub("(?<=<)0\\.|^0\\.", ".", p, perl = TRUE)
+    },
+    tidy_fun = broom.helpers::tidy_zeroinfl)) |>
+    modify_header(label = "Variable", estimate = "IRR") |>
+    modify_table_body(~ .x |>
+      mutate(
+        label = if_else(
+          row_type == "label" & variable %in% names(labs_vars),
+          labs_vars[variable],
+          label
+        )
+      )) |>
+      add_n()) |> 
+      tbl_merge(tab_spanner = c("Odds of Presenteeism", "Frequency of Presenteeism"))
+
+tbl_pres_mv <- tbl_pres_mv |> 
+  modify_table_body(~ .x |> 
+    mutate(
+      groupname_col_1 = NULL, 
+      estimate_1 = number(estimate_1, accuracy = .01),
+      #estimate_1 = if_else(is.na(estimate_1), "—", estimate_1),
+      ci_1 = paste(number(conf.low_1, accuracy = .01), ", ", number(conf.high_1, accuracy = .01)),
+      ci_1 = if_else(ci_1 == "NA, NA", "  ", ci_1),
+      groupname_col_2 = NULL, 
+      stat_n_2 = NULL, 
+      estimate_2 = number(estimate_2, accuracy = .01),
+      #estimate_2 = if_else(is.na(estimate_2), "-", estimate_2),
+      ci_2 = paste(number(conf.low_2, accuracy = .01), ", ", number(conf.high_2, accuracy = .01)),
+      ci_2 = if_else(ci_2 == "NA, NA", "  ", ci_2),
+
+    )
+  ) |>
+  as_flex_table() |>
+  delete_part("footer") 
+
+# change spanning headers
+typology <- data.frame(
+  col_keys = tbl_pres_mv$col_keys,
+  head1 = c("", "", rep("Odds of Presenteeism", 3), rep("Frequency of Presenteeism", 3)),
+  head2 = c("Variable", "N", "OR", "95% CI", "p", "IRR", "95% CI", "p"),
+  stringsAsFactors = FALSE
+)
+
+tbl_pres_mv <- tbl_pres_mv |>
+  set_header_df(mapping = typology, key = "col_keys") |> 
+  merge_h(part = "header") |>
+  my_flextable()
+
+
+tbl_pres_mv
+
+```
+
+**logit component** (any presenteeism): unlike absenteeism, alcohol and other drug use risk were not associated with odds of presenteeism, but psychological distress was. Effect of age and agency years was attentuated and was no longer associated with likelihood
+
+**count component** (frequency of presenteeism among those with ≥1 day): psychological distress was associated with higher counts. no other predictors were associated with frequency once any presenteeism had occurred. 
+
+::: {.callout-tip}
+## !!!
+results indicate only psychological distress  was associatedd with the occurrence of presenteeism, as well as the extent. 
+:::
+
+
+##### Interactions 
+ran interactions: 
+
+- `mod_pres_drug_k10 <- presenteeism ~ age + agency_years + max_other_drug_score*k10_total + alcohol_use_scores`
+- `mod_pres_alc_k10 <- presenteeism ~ age + agency_years +  alcohol_use_scores*k10_total + max_other_drug_score`
+
+```{r}
+#| label: pres-interactions 
+#| results: hide 
+mod_pres_alc_k10 <- presenteeism ~ age + agency_years + alcohol_use_scores*k10_total + max_other_drug_score
+mod_pres_drug_k10 <- presenteeism ~ age + agency_years + max_other_drug_score*k10_total + alcohol_use_scores
+
+mod_pres_alc_k10_mod <- hurdle(mod_pres_alc_k10, data = df_sub, 
+                          dist = "negbin", zero.dist = "binomial")
+mod_pres_drug_k10_mod <- hurdle(mod_pres_drug_k10, data = df_sub, 
+                           dist = "negbin", zero.dist = "binomial")
+
+lrtest(mod_pres_mv, mod_pres_drug_k10_mod)
+lrtest(mod_pres_mv, mod_pres_alc_k10_mod)
+```
+
+Results showed no significant interaction or added value of the additonal alcohol use model. 
+
+But results showed a significant interaction with other drug use and psychological distress for both components of the model 
+
+```{r}
+#| label: tbl-pres-mv-int
+#| tbl-cap: "Multivariable hurdle negative binomial model with interaction predicting presenteeism"
+#| warning: false
+
+# define merged table with both components
+tbl_pres_mv2 <- list(
+  
+  # logit component 
+  logit = suppressMessages(tbl_regression(
+    mod_pres_drug_k10_mod,
+    component = "zero_inflated",
+    exponentiate = TRUE,
+    estimate_fun = function(x) formatC(x, digits = 2, format = "f"),
+    pvalue_fun = function(x) {
+      p <- style_pvalue(x, digits = 3)
+      gsub("(?<=<)0\\.|^0\\.", ".", p, perl = TRUE)
+    },
+    tidy_fun = broom.helpers::tidy_zeroinfl)) |> 
+    modify_header(label = "Variable", estimate = "OR") |>
+    modify_table_body(~ .x |>
+      mutate(
+        label = if_else(row_type == "label" & variable %in% names(labs_vars), labs_vars[variable], label)
+       )) |> 
+        add_n(),
+
+  # count component 
+  count = suppressMessages(tbl_regression(
+    mod_pres_drug_k10_mod,
+    component = "conditional",
+    exponentiate = TRUE,
+    estimate_fun = function(x) formatC(x, digits = 2, format = "f"),
+    pvalue_fun = function(x) {
+      p <- style_pvalue(x, digits = 3)
+      gsub("(?<=<)0\\.|^0\\.", ".", p, perl = TRUE)
+    },
+    tidy_fun = broom.helpers::tidy_zeroinfl)) |>
+    modify_header(label = "Variable", estimate = "IRR") |>
+    modify_table_body(~ .x |>
+      mutate(
+        label = if_else(
+          row_type == "label" & variable %in% names(labs_vars),
+          labs_vars[variable],
+          label
+        )
+      )) |>
+      add_n()) |> 
+      tbl_merge(tab_spanner = c("Odds of Presenteeism", "Frequency of Presenteeism"))
+
+tbl_pres_mv2 <- tbl_pres_mv2 |> 
+  modify_table_body(~ .x |> 
+    mutate(
+      groupname_col_1 = NULL, 
+      estimate_1 = number(estimate_1, accuracy = .01),
+      #estimate_1 = if_else(is.na(estimate_1), "—", estimate_1),
+      ci_1 = paste(number(conf.low_1, accuracy = .01), ", ", number(conf.high_1, accuracy = .01)),
+      ci_1 = if_else(ci_1 == "NA, NA", "  ", ci_1),
+      groupname_col_2 = NULL, 
+      stat_n_2 = NULL, 
+      estimate_2 = number(estimate_2, accuracy = .01),
+      #estimate_2 = if_else(is.na(estimate_2), "-", estimate_2),
+      ci_2 = paste(number(conf.low_2, accuracy = .01), ", ", number(conf.high_2, accuracy = .01)),
+      ci_2 = if_else(ci_2 == "NA, NA", "  ", ci_2),
+
+    )
+  ) |>
+  as_flex_table() |>
+  delete_part("footer") 
+
+# change spanning headers
+typology <- data.frame(
+  col_keys = tbl_pres_mv2$col_keys,
+  head1 = c("", "", rep("Odds of Presenteeism", 3), rep("Frequency of Presenteeism", 3)),
+  head2 = c("Variable", "N", "OR", "95% CI", "p", "IRR", "95% CI", "p"),
+  stringsAsFactors = FALSE
+)
+
+tbl_pres_mv2 <- tbl_pres_mv2 |>
+  set_header_df(mapping = typology, key = "col_keys") |> 
+  merge_h(part = "header") |>
+  my_flextable()
+
+
+tbl_pres_mv2
+
+```
+
+Analysis of marginal effects showed that:
+
+- at lower levels of psychological distress (1 SD below the mean = 13.9), the predicted probability of presenteeism ranged from 18.2% at zero other drug use risk, to 99.7% at max risk. 
+- at high levels of psychological distress, probabilities ranged from 69.6% at low levels of risk to 87.7% at maximum risk. 
+
+
+```{r}
+#| label: margins
+#| warning: false
+#| results: hide 
+df_sub <- df_sub %>% mutate(presenteeism1 = ifelse(presenteeism >= 1, 1, 0))
+
+means <- df_sub %>%
+  summarise(
+    age_mean = mean(age, na.rm = TRUE),
+    agency_years_mean = mean(agency_years, na.rm = TRUE),
+    alcohol_mean = mean(alcohol_use_scores, na.rm = TRUE),
+    k10_mean = mean(k10_total, na.rm = TRUE),
+    k10_sd   = sd(k10_total, na.rm = TRUE))
+
+k10_low  <- with(means, k10_mean - k10_sd)
+k10_high <- with(means, k10_mean + k10_sd)
+m <- glm(presenteeism1 ~ age + agency_years + max_other_drug_score*k10_total + alcohol_use_scores, data = df_sub, family = binomial)
+
+
+preds <- avg_predictions(
+  m, 
+  by = c("max_other_drug_score", "k10_total"), 
+  newdata = datagrid(
+    max_other_drug_score = 0:40, 
+    k10_total = c(k10_low, k10_high)
+    )
+    )
+
+comparisons(
+  m, 
+  variables = "max_other_drug_score", 
+  newdata = datagrid(k10_total = c(k10_low, k10_high))
+  )
+comparisons(
+  m, 
+  hypothesis = "b2-b1=0",
+  variables = "max_other_drug_score",
+  newdata = datagrid(k10_total = c(k10_low, k10_high)))
+
+```
+
+::: {.callout-note}
+### !!!
+Each one point increase in other drug use risk was associated with a 3.9% increase in the probability of presenteeism at low psychological distress (p = .003), whereas the effect is attenuated and non-significant at high psychological distress (0.6% increase; p = .310)
+:::
+
+```{r}
+#| label: fig-interaction
+#| fig-cap: "Predicted probability of any presenteeism by other drug use risk and psychological distress"
+#| warning: false
+colourpal <- c("#1b9e77", "#d95f02", "#7570b3", "#e7298a", "#e6ab02")
+preds <- preds %>% mutate(distress = if_else(k10_total < 13.9, "Low","High"),
+                 distress = factor(distress, levels = c("Low", "High"), labels = c("Low (mean - 1 SD)", "High (mean + 1 SD)"),
+                                   ordered = TRUE))
+
+preds %>% ggplot(aes(x = max_other_drug_score, y = estimate, color = distress, fill = distress)) +
+  geom_line(size = 1) +
+  geom_ribbon(aes(ymin = conf.low, ymax = conf.high), alpha = 0.3, colour = NA) +
+  scale_y_continuous(
+    labels = label_percent(accuracy = 1),
+   breaks = seq(0, 1, by = 0.1), limits = c(0, 1.10) ) +
+  scale_x_continuous(breaks = seq(0, 40, 5), limits = c(0, 40)) + 
+  scale_colour_manual(values = c("#1b9e77","#7570b3")) +    
+  scale_fill_manual(values = c("#1b9e77","#7570b3")) +
+    
+    labs(
+      x = "Maximum other drug use risk score (ASSIST)",
+      y = "Predicted probability of presenteeism",
+      color = "Psychological distress (K10+)",
+      fill = "Psychological distress (K10+)"
+    ) +
+    theme_pubr(base_size = 13) +
+    labs_pubr()
+```
+
+(Note. Lines show model-based predictions from the logit component of the hurdle negative binomial model for presenteeism plotted over maximum other drug use risk scores (0-40) at low (1 SD below the mean) and high (1 SD above the mean) levels of psychological distress (M = 21.7, SD = 7.8). Shaded areas represent 95% confidence intervals. All other covariates in the final model (age, years working for agency, alcohol use risk) are held at their sample means. The significant interaction shows that when psychological distress is low, increases in other drug use risk are associated with an increase in the probability of any presenteeism. At higher levels of psychological distress, the baseline probability of presenteeism is elevated and the effect of other drug use risk is attentuated)
+  
+
+
