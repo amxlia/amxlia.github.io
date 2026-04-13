@@ -95,7 +95,6 @@ min_median_max <- function(data, variable, ...) {
 
 ---
 
-
 ## Full Analysis 
 ### Key Variables
 | Role | Variable(s) |
@@ -240,8 +239,8 @@ suggests standard linear models would be inappropriate. might be better to work 
 #| label: tbl-rates
 #| tbl-cap: "Rates of substance use in past three months by risk category"
 
-# pivot assist vars to long 
-# apply risk categories 
+# pivot assist vars to long
+# apply risk categories
 tbl_rates <- df |>
   dplyr::select(starts_with("assist_total_"), -assist_total_scores_count) |>
   pivot_longer(
@@ -295,9 +294,9 @@ tbl_rates <- df |>
   ) |>
   filter(Substance != 'Other') |>
   filter(Substance != "Smoking") |>
-  flextable() 
+  flextable()
 
-# change spanning headers to group n and % under each risk category 
+# change spanning headers to group n and % under each risk category
 typology <- data.frame(
   col_keys = c(
     "Substance",
@@ -320,19 +319,19 @@ typology <- data.frame(
   names = c("Substance", "Total using", rep(c("n", "%"), 3))
 )
 
-# print and format rates table 
+# print and format rates table
 tbl_rates <- tbl_rates |>
   set_header_df(mapping = typology, key = "col_keys") |>
   merge_h(part = "header") |>
-    my_flextable() |> 
-    hline(
-      border = fp_border(color = "black", width = 1),
-      i = c(1, 2),
-      part = "header"
-  ) |> 
-    hline_top(border = fp_border(color = "black", width = 1), part = "all")
+  my_flextable() |>
+  hline(
+    border = fp_border(color = "black", width = 1),
+    i = c(1, 2),
+    part = "header"
+  ) |>
+  hline_top(border = fp_border(color = "black", width = 1), part = "all")
 
-tbl_rates 
+tbl_rates
 ```
 
 **observations:**
@@ -419,8 +418,8 @@ tbl_alc
 - age and years in the agency are higher in moderate/high risk groups .. could be related to cumulative exposure to traumatic events etc. 
 - post hoc dunn tests with bonferroni correction show most differences are driven by low vs. moderate/high. moderate vs. high risk are pretty similar. 
 ```{r}
-#| eval: false
 #| label: dunn-alcohol 
+#| eval: false
 
 # post hoc pairwise comparisons - included for completeness. 
 tests <- df |> filter(recent_alcohol_user == 1)
@@ -537,18 +536,18 @@ dunn.test(tests$k10_12_presenteeism, tests$max_drug_use_interpretation, kw = TRU
 #| tbl-cap: "Correlation matrix of key variables"
 #| message: false 
 # select vars 
-cor_vars <- df |>
+df_cor_vars <- df |>
   dplyr::select(
     alcohol_use_scores, max_other_drug_score, 
     k10_total, absenteeism = k10_11_absenteeism, presenteeism = k10_12_presenteeism
   ) 
 
 # define variable types 
-continuous <- c("k10_total", "alcohol_use_scores", "max_other_drug_score")
-count <- c('presenteeism', 'absenteeism', 'recent_drug_count')
+vars_continuous <- c("k10_total", "alcohol_use_scores", "max_other_drug_score")
+vars_count <- c('presenteeism', 'absenteeism', 'recent_drug_count')
 
 # get all correlation pairs 
-cor_pairs <- combn(names(cor_vars), 2, simplify = FALSE)
+cor_pairs <- combn(names(df_cor_vars), 2, simplify = FALSE)
 
 # create function to get correct correlation type automatically 
 get_cors <- function(x_name, y_name, data) {
@@ -556,13 +555,13 @@ get_cors <- function(x_name, y_name, data) {
   y <- data[[y_name]]
   
   # define variable types 
-  is_x_count <- x_name %in% count
-  is_y_count <- y_name %in% count
-  is_x_continuous <- x_name %in% continuous
-  is_y_continuous <- y_name %in% continuous
+  is_x_count <- x_name %in% vars_count
+  is_y_count <- y_name %in% vars_count
+  is_x_continuous <- x_name %in% vars_continuous
+  is_y_continuous <- y_name %in% vars_continuous
   
   # define correlation method 
-  method <- case_when(
+  cor_method <- case_when(
     is_x_count & is_y_count ~ "spearman", # use spearman
     is_x_count & is_y_continuous ~ "spearman", # use spearman
     is_x_continuous & is_y_count ~ "spearman", # use spearman
@@ -576,30 +575,30 @@ get_cors <- function(x_name, y_name, data) {
   )
   
   # calculate correlations 
-  test <- suppressWarnings(cor.test(x, y, method = method))
+  cor_test <- suppressWarnings(cor.test(x, y, method = cor_method))
   
   # return correlation coefficient, p-value, method used
-  list(r = unname(test$estimate), p = test$p.value, method = method, type = cor_type)
+  list(r = unname(cor_test$estimate), p = cor_test$p.value, method = cor_method, type = cor_type)
 }
 
 # compute correlations for all pairs 
-cor_results <- purrr::map_dfr(cor_pairs, function(vars) {
-  res <- get_cors(vars[1], vars[2], cor_vars)
+results_cor <- purrr::map_dfr(cor_pairs, function(vars) {
+  res <- get_cors(vars[1], vars[2], df_cor_vars)
   tibble(
     var1 = vars[1],
     var2 = vars[2],
     cor = res$r,
     p = number(res$p, accuracy = .001),
-    method = res$method,
-    type = res$type#,
+    method = res$cor_method,
+    type = res$cor_type#,
     #p2 = res$p
   )
 })
 
 # make symmetric by mirroring rows
-cor_long <- cor_results |>
+df_cor_long <- results_cor |>
   bind_rows(
-    cor_results |>
+    results_cor |>
       rename(var1 = var2, var2 = var1)
   ) |>
   mutate(
@@ -613,29 +612,29 @@ cor_long <- cor_results |>
     cor_ch = paste0(formatC(cor, format = "f", digits = 2), stars))
   
 # make wide 
-cor_matrix <- cor_long |>
+matrix_cor <- df_cor_long |>
   dplyr::select(var1, var2, cor_ch) |>
   pivot_wider(names_from = var2, values_from = cor_ch) |> 
   dplyr::select(var1, alcohol_use_scores, max_other_drug_score, k10_total, absenteeism, presenteeism)
 
 # set cor labels 
-cor_labels <- c(
+labs_cor <- c(
   k10_total = "Psychological Distress",
   presenteeism = "Presenteeism",
   absenteeism = "Absenteeism",
   alcohol_use_scores = "Alcohol Use Score",
   max_other_drug_score = "Max Other Drug Score")
 
-colnames(cor_matrix) <- c(" " = "var1", cor_labels[colnames(cor_matrix)[-1]])
-cor_matrix[[1]] <- cor_labels[cor_matrix[[1]]]
-cor_matrix[upper.tri(cor_matrix)] <- NA
+colnames(matrix_cor) <- c(" " = "var1", labs_cor[colnames(matrix_cor)[-1]])
+matrix_cor[[1]] <- labs_cor[matrix_cor[[1]]]
+matrix_cor[upper.tri(matrix_cor)] <- NA
 
 # create ft 
-cor_tbl <- flextable(cor_matrix) |> 
+tbl_cors <- flextable(matrix_cor) |> 
   my_flextable() |> 
   set_header_labels("var1" = " ")
 
-cor_tbl
+tbl_cors
 ```
 **observations:**
 Pretty much everything is highly correlated (ranging from .24 - .52) . Strongest associations are with psychological distress (particularly with absenteeism and presenteeism), but that makes conceptual sense. might be also that they come from the k10+? Questions specifically asks "due to the symptoms described" (in the k10), so naturally they would be correlatedexcept for alcohol use and other drug use.
@@ -812,7 +811,7 @@ df_sub <- df |>
 
 
   # variable labels used across all model tables:
-  var_labels <- c(
+  labs_vars <- c(
   agency_years = "Years in agency",
   age = "Age",
   gender = "Gender",
@@ -824,7 +823,8 @@ df_sub <- df |>
 
 ```
 
-### Univariate models - Absenteeism 
+### Absenteeism 
+#### Univariate models 
 each predictor examined as univariate effect before building multivariable model to:
 
 - see variable-specific effects before adding covariates 
@@ -836,7 +836,7 @@ each univariate model produces two sets of estimates: odds ratio (OR) from the l
 wrote a function to loop this across predictors and stack results in a table (probably only 4 supp materials in publication )
 
 ```{r}
-#| label: fnction-uv
+#| label: function-uv
 #| warning: false 
 run_uv_hurdle <- function(outcome, predictors, 
                           data, exponentiate = T) {
@@ -846,8 +846,8 @@ run_uv_hurdle <- function(outcome, predictors,
   fmla <- as.formula(paste0(outcome, " ~ ", .x, " | ", .x))
   model <- hurdle(fmla, data = data, dist = "negbin", zero.dist = "binomial")
     
-  # zero part 
-  zero_tbl <- tbl_regression(
+  # logit part 
+  tbl_logit <- tbl_regression(
     model,
     component = "zero_inflated",
     exponentiate = TRUE,
@@ -863,8 +863,8 @@ run_uv_hurdle <- function(outcome, predictors,
     modify_table_body(~ .x |>
                         mutate(
                           label = ifelse(
-                            row_type == "label" & variable %in% names(var_labels),
-                            var_labels[variable],
+                            row_type == "label" & variable %in% names(labs_vars),
+                            labs_vars[variable],
                             label
                           ),
                           ci = ifelse(
@@ -877,7 +877,7 @@ run_uv_hurdle <- function(outcome, predictors,
     add_n() 
   
   # NB count part
-  count_tbl <- tbl_regression(
+  tbl_count <- tbl_regression(
     model,
     component = "conditional",
     exponentiate = T,
@@ -894,8 +894,8 @@ run_uv_hurdle <- function(outcome, predictors,
     modify_table_body(~ .x |>
                         mutate(
                           label = ifelse(
-                            row_type == "label" & variable %in% names(var_labels),
-                            var_labels[variable],
+                            row_type == "label" & variable %in% names(labs_vars),
+                            labs_vars[variable],
                             label
                           ),
                           ci = ifelse(
@@ -905,17 +905,17 @@ run_uv_hurdle <- function(outcome, predictors,
                           )
                         )) 
   
-  list(zero_tbl = zero_tbl, count_tbl = count_tbl)
+  list(tbl_logit = tbl_logit, tbl_count = tbl_count)
   })
 
   # separate and flatten count and zero tables
-  zero_tbls  <- map(model_tables, "zero_tbl")
-  count_tbls <- map(model_tables, "count_tbl")
+  tbls_logit  <- map(model_tables, "tbl_logit")
+  tbls_count <- map(model_tables, "tbl_count")
   
   tbl_merge(
     tbls = list(
-      tbl_stack(zero_tbls),
-      tbl_stack(count_tbls) 
+      tbl_stack(tbls_logit),
+      tbl_stack(tbls_count) 
       ),
     tab_spanner = c("Hurdle model (logit)", "Count model (NB)")
   )
@@ -948,10 +948,155 @@ tbl_abs_uv <- tbl_abs_uv |>
     )
   ) |>
   as_flex_table() |>
-  bold(part = "all", bold = FALSE) |> 
-  delete_part("footer") |> 
+  delete_part("footer") 
+
+
+# change spanning headers
+typology <- data.frame(
+  col_keys = tbl_abs_uv$col_keys,
+  head1 = c("", "", rep("Hurdle Model (logit)", 3), rep("Count Model (NB)", 3)),
+  head2 = c("Variable", "N", "OR", "95% CI", "p", "IRR", "95% CI", "p"),
+  stringsAsFactors = FALSE
+)
+
+# print and format 
+tbl_abs_uv <- tbl_abs_uv |>
+  set_header_df(mapping = typology, key = "col_keys") |> 
+  merge_h(part = "header") |>
   my_flextable()
+
+# fix NA
+tbl_abs_uv <- flextable::compose(tbl_abs_uv, i = 2, j = c(3, 4, 6, 7), value = flextable::as_paragraph(" "))
+tbl_abs_uv <- flextable::compose(tbl_abs_uv, i = 3, j = c(3, 4, 6, 7), value = flextable::as_paragraph("\u2014"))
+
 
 
 tbl_abs_uv
 ```
+
+univariate models showed that higher alcohol use risk, greater other drug use risk, and higher psychological distress were all associated with increased odds of reporting any absenteeism; age, gender, and years employed at the agency were not associated with the likelihood of reporting any absenteeism. 
+
+for those reporting any absenteeism, psychological distress and gender were associated with the frequency of absenteeism. 
+
+
+::: {.callout-important}
+## !!!
+substance use vars were associated with odds of any absenteeism, but not number of days absent; psychological distress was associated with both components
+:::
+
+## Multivariable model 
+predictors showing evidence of association in either component for the univariate models were retained for multivariable modelling.
+
+all vifs were below 5 (ranging from 1.04-1.16)
+```{r}
+#| label: vifs
+#| warning: false
+#| results: hide
+#| echo: true
+formula_abs <- absenteeism ~ gender + alcohol_use_scores + max_other_drug_score + k10_total
+mod_abs_mv <- hurdle(formula_abs, data = df_sub, dist = "negbin", zero.dist = "binomial")
+
+# check multicollinearity 
+car::vif(lm(formula_abs, data = df_sub))
+```
+
+
+```{r}
+#| label: tbl-abs-mv 
+#| tbl-cap: "Multivariable hurdle negative binomial model predicting absenteeism"
+#| warning: false
+
+# define merged table with both components
+tbl_abs_mv <- list(
+  
+  # logit component 
+  logit = suppressMessages(tbl_regression(
+    mod_abs_mv,
+    component = "zero_inflated",
+    exponentiate = TRUE,
+    estimate_fun = function(x) formatC(x, digits = 2, format = "f"),
+    pvalue_fun = function(x) {
+      p <- style_pvalue(x, digits = 3)
+      gsub("(?<=<)0\\.|^0\\.", ".", p, perl = TRUE)
+    },
+    tidy_fun = broom.helpers::tidy_zeroinfl)) |> 
+    modify_header(label = "Variable", estimate = "OR") |>
+    modify_table_body(~ .x |>
+      mutate(
+        label = if_else(row_type == "label" & variable %in% names(labs_vars), labs_vars[variable], label)
+       )) |> 
+        add_n(),
+
+  # count component 
+  count = suppressMessages(tbl_regression(
+    mod_abs_mv,
+    component = "conditional",
+    exponentiate = TRUE,
+    estimate_fun = function(x) formatC(x, digits = 2, format = "f"),
+    pvalue_fun = function(x) {
+      p <- style_pvalue(x, digits = 3)
+      gsub("(?<=<)0\\.|^0\\.", ".", p, perl = TRUE)
+    },
+    tidy_fun = broom.helpers::tidy_zeroinfl)) |>
+    modify_header(label = "Variable", estimate = "IRR") |>
+    modify_table_body(~ .x |>
+      mutate(
+        label = if_else(
+          row_type == "label" & variable %in% names(labs_vars),
+          labs_vars[variable],
+          label
+        )
+      )) |>
+      add_n()) |> 
+      tbl_merge(tab_spanner = c("Odds of Absenteeism", "Frequency of Absenteeism"))
+
+tbl_abs_mv <- tbl_abs_mv |> 
+  modify_table_body(~ .x |> 
+    mutate(
+      groupname_col_1 = NULL, 
+      estimate_1 = number(estimate_1, accuracy = .01),
+      #estimate_1 = if_else(is.na(estimate_1), "—", estimate_1),
+      ci_1 = paste(number(conf.low_1, accuracy = .01), ", ", number(conf.high_1, accuracy = .01)),
+      ci_1 = if_else(ci_1 == "NA, NA", "  ", ci_1),
+      groupname_col_2 = NULL, 
+      stat_n_2 = NULL, 
+      estimate_2 = number(estimate_2, accuracy = .01),
+      #estimate_2 = if_else(is.na(estimate_2), "-", estimate_2),
+      ci_2 = paste(number(conf.low_2, accuracy = .01), ", ", number(conf.high_2, accuracy = .01)),
+      ci_2 = if_else(ci_2 == "NA, NA", "  ", ci_2),
+
+    )
+  ) |>
+  as_flex_table() |>
+  delete_part("footer") 
+
+tbl_abs_mv <- flextable::compose(tbl_abs_mv, i = 1, j = c(3, 4, 6, 7), value = flextable::as_paragraph(" "))
+tbl_abs_mv <- flextable::compose(tbl_abs_mv, i = 2, j = c(3, 4, 6, 7), value = flextable::as_paragraph("\u2014"))
+
+# change spanning headers
+typology <- data.frame(
+  col_keys = tbl_abs_mv$col_keys,
+  head1 = c("", "", rep("Odds of Absenteeism", 3), rep("Frequency of Absenteeism", 3)),
+  head2 = c("Variable", "N", "OR", "95% CI", "p", "IRR", "95% CI", "p"),
+  stringsAsFactors = FALSE
+)
+
+tbl_abs_mv <- tbl_abs_mv |>
+  set_header_df(mapping = typology, key = "col_keys") |> 
+  merge_h(part = "header") |>
+  my_flextable()
+
+
+tbl_abs_mv
+
+```
+
+**logit component** (any absenteeism): higher alcohol use risk, greater other drug use risk, and higher psychological distress were all associated with increased odds of reporting any absenteeism. Effect of gender was attentuated and was no longer associated with likelihood 
+
+**count component** (frequency of absenteeism among those with ≥1 day): psychological distress was associated with higher counts. no other predictors were associated with frequency once any absence had occurred. 
+
+:::{.callout-tip}
+## !!!
+results indicate substance use vars are associated with occurrence of absenteeism; whereas psychological distress is associated with both the occurrence and extent of absenteeism
+:::
+attenuation of gender and no effects of substance use in count component suggest that these things influence whether absenteeism occurs, not its severity
