@@ -75,7 +75,33 @@ min_median_max <- function(data, variable, ...) {
 2. Examine associations between AOD use, psychological distress, and occupational functioning (absenteeism and presenteeism)
 3. Test whether AOD use and psychological distress, independently and together, predict occupational impairment
 
-## Key Variables
+## Approach 
+- Ran a series of negative binomial hurdle regressions due to excess zeros using two different outcomes: 1) absenteeism; and 2) presenteeism 
+- Key predictors of each model included:
+  - Psychological distress
+  - Alcohol use risk 
+  - Other drug use risk 
+- Covariates included: age, gender, years employed at the agency 
+- Ran univariate models first to find potential covariates for each outcome 
+- Ran multivariable models that included all predictors and significant covariates from the univariate models 
+- Ran for each outcome:
+  - alcohol use x psychological distress interaction model 
+  - other drug use x psychological distress interaction model 
+
+## Key findings 
+- Risky levels of alcohol use, drug use, and psychological distress were prevalent in the sample 
+- Alcohol use, other drug use, and psychological distress predicted the odds of absenteeism, and other drug use predicted the odds of presenteeism (particularly when psychological distress was low)
+- Psychological distress was the most consistent predictor of the odds and frequency of both absenteeism and presenteeism 
+
+## Interpretation 
+- Psychological distress is the primary driver of occupational impairment in PSP
+- AOD use contributes to occupational impairment, but in ways that differ across contexts (absenteeism/presenteeism), and substance classes (alcohol vs other drugs)
+
+---
+
+
+## Full Analysis 
+### Key Variables
 | Role | Variable(s) |
 |---|---|
 | Psychological distress | `k10_total`, `k10_total_interpretation` |

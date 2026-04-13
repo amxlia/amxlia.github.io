@@ -250,5 +250,49 @@
       "Notes",
       "Project Setup"
     ]
+  },
+  {
+    "objectID": "posts/hurdles.html#approach",
+    "href": "posts/hurdles.html#approach",
+    "title": "Negative Binomial Hurdle Models with Zero-Heavy Count Data",
+    "section": "Approach",
+    "text": "Approach\n\nRan a series of negative binomial hurdle regressions due to excess zeros using two different outcomes: 1) absenteeism; and 2) presenteeism\nKey predictors of each model included:\n\nPsychological distress\nAlcohol use risk\nOther drug use risk\n\nCovariates included: age, gender, years employed at the agency\nRan univariate models first to find potential covariates for each outcome\nRan multivariable models that included all predictors and significant covariates from the univariate models\nRan for each outcome:\n\nalcohol use x psychological distress interaction model\nother drug use x psychological distress interaction model",
+    "crumbs": [
+      "Analyses",
+      "Negative Binomial Hurdle Models with Zero-Heavy Count Data"
+    ]
+  },
+  {
+    "objectID": "posts/hurdles.html#key-findings",
+    "href": "posts/hurdles.html#key-findings",
+    "title": "Negative Binomial Hurdle Models with Zero-Heavy Count Data",
+    "section": "Key findings",
+    "text": "Key findings\n\nRisky levels of alcohol use, drug use, and psychological distress were prevalent in the sample\nAlcohol use, other drug use, and psychological distress predicted the odds of absenteeism, and other drug use predicted the odds of presenteeism (particularly when psychological distress was low)\nPsychological distress was the most consistent predictor of the odds and frequency of both absenteeism and presenteeism",
+    "crumbs": [
+      "Analyses",
+      "Negative Binomial Hurdle Models with Zero-Heavy Count Data"
+    ]
+  },
+  {
+    "objectID": "posts/hurdles.html#interpretation",
+    "href": "posts/hurdles.html#interpretation",
+    "title": "Negative Binomial Hurdle Models with Zero-Heavy Count Data",
+    "section": "Interpretation",
+    "text": "Interpretation\n\nPsychological distress is the primary driver of occupational impairment in PSP\nAOD use contributes to occupational impairment, but in ways that differ across contexts (absenteeism/presenteeism), and substance classes (alcohol vs other drugs)",
+    "crumbs": [
+      "Analyses",
+      "Negative Binomial Hurdle Models with Zero-Heavy Count Data"
+    ]
+  },
+  {
+    "objectID": "posts/hurdles.html#full-analysis",
+    "href": "posts/hurdles.html#full-analysis",
+    "title": "Negative Binomial Hurdle Models with Zero-Heavy Count Data",
+    "section": "Full Analysis",
+    "text": "Full Analysis\n\nKey Variables\n\n\n\n\n\n\n\nRole\nVariable(s)\n\n\n\n\nPsychological distress\nk10_total, k10_total_interpretation\n\n\nAlcohol use\nalcohol_use_scores, alcohol_use_interpretation\n\n\nOther drug use\nmax_other_drug_score, max_drug_use_interpretation\n\n\nOccupational functioning\nk10_11_absenteeism, k10_12_presenteeism\n\n\nPotential covariates\ngender, age, agency_years",
+    "crumbs": [
+      "Analyses",
+      "Negative Binomial Hurdle Models with Zero-Heavy Count Data"
+    ]
   }
 ]
