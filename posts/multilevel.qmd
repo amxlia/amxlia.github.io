@@ -1,0 +1,762 @@
+---
+format: 
+  html:
+    code-fold: true
+knitr:
+  opts_chunk:
+    ft.htmlscroll: false
+---
+# Multilevel Modelling of Perceived Freedom and Life Satisfaction {.unnumbered}
+This analysis is purely for *fun* and is not associated with any of my work
+I would usually properly weight this and consider the survey design but not today. 
+
+
+::: {.callout-important}
+### RQ
+Are people happier when they feel free?
+:::
+- does feeling personally free = higher life satisfaction? 
+- and does living in a free country strengthen or weaken that relationship? 
+
+Data: individual level data from the [World values survey](https://www.worldvaluessurvey.org/) 2017-2022 and country level data from the varieties of democracy institute [V-Dem dataset](https://www.v-dem.net/data/the-v-dem-dataset/)
+
+Haerpfer, C., Inglehart, R., Moreno, A., Welzel, C., Kizilova, K., Diez-Medrano, J., Lagos, M., Norris, P., Ponarin, E. & Puranen B. (2022): World Values Survey Wave 7 (2017-2022) Cross-National Data-Set. Version: 4.0.0. World Values Survey Association. DOI: doi.org/10.14281/18241.18
+
+### Variables 
+| Role | Variable | Source | Notes |
+|---|---|---|---|
+| **Outcome** | Life satisfaction (Q49) | WVS | 0–10 scale |
+| **Focal L1** | Perceived freedom (Q48) | WVS | Group-mean centred |
+| **L1 covariates** | Age (Q262 / X003R), sex (Q260), marital status (Q273), social class (Q287), income (Q288R), education (Q275), employment (employment) | WVS | Grand-mean centred |
+| **Focal L2** | Liberal democracy index (v2x_libdem), civil liberties index (v2x_civlib) | V-Dem | Grand-mean centred |
+
+
+### Analysis
+
+#### Preparation
+- Load relevant packages 
+- Then load the datasets 
+- Select and rename the variables of use 
+- Recode missing values from the WVS
+- Harmonise country identifiers 
+- Merge data
+- Get final analytic sample 
+```{r}
+#| label: load 
+#| message: false
+#| results: hide
+#| warning: false
+#| include: false
+
+library(here)
+here("posts/multilevel.qmd")
+
+# stop messages from printing 
+knitr::opts_chunk$set(message = FALSE)
+```
+
+
+```{r}
+#| results: hide 
+#| warning: false
+# load packages 
+library(dplyr)
+library(tidyr)
+library(tidyverse)
+library(haven)
+#devtools::install_github("vdeminstitute/vdemdata")
+library(vdemdata)
+library(lme4)
+library(lmerTest)
+library(countrycode)
+library(jtools)
+library(broom)
+library(naniar)
+library(flextable)
+library(kableExtra)
+library(gtsummary)
+library(summarytools)
+library(modelsummary)
+library(performance)
+library(parameters)
+library(scales)
+library(officer)
+library(influence.ME)
+
+# stop messages from printing 
+knitr::opts_chunk$set(message = FALSE)
+
+# set wd 
+here("posts/multilevel.qmd")
+
+# load data 
+df_wvs <- readRDS(here("R/WVS_Cross-National_Wave_7_rds_v6_0.rds"))
+df_vdem <- vdem
+
+# load custom flextable function 
+source(here("R/customflextable.R"))
+
+# select and rename wvs variables 
+df_wvs_clean <- df_wvs |>
+  transmute(
+    year = A_YEAR,
+    country_alpha = B_COUNTRY_ALPHA,
+    life_sat = Q49,
+    freedom = Q48,
+    age = Q262,
+    sex = Q260,
+    marital = Q273,
+    social_class = Q287,
+    income = Q288R,
+    education = Q275,
+    employment = Q279
+  )
+
+# select and rename vdem variables 
+df_vdem_clean <- df_vdem |>
+  filter(year == 2022) |>
+  select(
+    country_name,
+    country_text_id,
+    liberal_democracy = v2x_libdem,
+    civil_liberties = v2x_civlib
+  )
+
+# remove haven labels 
+df_wvs_clean <- zap_labels(df_wvs_clean)
+# recode missing values from the WVS 
+df_wvs_clean <- df_wvs_clean |>
+  mutate(across(c(life_sat:employment), ~na_if(., -1))) |> 
+  mutate(across(c(life_sat:employment), ~na_if(., -2))) |> 
+  mutate(across(c(life_sat:employment), ~na_if(., -3))) |> 
+  mutate(across(c(life_sat:employment), ~na_if(., -4))) |> 
+  mutate(across(c(life_sat:employment), ~na_if(., -5))) |> 
+  mutate(across(c(life_sat:employment), ~na_if(., -6))) 
+
+# harmonise country codes across data sets 
+df_wvs_clean <- df_wvs_clean |> 
+    mutate(
+        country_name = countrycode(
+            sourcevar = country_alpha, 
+            origin = "iso3c", 
+            destination = "country.name.en"),
+        country_code = countrycode(
+            sourcevar = country_name, 
+            origin = "country.name.en", 
+            destination = "iso3c"
+        ))
+
+df_vdem_clean <- df_vdem_clean |>
+  mutate(
+    country_code = countrycode(
+        sourcevar = country_name, 
+        origin = "country.name.en", 
+        destination = "iso3c"),
+    country_name = countrycode(
+        sourcevar = country_code, 
+        origin = "iso3c", 
+        destination = "country.name.en"
+    ))
+
+# merge data 
+df <- df_wvs_clean |> 
+    left_join(df_vdem_clean, by = "country_name")
+
+# get final analytic sample 
+df <- df |> filter(!is.na(life_sat), !is.na(freedom), !is.na(liberal_democracy), !is.na(civil_liberties))
+
+# remove irrelevant variables 
+df <- df |> 
+    mutate(
+        country_alpha = NULL, 
+        country_code.x = NULL,
+        country_code.y = NULL, 
+        country_text_id = NULL
+    )
+```
+
+#### Data auditing 
+Before modelling, the following checks are run: 
+
+```{r}
+#| label: data-audit
+#| message: false
+#| warning: false
+#| results: hide 
+
+# l2 sample size — number of countries
+df |> distinct(country_name) |> nrow()
+
+# cluster size distribution across countries
+df |> count(country_name) |> summary()
+```
+
+```{r}
+# missing data
+missing <- miss_var_summary(df) 
+missing_labels <- c(
+  "Social class", "Income", "Country", "Employment", "Education",
+  "Marital Status", "Age", "Sex", "Year", "Life Satisfaction",
+  "Freedom", "Liberal Democracy", "Civil Liberties"
+)
+missing <- missing |> 
+    mutate(
+        variable = missing_labels,
+        n_miss = number(n_miss, accuracy = 1),
+        pct_miss = as.numeric(pct_miss),
+        pct_miss = if_else(variable == "Sex", 0.088, pct_miss), 
+        pct_miss = number(pct_miss, accuracy = .01)
+    ) |> 
+        rename(Variable = variable, `N missing` = n_miss, 
+    `% missing` = pct_miss) |> flextable() |> my_flextable()
+missing 
+```
+There are 63 countries. Data is mostly present. 
+
+
+::: {.callout-note}
+### Outcome distribution
+life satisfaction is measured on a 0–10 scale. Although technically ordinal, it is treated as continuous here given its 11-point range
+:::
+
+#### Variable transformation 
+First perceived freedom (Q48) is group-mean centred to separate: 
+
+- within-country effects (i.e., individual deviation from country means)
+- between-country effects (i.e., averaged perceived freedom)
+
+Its country-level mean is retained as a separate L2 predictor. All other L1 covariates and L2 predictors are **grand-mean centred (CGM)**. 
+
+```{r}
+#| label: centre 
+# mean centre 
+df <- df |> 
+    group_by(country_name) |> 
+    mutate(
+        # focal L1 predictor - group mean centred + group mean 
+        freedom_cwc = freedom - mean(freedom, na.rm = TRUE), 
+        freedom_mean = mean(freedom, na.rm = TRUE),
+        # L1 covariates — grand-mean centred
+        age_cgm = age - mean(age, na.rm = TRUE),
+        income_cgm = income - mean(income, na.rm = TRUE),
+        educ_cgm = education - mean(education,  na.rm = TRUE)
+    ) |> 
+    ungroup() |> 
+    mutate(
+        # L2 predictors — grand-mean centred
+        liberal_democracy_cgm  = liberal_democracy - mean(liberal_democracy, na.rm = TRUE),
+        civil_liberties_cgm  = civil_liberties - mean(civil_liberties, na.rm = TRUE)
+    )
+   
+```
+
+Now we need to code the factor level data
+```{r}
+df <- df |> 
+    mutate(
+       sex = as.factor(case_when(as.character(sex) == "1" ~ "Male", as.character(sex) == "2" ~ "Female", TRUE ~ as.character(sex))),
+       marital = factor(
+            marital, 
+            levels = c(1:6), 
+            labels = c(
+                "Married", 
+                "Living together as married",
+                "Divorced", 
+                "Separated",
+                "Widowed",
+                "Single"
+                )
+       ), 
+       social_class = factor(
+            social_class, 
+            levels = c(1:5), 
+            labels = c(
+                "Upper class", 
+                "Upper middle class", 
+                "Lower middle class", 
+                "Working class", 
+                "Lower class"
+            )
+        ),
+        income = factor(income, levels = c(1:3), labels = c("Low", "Medium", "High")
+        ),
+        education_factor = factor(
+            education,
+            levels = c(0:8), 
+            labels = c(
+                "Early childhood / no education", 
+                "Primary", 
+                "Lower secondary",
+                "Upper secondary", 
+                "Post-secondary non-tertiary", 
+                "Short-cycle tertiary", 
+                "Bachelor or equivalent",
+                "Master or equivalent", 
+                "Doctor or equivalent"
+            )
+        ),
+        country_name = factor(country_name),
+        employment = factor(
+            employment, 
+            levels = c(1:8),
+            labels = c(
+                "Full time", 
+                "Part time",
+                "Self-employed", 
+                "Retired/pensioned", 
+                "Housewife not otherwise employed", 
+                "Student", 
+                "Unemployed",
+                "Other"
+            )
+        )
+        )
+        
+
+
+```
+
+
+#### Model specification 
+First need to fit models with `REML = FALSE` to allow valid likelihood ratio tests via `anova()`. The final model is refit with `REML = TRUE` for unbiased variance estimates.
+
+Models are built in the following sequence: 
+
+1. Null model - with random intercept to get baseline ICC (proportion of variance in life satisfaction due to country-level differences) 
+2. Random intercept model with L1 predictors 
+3. Random slope for perceived freedom 
+4. L2 predictors 
+5. Cross-level interactions 
+
+```{r}
+#| label: m0-null
+
+# set up variable labels 
+labs_vars <- c(
+    freedom_cwc = "Perceived Freedom", 
+    freedom_mean = "Perceived Freedom (mean)",
+    age_cgm = "Age", 
+    sex = "Sex", 
+    marital = "Marital status", 
+    social_class = "Social class", 
+    income_cgm = "Income", 
+    educ_cgm = "Education",
+    employment = "Employment",
+    liberal_democracy_cgm = "Liberal Democracy (mean)",
+    civil_liberties_cgm = "Civil Liberties (mean)")
+
+# build null model with random intercept 
+m0 <- lmer(life_sat ~ 1 + (1 | country_name), data = df, REML = TRUE)
+summ(m0)
+```
+
+::: {.callout-important}
+## ICC
+since ICC > .05, the MLM framework seems good
+:::
+
+The random intercept model was fit across ~85k individuals nested in 61 countries. 
+
+Fixed effects accounted for 17% of the variance in life satisfaction, rising to 29% when including country-level random intercept variance. The ICC from the null model indicates that 14% of the variance in life satisfaction is between countries, justifying multi level approach. 
+
+```{r}
+#| label: tab-m1-l1
+#| tbl-cap: "Random intercept model with individual level predictors"
+# run random intercept model with l1 predictors 
+m1 <- lmer(life_sat ~ freedom_cwc + age_cgm + sex + marital + social_class + income_cgm + educ_cgm + employment +
+             (1 | country_name),
+           data = df, REML = FALSE)
+# create table of fixed effects 
+t1 <- tbl_regression(
+    m1, 
+    estimate_fun = function(x) formatC(x, digits = 2, format = "f"),
+    pvalue_fun = function(x) {
+      p <- style_pvalue(x, digits = 3)
+      gsub("(?<=<)0\\.|^0\\.", ".", p, perl = TRUE)
+    }
+) |> 
+    modify_table_body(~ .x |> 
+    mutate(label = ifelse(
+        row_type == "label" & variable %in% names(labs_vars), labs_vars[variable], label)
+    )) |> 
+        as_flex_table() |> 
+        delete_part("footer")
+
+t <- data.frame(col_keys = t1$col_keys, 
+head = c("Characteristic", "B", "95% CI", "p"))
+
+t1 <- t1 |> set_header_df(mapping = t, key = "col_keys") |> my_flextable()
+t1 <- compose(t1, i = c(3,4,6,7,13,14,21,22), j = c(2,3), value = as_paragraph(" "))
+t1
+```
+
+::: {.callout-important}
+### perceived freedom 
+Perceived freedom was the strongerst predictor (individual) (b = 0.38, p < .001), where a one unit increase in within-country perceived freedom is associated with a 0.38-point increase in life satisfaction. 
+:::
+
+Other findings: 
+
+- Income showed a similarly sized positive effect (b = 0.37, p < .001). 
+- Marital status and social class were also notable for some categories (people who are seperated or divorced / lower and working class) and showed lower life satisfaction relative to their reference categories 
+- Age was not a significant predictor 
+- Unemployment was most strongly associated with lower satisfaction compared to employment, and retirement and student status were associated with higher satisfaction 
+
+Country level random intercept SD = 0.77 indicates variation in baseline satisfaction across countries. 
+
+So now we add a random slope for perceived freedom to see whether the within-country effect of perceived freedom on life satisfaction varies across countries.
+
+We then compare to model one using likelihood ratio tests.
+
+```{r}
+#| label: m2-random-slope
+#| tbl-cap: "Random intercept model with individual level predictors and random slope for percieved freedom "
+#| warning: false
+m2 <- lmer(life_sat ~ freedom_cwc + age_cgm + sex + marital + social_class + income_cgm + educ_cgm + employment +
+             (1 + freedom_cwc | country_name),
+           data = df, REML = FALSE)
+
+anova(m1, m2)  
+```
+
+::: {.callout-tip}
+## random slope for perceived freedom is warranted
+adding the random slope allowed within-country effect of freedom on life satisfaction to vary. the likelihood ratio test confirmed this had a significant improvement over m1 (∆χ2(2) = 1391.2, p < .001) and a reduction in AIC/BIC. 
+:::
+
+The random slope SD is 0.11 and indicates that while there is a positive average within-country effect of perceived freedom (b = .039), the effect also differs meaningfully across countries. 
+
+
+```{r}
+#| label: tbl-m2 
+#| #| tbl-cap: "Random intercept model with individual level predictors and random slope for percieved freedom "
+
+# create table of fixed effects 
+t2 <- tbl_regression(
+    m2, 
+    estimate_fun = function(x) formatC(x, digits = 2, format = "f"),
+    pvalue_fun = function(x) {
+      p <- style_pvalue(x, digits = 3)
+      gsub("(?<=<)0\\.|^0\\.", ".", p, perl = TRUE)
+    }
+) |> 
+    modify_table_body(~ .x |> 
+    mutate(label = ifelse(
+        row_type == "label" & variable %in% names(labs_vars), labs_vars[variable], label)
+    )) |> 
+        as_flex_table() |> 
+        delete_part("footer")
+
+t <- data.frame(col_keys = t2$col_keys, 
+head = c("Characteristic", "B", "95% CI", "p"))
+
+t2 <- t2 |> set_header_df(mapping = t, key = "col_keys") |> my_flextable()
+t2 <- compose(t2, i = c(3,4,6,7,13,14,21,22), j = c(2,3), value = as_paragraph(" "))
+t2
+```
+
+Fixed effects are pretty stable in relation to the first model. 
+
+::: {.callout-note}
+## singularity
+`isSingular(m2)` showed FALSE, so the full random effects structure is retained for M3. (intercept + slope + covariance)
+:::
+
+so then we added the l2 predictors (country level democracy and civil liberties). 
+
+the group mean of perceived freedom is included to decompose compositional from structural effects.
+
+```{r}
+#| label: m3-l2
+m3 <- lmer(life_sat ~ freedom_cwc + freedom_mean + age_cgm + sex + marital + social_class +
+    income_cgm + educ_cgm + employment + liberal_democracy_cgm + civil_liberties_cgm +
+    (1 + freedom_cwc | country_name),
+  data = df, REML = FALSE
+)
+
+
+anova(m2, m3)
+```
+
+::: {.callout-tip}
+## l2 predictors 
+adding the L2 predictors and the country-level mean of perceived freedom improved the model (∆X2(3) = 35.88, p < .001), tho the AIC reduction is pretty modest (∆AIC = 30). 
+:::
+
+The random slope SD is 0.11 and indicates that while there is a positive average within-country effect of perceived freedom (b = .039), the effect also differs meaningfully across countries. 
+
+
+```{r}
+#| label: tbl-m3 
+#| #| tbl-cap: "Random intercept model with individual level predictors and random slope for percieved freedom, as well as L2 predictors and country level mean of perceived freedom"
+
+# create table of fixed effects 
+t3 <- tbl_regression(
+    m3, 
+    estimate_fun = function(x) formatC(x, digits = 2, format = "f"),
+    pvalue_fun = function(x) {
+      p <- style_pvalue(x, digits = 3)
+      gsub("(?<=<)0\\.|^0\\.", ".", p, perl = TRUE)
+    }
+) |> 
+    modify_table_body(~ .x |> 
+    mutate(label = ifelse(
+        row_type == "label" & variable %in% names(labs_vars), labs_vars[variable], label)
+    )) |> 
+        as_flex_table() |> 
+        delete_part("footer")
+
+t <- data.frame(col_keys = t3$col_keys, 
+head = c("Characteristic", "B", "95% CI", "p"))
+
+t3 <- t3 |> set_header_df(mapping = t, key = "col_keys") |> my_flextable()
+t3 <- compose(t3, i = c(4,5, 7,8,14,15, 22, 23), j = c(2,3), value = as_paragraph(" "))
+t3
+```
+
+between country effect of perceived freedom was positive and significant (b = 0.85, p < .001) indicating that countries where people feel freer on average also report higher life satisfaction (distinct from within country effects). 
+
+Neither liberal democracy (b = 0.65, p = .34) nor civil liberties (b = -0.57, p = .41) were significant, suggesting that the structural level national freedom doesnt actually directly predict life satisfaction when you take into account individual level perceptions. 
+
+Lastly we checked the primary interest: does national-level freedom moderate the relationship between *perceived* freedom and life satisfaction?
+
+```{r}
+#| label: m4-crosslevel
+
+m4 <- lmer(life_sat ~ freedom_cwc + freedom_mean + age_cgm + sex + marital + social_class +
+    income_cgm + educ_cgm + employment + liberal_democracy_cgm + civil_liberties_cgm + freedom_cwc:liberal_democracy_cgm +
+    (1 + freedom_cwc | country_name),
+  data = df, REML = FALSE
+)
+
+anova(m3, m4)
+```
+
+::: {.callout-tip}
+### cross level interaction
+adding the interaction term improved the model fit (∆χ2 = 4.34, p = .036) but the AIC only reduced by 2. 
+:::
+
+```{r}
+#| label: tbl-m4 
+#| #| tbl-cap: "Random intercept model with individual level predictors and random slope for percieved freedom, as well as L2 predictors and country level mean of perceived freedom, and interaction for liberal democracy and perceived freedom "
+
+# create table of fixed effects 
+t4 <- tbl_regression(
+    m4, 
+    estimate_fun = function(x) formatC(x, digits = 2, format = "f"),
+    pvalue_fun = function(x) {
+      p <- style_pvalue(x, digits = 3)
+      gsub("(?<=<)0\\.|^0\\.", ".", p, perl = TRUE)
+    }
+) |> 
+    modify_table_body(~ .x |> 
+    mutate(label = ifelse(
+        row_type == "label" & variable %in% names(labs_vars), labs_vars[variable], label),
+    )) |> 
+        as_flex_table() |> 
+        delete_part("footer")
+
+t <- data.frame(col_keys = t4$col_keys, 
+head = c("Characteristic", "B", "95% CI", "p"))
+
+t4 <- t4 |> set_header_df(mapping = t, key = "col_keys") |> my_flextable()
+t4 <- compose(t4, i = c(4,5, 7,8,14,15, 22, 23), j = c(2,3), value = as_paragraph(" "))
+t4 <- compose(t4, i = 33, j = 1, value = as_paragraph("Perceived Freedom x Liberal Democracy (mean)"))
+t4
+```
+
+
+The interaction was small but significant (b = 0.12, 95% CI [0.01, 0.23], p = .037): the positive effect of perceived freedom on life satisfaction is slightly stronger in more democratic countries. 
+
+However, the effect size is modest and the LRT is only marginally significant.
+
+Direct effects of liberal democracy and civil liberties remain non-significant. 
+
+All other fixed effects are pretty stable across the models. 
+
+Random effects were unchanged from M4 (intercept sd = 0.58, slope sd = .11) so the interaction might not explain additional between-country variation 
+
+::: {.callout-warning}
+The marginal significance of the LRT (p = .036) combined with minimal AIC improvement suggests M3 may be the more defensible final model 
+:::
+
+
+```{r}
+#| label: cli-plot
+# fig-cap: "Perceived freedom x Liberal Democracy "
+library(ggeffects)
+ggpredict(m4, terms = c("freedom_cwc", "liberal_democracy_cgm [-1, 0, 1]")) |>
+  plot() +
+  labs(
+    x = "Perceived Freedom (within-country centred)",
+    y = "Predicted Life Satisfaction",
+    colour = "Liberal Democracy\n(±1 SD, mean)"
+  ) +
+    ggpubr::theme_pubr() + ggpubr::labs_pubr()
+```
+
+finally we build the best-fitting model with `REML = TRUE` for reporting.
+
+```{r}
+#| label: m-final
+#| warning: false
+m_final <- lmer(life_sat ~ freedom_cwc + freedom_mean + age_cgm + sex + marital + social_class +
+    income_cgm + educ_cgm + employment + liberal_democracy_cgm + civil_liberties_cgm + freedom_cwc:liberal_democracy_cgm +
+    (1 + freedom_cwc | country_name),
+  data = df, REML = TRUE
+)
+```
+
+::: {.callout-warning}
+## convergence 
+the final model (`REML = TRUE` failed to converge). something else must be going on as the model converged fine under ML. 
+:::
+
+### diagnosis 
+```{r}
+#| label: diagnosis
+#| warning: false
+#| results: hide 
+# see which optimisers actually converge 
+all_fits <- allFit(m_final) 
+summary(all_fits)$which.OK
+
+```
+
+try to run again with bobyqa optimiser 
+```{r}
+#| label: bobyqa-optimisation 
+m_final <- lmer(life_sat ~ freedom_cwc + freedom_mean + age_cgm + sex + marital + social_class +
+    income_cgm + educ_cgm + employment + liberal_democracy_cgm + civil_liberties_cgm + freedom_cwc:liberal_democracy_cgm +
+    (1 + freedom_cwc | country_name),
+  data = df, REML = TRUE, control = lmerControl(optimizer = "bobyqa")
+)
+
+```
+
+convergence was achieved using the bobyqa optimiser. the final model was fit across 84,922 individuals in 61 countries. 
+
+```{r}
+#| label: tbl-mf
+#| tbl-cap: "Final model"
+
+# create table of fixed effects 
+tf <- tbl_regression(
+    m_final, 
+    estimate_fun = function(x) formatC(x, digits = 2, format = "f"),
+    pvalue_fun = function(x) {
+      p <- style_pvalue(x, digits = 3)
+      gsub("(?<=<)0\\.|^0\\.", ".", p, perl = TRUE)
+    }
+) |> 
+    modify_table_body(~ .x |> 
+    mutate(label = ifelse(
+        row_type == "label" & variable %in% names(labs_vars), labs_vars[variable], label),
+    )) |> 
+        as_flex_table() |> 
+        delete_part("footer")
+
+t <- data.frame(col_keys = tf$col_keys, 
+head = c("Characteristic", "B", "95% CI", "p"))
+
+tf <- tf|> set_header_df(mapping = t, key = "col_keys") |> my_flextable()
+tf <- compose(tf, i = c(4,5, 7,8,14,15, 22, 23), j = c(2,3), value = as_paragraph(" "))
+tf <- compose(tf, i = 33, j = 1, value = as_paragraph("Perceived Freedom x Liberal Democracy (mean)"))
+tf
+```
+
+Fixed effects are consistent with the ML solution. 
+
+Perceived freedom was the strongest individual-level predictor and the between-country effect of freedom was also strong. The cross-level interaction was retained and significant. The within country effect of perceived freedom on life satisfaction is amplified in more liberal and democratic countries. Income and lower social class were the strongest socioeconomic predictors. Age was non significant throughout. 
+
+In terms of random effects,  there were between country differences in baseline satisfaction after accounting for all predictors (intercept variance sd = 0.6). the random slope sd = 0.11 confirms that the freedom-satisfaction relationship varies across countries and the small positive intercept-slope correlation (r = 0.15) suggests countries with higher baseline satisfaction show stronger freedom effects. 
+
+### Assumption Checks
+
+```{r}
+
+# residual normality 
+qqnorm(resid(m_final))
+qqline(resid(m_final))
+```
+residual normality: qq plot of l1 residuals shows good central fit but deviation at both tails. this deviation is only moderate and unlikely to bias fixed effects estimates. 
+
+```{r}
+# fitted vs residuals (homoscedasticity)
+plot(fitted(m_final), resid(m_final, type = "pearson"), 
+    xlab = "Fitted", ylab = "Pearson Residuals")
+abline(h = 0, lty = 2)
+```
+
+homoscedasticity: fitted vs residuals plot shows distinctive patterns. as the fitted values increase, there is a diagonal stripe along the plot. could be because we used bounded ordinal measure as a continuous measure... 
+
+```{r}
+# l2 random effect normality 
+ranef_df <- as.data.frame(ranef(m_final)$country_name)
+qqnorm(ranef_df[["(Intercept)"]]);  qqline(ranef_df[["(Intercept)"]])
+qqnorm(ranef_df[["freedom_cwc"]]);  qqline(ranef_df[["freedom_cwc"]])
+```
+l2 random effect normality: the qqplot for country level random intercepts shows reasonable normality with some minor deviation. 
+
+```{r}
+#| results: hide 
+# normality 
+check_normality(m_final)
+
+# heteroscedasticity
+check_heteroscedasticity(m_final)
+# collinearity 
+check_collinearity(m_final)
+```
+No multicollinearity concerns for the L1 predictors (all VIFs < 2.5). But liberal democracy (vif = 5.59) and civil liberties (vif = 5.46) have moderate collinearity, which is expected... might explain why they never achieve significance as a direct effect. 
+
+::: {.callout-tip}
+### !!!
+might be worth doing models with them entered seperately for sensitivity purposes
+:::
+
+lets do just liberal democracy:
+```{r}
+m_final_libdem <- lmer(life_sat ~ freedom_cwc + freedom_mean + age_cgm + 
+                         sex + marital + social_class + income_cgm + educ_cgm + 
+                         employment + liberal_democracy_cgm + 
+                         freedom_cwc:liberal_democracy_cgm +
+                         (1 + freedom_cwc | country_name),
+                       data = df, REML = TRUE,
+                       control = lmerControl(optimizer = "bobyqa"))
+```
+no real diference. 
+
+## Final model
+**to do** 
+
+```{r}
+#| label: results-table
+#| eval: false 
+models <- list(
+    "Null" = m0,
+    "L1" = m1, 
+    "L2" = m3, 
+    "Cross-Level" = m4,
+    "Final" = m_final)
+m <- modelsummary(
+    output= "dataframe",
+    models,  
+    estimate = "{estimate} [{conf.low}, {conf.high}]{stars}",
+    statistic = NULL,
+    stars = TRUE,
+
+    gof_map = c("icc", "r2.marginal", "r2.conditional", "nobs", "ngroups"),
+    coef_rename = c(
+        "freedom_cwc" = "Perceived Freedom",
+        "age_cgm" = "Age"
+
+    ),
+    notes = "REML = TRUE for null model variance components; ML for model comparison.
+           L1 predictors group-mean centred; L2 predictors grand-mean centred.
+           95% CIs computed with Satterthwaite approximation."
+) 
+m
+```
+

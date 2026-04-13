@@ -871,7 +871,6 @@ run_uv_hurdle <- function(outcome, predictors,
     estimate_fun = function(x) formatC(x, digits = 2, format = "f"),
     pvalue_fun = function(x) {
       p <- style_pvalue(x, digits = 3)
-      # remove leading zero from both "0.03" and "<0.001"
       gsub("(?<=<)0\\.|^0\\.", ".", p, perl = TRUE)
     }, 
     tidy_fun = broom.helpers::tidy_zeroinfl

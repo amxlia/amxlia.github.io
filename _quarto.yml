@@ -18,12 +18,15 @@ book:
       #- more to come 
 
   ## WORKFLOW
-    - part: "Analyses"
+    - part: "Projects and Analyses"
       chapters: 
       - posts/hurdles.qmd
     - part: "Custom functions"
       chapters:
       - posts/customflextable.qmd
+    - part: "Other Analyses"
+      chapters:
+      - posts/multilevel.qmd
     - part: "Notes"
       chapters:
       - posts/scripts_and_workflow.qmd
