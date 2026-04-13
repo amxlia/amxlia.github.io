@@ -6,7 +6,7 @@ knitr:
   opts_chunk:
     ft.htmlscroll: false
 ---
-# Multilevel Modelling of Perceived Freedom and Life Satisfaction {.unnumbered}
+# Multilevel Modelling of Life Satisfaction {.unnumbered}
 This analysis is purely for *fun* and is not associated with any of my work
 I would usually properly weight this and consider the survey design but not today. 
 

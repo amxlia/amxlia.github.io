@@ -1,4 +1,4 @@
-# Publication ready tables {.unnumbered}
+# Custom Function for Publication-Ready Tables {.unnumbered}
 This is the code I use to make my tables ready for publication. 
 
 *Purpose:* Styling functions for producing publication-ready tables. All tables follow APA-adjacent formatting

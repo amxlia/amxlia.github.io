@@ -1,4 +1,4 @@
-# Script Practices {.unnumbered}
+# Script Practices and Workflows {.unnumbered}
 - one script = one purpose 
 - keep scripts short 
 

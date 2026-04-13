@@ -1,50 +1,40 @@
 project:
   type: book
   output-dir: docs
-toc: false
 
 
 book:
   title: "Amelia Henry"
   search: false
-  
-  # CHAPTERS/STRUCTURE 
   chapters:
   ## HOME 
     - index.qmd
-    - part: "Introduction"
-      chapters: 
-      - posts/aboutme.qmd
-      #- more to come 
-
-  ## WORKFLOW
-    - part: "Projects and Analyses"
-      chapters: 
-      - posts/hurdles.qmd
-    - part: "Custom functions"
+    - posts/aboutme.qmd
+    - part: "Main Analyses"
       chapters:
-      - posts/customflextable.qmd
+      - posts/hurdles.qmd
     - part: "Other Analyses"
       chapters:
       - posts/multilevel.qmd
+    - part: "Custom functions"
+      chapters:
+      - posts/customflextable.qmd
     - part: "Notes"
       chapters:
       - posts/scripts_and_workflow.qmd
       - posts/project_setup.qmd
+    # - part: "Other Analyses"
+    #   chapters:
+    #   - posts/multilevel.qmd
+    # - part: "Custom functions"
+    #   chapters:
+    #   - posts/customflextable.qmd
+    # - part: "Notes"
+    #   chapters:
+    #   - posts/scripts_and_workflow.qmd
+    #   - posts/project_setup.qmd
 
-    #- more to come 
-   # - part: "Analyses"
-      #chapters:
-      #- regression models 
-      #- other 
 
-    # - part: "Plots"
-    # #chapters:
-    #   #- bar plotts
-    #   #- other 
-    # - part: "Tables"
-    # #-chapters:
-    # #apa tables 
 
 
 
@@ -56,4 +46,7 @@ format:
     theme: 
       - minty
     code-copy: true
+    toc: false
+
+
   

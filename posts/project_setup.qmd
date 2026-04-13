@@ -1,4 +1,4 @@
-# Project Setup {.unnumbered}
+# How I Set Up Projects {.unnumbered}
 ## purpose
 - keep everything organised 
 - reproducible and transparent structure 
