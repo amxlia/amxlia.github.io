@@ -78,8 +78,8 @@ tbl_shapiro <- df |>
   rename(Variable = var, Statistic = statistic) |>
   # convert to flextable 
   flextable() |> 
-  # apply my flextable formatting from `my_flextable()
-  my_flextable()
+  # apply my flextable formatting from `my_flextable(font_size = 10)
+  my_flextable(font_size = 10)
 
 tbl_shapiro
 ```
@@ -208,7 +208,7 @@ typology <- data.frame(
 tbl_rates <- tbl_rates |>
   set_header_df(mapping = typology, key = "col_keys") |>
   merge_h(part = "header") |>
-  my_flextable() |>
+  my_flextable(font_size = 10) |>
   hline(
     border = fp_border(color = "black", width = 1),
     i = c(1, 2),
@@ -288,7 +288,7 @@ tbl_alc <- df |>
   modify_footnote(everything() ~ NA) |>
   modify_header(p.value ~ "p") |>
   gtsummary::as_flex_table() |> 
-  my_flextable()
+  my_flextable(font_size = 10)
 tbl_alc 
 ```
 Higher alcohol risk is associated with greater psychological distress and higher absenteeism and presenteeism. Age and agency years are higher in the moderate/higher risk groups - which might be related to cumulative exposure to traumatic events? 
@@ -385,7 +385,7 @@ tbl_drug <- df |>
   modify_footnote(everything() ~ NA) |>
   modify_header(p.value ~ "p") |>
   gtsummary::as_flex_table() |>
-  my_flextable()
+  my_flextable(font_size = 10)
 tbl_drug
 ```
 Much smaller n here (especially high risk group, n = 5); interpret w caution. Fisher's exact test used for gender given small cell sizes. 
@@ -511,7 +511,7 @@ matrix_cor[upper.tri(matrix_cor)] <- NA
 
 # create ft 
 tbl_cors <- flextable(matrix_cor) |> 
-  my_flextable() |> 
+  my_flextable(font_size = 10) |> 
   set_header_labels("var1" = " ")
 
 tbl_cors
@@ -626,6 +626,7 @@ sink()
 Overdispersion was confirmed across all predictors. Poisson dispersion consistently >1 (not a good candidate).Zero-inflated and hurdle models outperformed NB on AIC/BIC and predicted zeros better. Vuong tests favoured hurdle and zero-inflated, though difference between ZINB and hurdle NB was small. 
 
 Fit statistics between ZINB and hurdle NB were similar enough. 
+
 ::: {.callout-important}
 ### !!! 
 MS and I discussed this, and we think zero-inflation models were too rigid for our outcomes. 
@@ -795,7 +796,7 @@ typology <- data.frame(
 tbl_abs_uv <- tbl_abs_uv |>
   set_header_df(mapping = typology, key = "col_keys") |> 
   merge_h(part = "header") |>
-  my_flextable()
+  my_flextable(font_size = 10)
 
 # fix NA
 tbl_abs_uv <- flextable::compose(tbl_abs_uv, i = 2, j = c(3, 4, 6, 7), value = flextable::as_paragraph(" "))
@@ -907,7 +908,7 @@ typology <- data.frame(
 tbl_abs_mv <- tbl_abs_mv |>
   set_header_df(mapping = typology, key = "col_keys") |> 
   merge_h(part = "header") |>
-  my_flextable()
+  my_flextable(font_size = 10)
 
 
 tbl_abs_mv
@@ -979,7 +980,7 @@ typology <- data.frame(
 tbl_pres_uv <- tbl_pres_uv |>
   set_header_df(mapping = typology, key = "col_keys") |> 
   merge_h(part = "header") |>
-  my_flextable()
+  my_flextable(font_size = 10)
 
 # fix NA
 tbl_pres_uv <- flextable::compose(tbl_pres_uv, i = 2, j = c(3, 4, 6, 7), value = flextable::as_paragraph(" "))
@@ -1085,7 +1086,7 @@ typology <- data.frame(
 tbl_pres_mv <- tbl_pres_mv |>
   set_header_df(mapping = typology, key = "col_keys") |> 
   merge_h(part = "header") |>
-  my_flextable()
+  my_flextable(font_size = 10)
 
 
 tbl_pres_mv
@@ -1194,7 +1195,7 @@ typology <- data.frame(
 tbl_pres_mv2 <- tbl_pres_mv2 |>
   set_header_df(mapping = typology, key = "col_keys") |> 
   merge_h(part = "header") |>
-  my_flextable()
+  my_flextable(font_size = 10)
 
 
 tbl_pres_mv2
