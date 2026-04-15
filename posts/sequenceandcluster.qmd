@@ -1,0 +1,56 @@
+---
+code-annotations: below
+---
+# Sequence and Cluster Analysis {.unnumbered}
+
+## Introduction 
+This analysis aims to identify distinct clusters of daily time use patterns and to examine how cluster membership is associated with depression and alcohol use, as well as their co-occurrence. 
+
+Using data from the Longitudinal Study of Australian Children (Wave 8, B cohort, aged 14-15), I employed sequence analysis of daily time use diary data to identify homogenous clusters of adolescents with common time use patterns. 
+
+Subsequently, I explored membership in these clusters and their associations with depression, alcohol use, and their co-occurrence to gain insight into how daily patterns may relate to the combined challenges of depression and alcohol related issues in adolescence (document to come)
+
+## Set-Up 
+```{r}
+#| label: setup-packages
+#| results: hide 
+#| message: false
+#| 
+# load packages
+pacman::p_load(here, tidyverse, RColorBrewer, TraMineR, TraMineRextras, lubridate, cluster, WeightedCluster, haven, gtsummary, flextable, ggseqplot, ggpubr, patchwork, officer) 
+
+# set wd 
+here::i_am("posts/sequenceandcluster.qmd") 
+
+# load data
+data0 <- read.csv(here("R/tuddatab.csv")) 
+datalsac <- read.csv(here("R/lsacdatab.csv")) 
+act_dict <- readRDS(here("R/act_dict.RDS")) 
+
+# source custom flextable function 
+source(here("R/customflextable.R")) 
+
+# function to convert time to date and handle pm to am transition 
+convert_time <- function(time_vector) {
+  time_vector <- parse_date_time(time_vector, "%I %M %p")
+  transitions <- which(
+    hour(time_vector[-1]) < 12 & hour(time_vector[-length(time_vector)]) >= 12
+  )
+  for (transition_row in transitions) {
+    time_vector[(transition_row + 1):length(time_vector)] <- time_vector[
+      (transition_row + 1):length(time_vector)
+    ] +
+      days(1)
+  }
+  return(time_vector)
+}
+```
+
+1. Load packages 
+2. Use `here` package to set working directory 
+3. Load `tuddab.csv` time use diary data 
+4. Load `lsacdatab.csv` LSAC Wave 8 survey data (B cohort)
+5. Load `act_dict` recoded activity dictionary 
+6. Source [script for custom flextable](https://amxlia.github.io/posts/customflextable.html)
+7. Create function to convert time to dates and handle pm to am transitions 
+

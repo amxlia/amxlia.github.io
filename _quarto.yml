@@ -13,6 +13,7 @@ book:
     - part: "Main Analyses"
       chapters:
       - posts/hurdles.qmd
+      #- posts/sequenceandcluster.qmd
     # - part: "Other Analyses"
     #   chapters:
     #   - posts/multilevel.qmd
@@ -34,19 +35,29 @@ book:
     #   - posts/scripts_and_workflow.qmd
     #   - posts/project_setup.qmd
 
-
-
-
-
 ## APPEARANCE 
-syntax-highlighting: pygments
+
 
 format:
   html:
-    theme: 
-      - minty
+    code-fold: show
+    code-summary: "Show/hide the code"
+    code-overflow: wrap
     code-copy: true
+    # code-tools:
+    #   source: true
+    #   toggle: false
+    syntax-highlighting: 
+      light: atom-one
+      dark: arrow
+    theme: 
+      light: flatly
+      dark: darkly 
     toc: false
 
+knitr:
+  opts_chunk:
+    ft.htmlscroll: false
+    message: false
+    warning: false
 
-  
