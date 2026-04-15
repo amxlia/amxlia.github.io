@@ -13,6 +13,7 @@ website:
       - section: "Main Analyses"
         contents:
         - posts/hurdles.qmd
+        - posts/sequenceandcluster.qmd
       - section: "Custom Functions"
         contents: 
         - posts/customflextable.qmd
@@ -26,7 +27,7 @@ website:
 
 format:
   html:
-    code-fold: show
+    code-fold: true
     code-summary: "Show/hide the code"
     code-overflow: wrap
     code-copy: true
