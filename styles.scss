@@ -1,9 +1,20 @@
 /*-- scss:defaults --*/
-/* bootstrap variable overrides go here  */
+// colours are #e35336 #f5f5dc #f4a460 #a0522d
+//font colours 
+$link-color: #E35446;
+
+// bootstrap variable overrides go here //
 /*-- scss:rules --*/
-/* css styles */
-/* left align captions */
+// left align captions //
 .quarto-table-caption {
     text-align: left;
 }
 
+// edit inline code 
+code {
+    color: #a0522d;
+    background-color: #f5f5dc;
+    padding: 2px 4px;
+    border-radius: 4px;
+    font-family: monospace
+}

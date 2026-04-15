@@ -51,6 +51,6 @@ convert_time <- function(time_vector) {
 3. Load `tuddab.csv` time use diary data 
 4. Load `lsacdatab.csv` LSAC Wave 8 survey data (B cohort)
 5. Load `act_dict` recoded activity dictionary 
-6. Source [script for custom flextable](https://amxlia.github.io/posts/customflextable.html)
+6. Source [script for custom flextable](https://amxlia.github.io/posts/customflextable.html){.btn .btn-primary role="button"}
 7. Create function to convert time to dates and handle pm to am transitions 
 

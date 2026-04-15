@@ -18,8 +18,8 @@ website:
         - posts/customflextable.qmd
       - section: "Notes"
         contents:
-      - posts/scripts_and_workflow.qmd
-      - posts/project_setup.qmd
+        - posts/scripts_and_workflow.qmd
+        - posts/project_setup.qmd
 
 
 ## APPEARANCE 
@@ -34,7 +34,7 @@ format:
     #   source: true
     #   toggle: false
     syntax-highlighting: 
-      light: atom-one
+      light: boilerplate.theme
       dark: arrow
     theme: 
       light: 
