@@ -518,7 +518,7 @@ between country effect of perceived freedom was positive and significant (b = 0.
 
 Neither liberal democracy (b = 0.65, p = .34) nor civil liberties (b = -0.57, p = .41) were significant, suggesting that the structural level national freedom doesnt actually directly predict life satisfaction when you take into account individual level perceptions. 
 
-Lastly we checked the primary interest: does national-level freedom moderate the relationship between *perceived* freedom and life satisfaction?
+Lastly we checked the primary interest: does national-level freedom (liberal democracy) moderate the relationship between *perceived* freedom and life satisfaction?
 
 ```{r}
 #| label: m4-crosslevel
