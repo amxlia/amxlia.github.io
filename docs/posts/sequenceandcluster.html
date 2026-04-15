@@ -7,7 +7,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
 
 
-<title>scripts_and_workflow – Amelia Henry</title>
+<title>sequenceandcluster – Amelia Henry</title>
 <style>
 /* Default styles provided by pandoc.
 ** See https://pandoc.org/MANUAL.html#variables-for-html for config info.
@@ -268,7 +268,9 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
       <button type="button" class="quarto-btn-toggle btn" data-bs-toggle="collapse" role="button" data-bs-target=".quarto-sidebar-collapse-item" aria-controls="quarto-sidebar" aria-expanded="false" aria-label="Toggle sidebar navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">
         <i class="bi bi-layout-text-sidebar-reverse"></i>
       </button>
-        <nav class="quarto-page-breadcrumbs" aria-label="breadcrumb"><ol class="breadcrumb"><li class="breadcrumb-item"><a href="../posts/scripts_and_workflow.html">Script Practices and Workflows</a></li></ol></nav>
+        <nav class="quarto-page-breadcrumbs" aria-label="breadcrumb"><ol class="breadcrumb"><li class="breadcrumb-item">
+      Amelia Henry
+      </li></ol></nav>
         <a class="flex-grow-1" role="navigation" data-bs-toggle="collapse" data-bs-target=".quarto-sidebar-collapse-item" aria-controls="quarto-sidebar" aria-expanded="false" aria-label="Toggle sidebar navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">      
         </a>
     </div>
@@ -340,7 +342,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
   </li>
         <li class="sidebar-item">
   <div class="sidebar-item-container"> 
-  <a href="../posts/scripts_and_workflow.html" class="sidebar-item-text sidebar-link active">
+  <a href="../posts/scripts_and_workflow.html" class="sidebar-item-text sidebar-link">
  <span class="menu-text">Script Practices and Workflows</span></a>
   </div>
 </li>
@@ -363,65 +365,58 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 
 
 
-<section id="script-practices-and-workflows" class="level1 unnumbered">
-<h1 class="unnumbered">Script Practices and Workflows</h1>
-<ul>
-<li>one script = one purpose</li>
-<li>keep scripts short</li>
-</ul>
-<p>Example layout of script folder:</p>
-<pre><code>R/
-├── 01_data_processing.R   # scripts for cleaning and processing data
-├── 02_linear_models.R     # scripts for running linear models 
-├── utilities.R           # scripts for functions that are used across multiple analyses
-├── functions_data_processing.R  # scripts for functions that are specific to data processing</code></pre>
-<section id="functions" class="level2">
-<h2 class="anchored" data-anchor-id="functions">functions</h2>
-<ul>
-<li>any repeated logic gets moved to functions</li>
-<li>if repeated across different tasks -&gt; <code>utilities.R</code></li>
-<li>if task-specific -&gt; <code>functions_01_data_cleaning.R</code></li>
-</ul>
+<section id="sequence-and-cluster-analysis" class="level1 unnumbered">
+<h1 class="unnumbered">Sequence and Cluster Analysis</h1>
+<section id="introduction" class="level2">
+<h2 class="anchored" data-anchor-id="introduction">Introduction</h2>
+<p>This analysis aims to identify distinct clusters of daily time use patterns and to examine how cluster membership is associated with depression and alcohol use, as well as their co-occurrence.</p>
+<p>Using data from the Longitudinal Study of Australian Children (Wave 8, B cohort, aged 14-15), I employed sequence analysis of daily time use diary data to identify homogenous clusters of adolescents with common time use patterns.</p>
+<p>Subsequently, I explored membership in these clusters and their associations with depression, alcohol use, and their co-occurrence to gain insight into how daily patterns may relate to the combined challenges of depression and alcohol related issues in adolescence (document to come)</p>
 </section>
-<section id="style-conventions" class="level2">
-<h2 class="anchored" data-anchor-id="style-conventions">style conventions</h2>
-<ul>
-<li>Use pipes: <code>|&gt;</code></li>
-<li>one step per line</li>
-</ul>
-<div class="cell" data-run="false">
+<section id="set-up" class="level2">
+<h2 class="anchored" data-anchor-id="set-up">Set-Up</h2>
+<div class="cell">
 <details open="" class="code-fold">
 <summary>Show/hide the code</summary>
-<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb2"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a>df <span class="sc">|&gt;</span></span>
-<span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a>    dplyr<span class="sc">::</span><span class="fu">filter</span>(age <span class="sc">&gt;</span> <span class="dv">18</span>) <span class="sc">|&gt;</span>  </span>
-<span id="cb2-3"><a href="#cb2-3" aria-hidden="true" tabindex="-1"></a>    dplyr<span class="sc">::</span><span class="fu">mutate</span>(<span class="at">age_group =</span> <span class="fu">ifelse</span>(age <span class="sc">&lt;</span> <span class="dv">30</span>, <span class="st">"young"</span>, <span class="st">"old"</span>)) <span class="sc">|&gt;</span></span>
-<span id="cb2-4"><a href="#cb2-4" aria-hidden="true" tabindex="-1"></a>    dplyr<span class="sc">::</span><span class="fu">group_by</span>(age_group) <span class="sc">|&gt;</span></span>
-<span id="cb2-5"><a href="#cb2-5" aria-hidden="true" tabindex="-1"></a>    dplyr<span class="sc">::</span><span class="fu">summarise</span>(<span class="at">mean_income =</span> <span class="fu">mean</span>(income))</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb1"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="co"># load packages</span></span>
+<span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a>pacman<span class="sc">::</span><span class="fu">p_load</span>(here, tidyverse, RColorBrewer, TraMineR, TraMineRextras, lubridate, cluster, WeightedCluster, haven, gtsummary, flextable, ggseqplot, ggpubr, patchwork, officer) </span>
+<span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-4"><a href="#cb1-4" aria-hidden="true" tabindex="-1"></a><span class="co"># set wd </span></span>
+<span id="cb1-5"><a href="#cb1-5" aria-hidden="true" tabindex="-1"></a>here<span class="sc">::</span><span class="fu">i_am</span>(<span class="st">"posts/sequenceandcluster.qmd"</span>) </span>
+<span id="cb1-6"><a href="#cb1-6" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-7"><a href="#cb1-7" aria-hidden="true" tabindex="-1"></a><span class="co"># load data</span></span>
+<span id="cb1-8"><a href="#cb1-8" aria-hidden="true" tabindex="-1"></a>data0 <span class="ot">&lt;-</span> <span class="fu">read.csv</span>(<span class="fu">here</span>(<span class="st">"R/tuddatab.csv"</span>)) </span>
+<span id="cb1-9"><a href="#cb1-9" aria-hidden="true" tabindex="-1"></a>datalsac <span class="ot">&lt;-</span> <span class="fu">read.csv</span>(<span class="fu">here</span>(<span class="st">"R/lsacdatab.csv"</span>)) </span>
+<span id="cb1-10"><a href="#cb1-10" aria-hidden="true" tabindex="-1"></a>act_dict <span class="ot">&lt;-</span> <span class="fu">readRDS</span>(<span class="fu">here</span>(<span class="st">"R/act_dict.RDS"</span>)) </span>
+<span id="cb1-11"><a href="#cb1-11" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-12"><a href="#cb1-12" aria-hidden="true" tabindex="-1"></a><span class="co"># source custom flextable function </span></span>
+<span id="cb1-13"><a href="#cb1-13" aria-hidden="true" tabindex="-1"></a><span class="fu">source</span>(<span class="fu">here</span>(<span class="st">"R/customflextable.R"</span>)) </span>
+<span id="cb1-14"><a href="#cb1-14" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-15"><a href="#cb1-15" aria-hidden="true" tabindex="-1"></a><span class="co"># function to convert time to date and handle pm to am transition </span></span>
+<span id="cb1-16"><a href="#cb1-16" aria-hidden="true" tabindex="-1"></a>convert_time <span class="ot">&lt;-</span> <span class="cf">function</span>(time_vector) {</span>
+<span id="cb1-17"><a href="#cb1-17" aria-hidden="true" tabindex="-1"></a>  time_vector <span class="ot">&lt;-</span> <span class="fu">parse_date_time</span>(time_vector, <span class="st">"%I %M %p"</span>)</span>
+<span id="cb1-18"><a href="#cb1-18" aria-hidden="true" tabindex="-1"></a>  transitions <span class="ot">&lt;-</span> <span class="fu">which</span>(</span>
+<span id="cb1-19"><a href="#cb1-19" aria-hidden="true" tabindex="-1"></a>    <span class="fu">hour</span>(time_vector[<span class="sc">-</span><span class="dv">1</span>]) <span class="sc">&lt;</span> <span class="dv">12</span> <span class="sc">&amp;</span> <span class="fu">hour</span>(time_vector[<span class="sc">-</span><span class="fu">length</span>(time_vector)]) <span class="sc">&gt;=</span> <span class="dv">12</span></span>
+<span id="cb1-20"><a href="#cb1-20" aria-hidden="true" tabindex="-1"></a>  )</span>
+<span id="cb1-21"><a href="#cb1-21" aria-hidden="true" tabindex="-1"></a>  <span class="cf">for</span> (transition_row <span class="cf">in</span> transitions) {</span>
+<span id="cb1-22"><a href="#cb1-22" aria-hidden="true" tabindex="-1"></a>    time_vector[(transition_row <span class="sc">+</span> <span class="dv">1</span>)<span class="sc">:</span><span class="fu">length</span>(time_vector)] <span class="ot">&lt;-</span> time_vector[</span>
+<span id="cb1-23"><a href="#cb1-23" aria-hidden="true" tabindex="-1"></a>      (transition_row <span class="sc">+</span> <span class="dv">1</span>)<span class="sc">:</span><span class="fu">length</span>(time_vector)</span>
+<span id="cb1-24"><a href="#cb1-24" aria-hidden="true" tabindex="-1"></a>    ] <span class="sc">+</span></span>
+<span id="cb1-25"><a href="#cb1-25" aria-hidden="true" tabindex="-1"></a>      <span class="fu">days</span>(<span class="dv">1</span>)</span>
+<span id="cb1-26"><a href="#cb1-26" aria-hidden="true" tabindex="-1"></a>  }</span>
+<span id="cb1-27"><a href="#cb1-27" aria-hidden="true" tabindex="-1"></a>  <span class="fu">return</span>(time_vector)</span>
+<span id="cb1-28"><a href="#cb1-28" aria-hidden="true" tabindex="-1"></a>}</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </details>
 </div>
-</section>
-<section id="naming-conventions" class="level2">
-<h2 class="anchored" data-anchor-id="naming-conventions">naming conventions</h2>
-<ul>
-<li>use <code>snake_case</code> for everything</li>
-<li>objects start with noun (e.g., <code>df_*</code> or <code>mod_*</code>)</li>
-<li>functions start with verb (e.g., <code>clean_</code>, <code>fit_</code>)</li>
-</ul>
-</section>
-<section id="ordering-and-flow" class="level2">
-<h2 class="anchored" data-anchor-id="ordering-and-flow">ordering and flow</h2>
-<p>if structure begins to exist (e.g., order of scripts) use <code>targets</code> to remove manual ordering/execution</p>
-<div class="cell" data-run="false">
-<details open="" class="code-fold">
-<summary>Show/hide the code</summary>
-<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb3"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a><span class="fu">list</span>(</span>
-<span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">tar_target</span>(raw, <span class="fu">get_data</span>()),</span>
-<span id="cb3-3"><a href="#cb3-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">tar_target</span>(cleaned, <span class="fu">clean_data</span>(raw)),</span>
-<span id="cb3-4"><a href="#cb3-4" aria-hidden="true" tabindex="-1"></a>  <span class="fu">tar_target</span>(model, <span class="fu">fit_linear_model</span>(cleaned)),</span>
-<span id="cb3-5"><a href="#cb3-5" aria-hidden="true" tabindex="-1"></a>  <span class="fu">tar_target</span>(plot, <span class="fu">create_plot</span>(model))</span>
-<span id="cb3-6"><a href="#cb3-6" aria-hidden="true" tabindex="-1"></a>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
-</details>
-</div>
+<ol type="1">
+<li>Load packages</li>
+<li>Use <code>here</code> package to set working directory</li>
+<li>Load <code>tuddab.csv</code> time use diary data</li>
+<li>Load <code>lsacdatab.csv</code> LSAC Wave 8 survey data (B cohort)</li>
+<li>Load <code>act_dict</code> recoded activity dictionary</li>
+<li>Source <a href="https://amxlia.github.io/posts/customflextable.html">script for custom flextable</a></li>
+<li>Create function to convert time to dates and handle pm to am transitions</li>
+</ol>
 
 
 </section>

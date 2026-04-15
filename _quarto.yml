@@ -1,42 +1,28 @@
 project:
-  type: book
+  type: website
   output-dir: docs
 
 
-book:
+website:
   title: "Amelia Henry"
   search: false
-  chapters:
-  ## HOME 
-    - index.qmd
-    - posts/aboutme.qmd
-    - part: "Main Analyses"
-      chapters:
-      - posts/hurdles.qmd
-      #- posts/sequenceandcluster.qmd
-    # - part: "Other Analyses"
-    #   chapters:
-    #   - posts/multilevel.qmd
-    - part: "Custom functions"
-      chapters:
-      - posts/customflextable.qmd
-    - part: "Notes"
-      chapters:
+  sidebar:
+    contents:
+      - href: index.qmd
+      - href: posts/aboutme.qmd
+      - section: "Main Analyses"
+        contents:
+        - posts/hurdles.qmd
+      - section: "Custom Functions"
+        contents: 
+        - posts/customflextable.qmd
+      - section: "Notes"
+        contents:
       - posts/scripts_and_workflow.qmd
       - posts/project_setup.qmd
-    # - part: "Other Analyses"
-    #   chapters:
-    #   - posts/multilevel.qmd
-    # - part: "Custom functions"
-    #   chapters:
-    #   - posts/customflextable.qmd
-    # - part: "Notes"
-    #   chapters:
-    #   - posts/scripts_and_workflow.qmd
-    #   - posts/project_setup.qmd
+
 
 ## APPEARANCE 
-
 
 format:
   html:
@@ -51,7 +37,9 @@ format:
       light: atom-one
       dark: arrow
     theme: 
-      light: flatly
+      light: 
+        - flatly
+        - styles.scss
       dark: darkly 
     toc: false
 
