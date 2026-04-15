@@ -141,28 +141,6 @@
     ]
   },
   {
-    "objectID": "posts/multilevel.html",
-    "href": "posts/multilevel.html",
-    "title": "Multilevel Modelling of Life Satisfaction",
-    "section": "",
-    "text": "Variables\nThis analysis is purely for fun and is not associated with any of my work I would usually properly weight this and consider the survey design but not today.\nData: individual level data from the World values survey 2017-2022 and country level data from the varieties of democracy institute V-Dem dataset\nHaerpfer, C., Inglehart, R., Moreno, A., Welzel, C., Kizilova, K., Diez-Medrano, J., Lagos, M., Norris, P., Ponarin, E. & Puranen B. (2022): World Values Survey Wave 7 (2017-2022) Cross-National Data-Set. Version: 4.0.0. World Values Survey Association. DOI: doi.org/10.14281/18241.18",
-    "crumbs": [
-      "Other Analyses",
-      "Multilevel Modelling of Life Satisfaction"
-    ]
-  },
-  {
-    "objectID": "posts/multilevel.html#final-model",
-    "href": "posts/multilevel.html#final-model",
-    "title": "Multilevel Modelling of Life Satisfaction",
-    "section": "Final model",
-    "text": "Final model\nto do\n\n\nCode\nmodels &lt;- list(\n    \"Null\" = m0,\n    \"L1\" = m1, \n    \"L2\" = m3, \n    \"Cross-Level\" = m4,\n    \"Final\" = m_final)\nm &lt;- modelsummary(\n    output= \"dataframe\",\n    models,  \n    estimate = \"{estimate} [{conf.low}, {conf.high}]{stars}\",\n    statistic = NULL,\n    stars = TRUE,\n\n    gof_map = c(\"icc\", \"r2.marginal\", \"r2.conditional\", \"nobs\", \"ngroups\"),\n    coef_rename = c(\n        \"freedom_cwc\" = \"Perceived Freedom\",\n        \"age_cgm\" = \"Age\"\n\n    ),\n    notes = \"REML = TRUE for null model variance components; ML for model comparison.\n           L1 predictors group-mean centred; L2 predictors grand-mean centred.\n           95% CIs computed with Satterthwaite approximation.\"\n) \nm",
-    "crumbs": [
-      "Other Analyses",
-      "Multilevel Modelling of Life Satisfaction"
-    ]
-  },
-  {
     "objectID": "posts/customflextable.html",
     "href": "posts/customflextable.html",
     "title": "Custom Function for Publication-Ready Tables",

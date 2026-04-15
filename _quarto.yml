@@ -13,9 +13,9 @@ book:
     - part: "Main Analyses"
       chapters:
       - posts/hurdles.qmd
-    - part: "Other Analyses"
-      chapters:
-      - posts/multilevel.qmd
+    # - part: "Other Analyses"
+    #   chapters:
+    #   - posts/multilevel.qmd
     - part: "Custom functions"
       chapters:
       - posts/customflextable.qmd
