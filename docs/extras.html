@@ -7,7 +7,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
 
 
-<title>Amelia Henry</title>
+<title>Extras – Amelia Henry</title>
 <style>
 /* Default styles provided by pandoc.
 ** See https://pandoc.org/MANUAL.html#variables-for-html for config info.
@@ -28,6 +28,8 @@ ul.task-list li input[type="checkbox"] {
 
 <script src="site_libs/quarto-nav/quarto-nav.js"></script>
 <script src="site_libs/quarto-nav/headroom.min.js"></script>
+<script src="site_libs/quarto-listing/list.min.js"></script>
+<script src="site_libs/quarto-listing/quarto-listing.js"></script>
 <script src="site_libs/clipboard/clipboard.min.js"></script>
 <script src="site_libs/quarto-html/quarto.js" type="module"></script>
 <script src="site_libs/quarto-html/tabsets/tabsets.js" type="module"></script>
@@ -58,11 +60,69 @@ ul.task-list li input[type="checkbox"] {
     "search-label": "Search"
   }
 }</script>
+<script>
 
+  window.document.addEventListener("DOMContentLoaded", function (_event) {
+    const listingTargetEl = window.document.querySelector('#listing-listing .list');
+    if (!listingTargetEl) {
+      // No listing discovered, do not attach.
+      return; 
+    }
+
+    const options = {
+      valueNames: ['listing-title','listing-author','listing-date','listing-image','listing-description','listing-categories',{ data: ['index'] },{ data: ['categories'] },{ data: ['listing-date-sort'] },{ data: ['listing-file-modified-sort'] }],
+      
+      searchColumns: ["listing-title","listing-author","listing-date","listing-image","listing-description","listing-categories"],
+    };
+
+    window['quarto-listings'] = window['quarto-listings'] || {};
+    window['quarto-listings']['listing-listing'] = new List('listing-listing', options);
+
+    if (window['quarto-listing-loaded']) {
+      window['quarto-listing-loaded']();
+    }
+  });
+
+  window.addEventListener('hashchange',() => {
+    if (window['quarto-listing-loaded']) {
+      window['quarto-listing-loaded']();
+    }
+  })
+  </script>
+
+  <script src="https://cdnjs.cloudflare.com/polyfill/v3/polyfill.min.js?features=es6"></script>
+  <script defer="" src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-chtml-full.js" type="text/javascript"></script>
+
+<script type="text/javascript">
+const typesetMath = (el) => {
+  if (window.MathJax) {
+    // MathJax Typeset
+    window.MathJax.typeset([el]);
+  } else if (window.katex) {
+    // KaTeX Render
+    var mathElements = el.getElementsByClassName("math");
+    var macros = [];
+    for (var i = 0; i < mathElements.length; i++) {
+      var texText = mathElements[i].firstChild;
+      if (mathElements[i].tagName == "SPAN" && texText && texText.data) {
+        window.katex.render(texText.data, mathElements[i], {
+          displayMode: mathElements[i].classList.contains('display'),
+          throwOnError: false,
+          macros: macros,
+          fleqn: false
+        });
+      }
+    }
+  }
+}
+window.Quarto = {
+  typesetMath
+};
+</script>
 
 </head>
 
-<body class="floating nav-fixed fullcontent quarto-light"><script id="quarto-html-before-body" type="application/javascript">
+<body class="floating nav-fixed quarto-light"><script id="quarto-html-before-body" type="application/javascript">
     const toggleBodyColorMode = (bsSheetEl) => {
       const mode = bsSheetEl.getAttribute("data-mode");
       const bodyEl = window.document.querySelector("body");
@@ -241,7 +301,7 @@ ul.task-list li input[type="checkbox"] {
           <div class="collapse navbar-collapse" id="navbarCollapse">
             <ul class="navbar-nav navbar-nav-scroll ms-auto">
   <li class="nav-item">
-    <a class="nav-link active" href="./index.html" aria-current="page"> 
+    <a class="nav-link" href="./index.html"> 
 <span class="menu-text">Home</span></a>
   </li>  
   <li class="nav-item">
@@ -253,7 +313,7 @@ ul.task-list li input[type="checkbox"] {
 <span class="menu-text">Projects</span></a>
   </li>  
   <li class="nav-item">
-    <a class="nav-link" href="./extras.html"> 
+    <a class="nav-link active" href="./extras.html" aria-current="page"> 
 <span class="menu-text">Extras</span></a>
   </li>  
 </ul>
@@ -272,26 +332,139 @@ ul.task-list li input[type="checkbox"] {
 </nav>
 <div id="quarto-sidebar-glass" class="quarto-sidebar-collapse-item" data-bs-toggle="collapse" data-bs-target=".quarto-sidebar-collapse-item"></div>
 <!-- margin-sidebar -->
-    
+    <div id="quarto-margin-sidebar" class="sidebar margin-sidebar">
+    <h5 class="quarto-listing-category-title">Categories</h5><div class="quarto-listing-category category-unnumbered"><div class="category" data-category="Rm9ybWF0dGluZw==">Formatting</div><div class="category" data-category="RnVuY3Rpb25z">Functions</div><div class="category" data-category="T3JnYW5pc2F0aW9u">Organisation</div><div class="category" data-category="UHJvamVjdCUyME1hbmFnZW1lbnQ=">Project Management</div><div class="category" data-category="VGFibGVz">Tables</div><div class="category" data-category="V29ya2Zsb3c=">Workflow</div></div></div>
 <!-- main -->
-<main class="content" id="quarto-document-content"><header id="title-block-header" class="quarto-title-block"></header>
+<main class="content" id="quarto-document-content">
+
+
+<header id="title-block-header" class="quarto-title-block default">
+<div class="quarto-title">
+<h1 class="title">Extras</h1>
+</div>
+
+
+
+<div class="quarto-title-meta">
+
+    
+  
+    
+  </div>
+  
+
+
+</header>
 
 
 
 
 
-<section id="welcome" class="level1 unnumbered">
-<h1 class="unnumbered">Welcome</h1>
-<p>This site is essentially a living lab notebook; a running collection of how I work with data over time. I like to think of this as a mix between a portfolio and a working record.</p>
-<p><em>I am slowly migrating all my existing work to this site - bear with me!</em></p>
-<p>It brings together my approaches, projects, and things I have learned along the way. Everything here is built openly and documented as I go. The focus is on my <strong>approach</strong> and <strong>processes</strong> to conducting transparent and reproducible research, rather than on particular findings.</p>
-<p>If you find something useful, have any questions, notice something is off/spotted an error, or just want to chat, feel free to reach out!</p>
-<p>You can find me on <a href="https://www.linkedin.com/in/amelia-henry/">LinkedIn</a> or you <a href="mailto:amelia.henry@sydney.edu.au">email</a> me.</p>
 
+<div class="quarto-listing quarto-listing-container-grid" id="listing-listing">
+<div class="list grid quarto-listing-cols-2">
+<div class="g-col-1" data-index="0" data-categories="RnVuY3Rpb25zJTJDRm9ybWF0dGluZyUyQ1RhYmxlcw==" data-listing-date-sort="1774962000000" data-listing-file-modified-sort="1776241278327" data-listing-date-modified-sort="NaN" data-listing-reading-time-sort="2" data-listing-word-count-sort="398">
+<a href="./extras/flextablefunction/index.html" class="quarto-grid-link">
+<div class="quarto-grid-item card h-100 card-left">
+<p class="card-img-top">
+<img loading="lazy" src="./extras/flextablefunction/tbl1.png" class="thumbnail-image card-img" style="height: 150px;">
+</p>
+<div class="card-body post-contents">
+<h5 class="no-anchor card-title listing-title">
+Custom Function for Publication-Ready Tables
+</h5>
+<div class="listing-categories">
 
-</section>
+<div class="listing-category" onclick="window.quartoListingCategory('RnVuY3Rpb25z'); return false;">Functions</div>
 
-</main> <!-- /main -->
+<div class="listing-category" onclick="window.quartoListingCategory('Rm9ybWF0dGluZw=='); return false;">Formatting</div>
+
+<div class="listing-category" onclick="window.quartoListingCategory('VGFibGVz'); return false;">Tables</div>
+
+</div>
+<div class="card-text listing-description delink">
+<p>This is the code I use to make my tables ready for publication.</p>
+</div>
+<div class="card-attribution card-text-small justify">
+<div class="listing-author">
+
+</div>
+<div class="listing-date">
+Apr 1, 2026
+</div>
+</div>
+</div>
+</div></a>
+</div>
+<div class="g-col-1" data-index="1" data-categories="UHJvamVjdCUyME1hbmFnZW1lbnQlMkNXb3JrZmxvdyUyQ09yZ2FuaXNhdGlvbg==" data-listing-date-sort="1774875600000" data-listing-file-modified-sort="1776240406784" data-listing-date-modified-sort="NaN" data-listing-reading-time-sort="2" data-listing-word-count-sort="261">
+<a href="./extras/project-setup/index.html" class="quarto-grid-link">
+<div class="quarto-grid-item card h-100 card-left">
+<p class="card-img-top">
+<img loading="lazy" src="./extras/project-setup/files.jpg" class="thumbnail-image card-img" style="height: 150px;">
+</p>
+<div class="card-body post-contents">
+<h5 class="no-anchor card-title listing-title">
+How I Set Up Projects
+</h5>
+<div class="listing-categories">
+
+<div class="listing-category" onclick="window.quartoListingCategory('UHJvamVjdCUyME1hbmFnZW1lbnQ='); return false;">Project Management</div>
+
+<div class="listing-category" onclick="window.quartoListingCategory('V29ya2Zsb3c='); return false;">Workflow</div>
+
+<div class="listing-category" onclick="window.quartoListingCategory('T3JnYW5pc2F0aW9u'); return false;">Organisation</div>
+
+</div>
+<div class="card-text listing-description delink">
+<p>Notes on keeping everything organised with a clear work flow and file organisation.</p>
+</div>
+<div class="card-attribution card-text-small justify">
+<div class="listing-author">
+
+</div>
+<div class="listing-date">
+Mar 31, 2026
+</div>
+</div>
+</div>
+</div></a>
+</div>
+<div class="g-col-1" data-index="2" data-categories="UHJvamVjdCUyME1hbmFnZW1lbnQlMkNXb3JrZmxvdyUyQ09yZ2FuaXNhdGlvbg==" data-listing-date-sort="1774875600000" data-listing-file-modified-sort="1776240808301" data-listing-date-modified-sort="NaN" data-listing-reading-time-sort="1" data-listing-word-count-sort="194">
+<a href="./extras/conventions/index.html" class="quarto-grid-link">
+<div class="quarto-grid-item card h-100 card-left">
+<p class="card-img-top">
+<img loading="lazy" src="./extras/conventions/scripts.avif" class="thumbnail-image card-img" style="height: 150px;">
+</p>
+<div class="card-body post-contents">
+<h5 class="no-anchor card-title listing-title">
+Script Conventions
+</h5>
+<div class="listing-categories">
+
+<div class="listing-category" onclick="window.quartoListingCategory('UHJvamVjdCUyME1hbmFnZW1lbnQ='); return false;">Project Management</div>
+
+<div class="listing-category" onclick="window.quartoListingCategory('V29ya2Zsb3c='); return false;">Workflow</div>
+
+<div class="listing-category" onclick="window.quartoListingCategory('T3JnYW5pc2F0aW9u'); return false;">Organisation</div>
+
+</div>
+<div class="card-text listing-description delink">
+<p>Conventions I try to follow</p>
+</div>
+<div class="card-attribution card-text-small justify">
+<div class="listing-author">
+
+</div>
+<div class="listing-date">
+Mar 31, 2026
+</div>
+</div>
+</div>
+</div></a>
+</div>
+</div>
+<div class="listing-no-matching d-none">No matching items</div>
+</div></main> <!-- /main -->
 <script id="quarto-html-after-body" type="application/javascript">
   window.document.addEventListener("DOMContentLoaded", function (event) {
     // Ensure there is a toggle, if there isn't float one in the top right

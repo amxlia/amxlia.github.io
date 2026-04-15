@@ -1,0 +1,10 @@
+---
+title: Projects
+listing:
+    contents: projects
+    categories: unnumbered
+    sort: "date desc"
+    type: default
+grid:
+    sidebar-width: 10px
+--- 

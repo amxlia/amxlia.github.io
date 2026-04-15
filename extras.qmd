@@ -1,0 +1,11 @@
+---
+title: Extras
+listing:
+    contents: extras
+    categories: unnumbered
+    sort: "date desc"
+    type: grid
+    grid-columns: 2
+grid:
+    sidebar-width: 10px
+--- 

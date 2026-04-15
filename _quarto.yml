@@ -6,22 +6,32 @@ project:
 website:
   title: "Amelia Henry"
   search: false
-  sidebar:
-    contents:
-      - href: index.qmd
-      - href: posts/aboutme.qmd
-      - section: "Main Analyses"
+  bread-crumbs: true
+  page-navigation: true
+  navbar: 
+    background: primary
+    right:
+      - text: "Home"
+        href: index.qmd
+      - href: aboutme.qmd
+      - text: "Projects"
+        href: projects.qmd
+      - text: "Extras"
+        href: extras.qmd
+  sidebar: 
+      # - title: "Projects"
+      #   contents:
+      #   - posts/projects/hurdles.qmd
+      #   - posts/projects/sequenceandcluster.qmd
+      - title: "Extras"
         contents:
-        - posts/hurdles.qmd
-        - posts/sequenceandcluster.qmd
-      - section: "Custom Functions"
-        contents: 
-        - posts/customflextable.qmd
-      - section: "Notes"
-        contents:
-        - posts/scripts_and_workflow.qmd
-        - posts/project_setup.qmd
-
+          - section: "Custom Functions"
+            contents: 
+            - posts/extras/customflextable.qmd
+          - section: "Notes"
+            contents:
+            - posts/extras/scripts_and_workflow.qmd
+            - posts/extras/project_setup.qmd
 
 ## APPEARANCE 
 
@@ -42,7 +52,10 @@ format:
         - flatly
         - styles.scss
       dark: darkly 
-    toc: false
+    toc: true
+    toc-location: left
+    grid: 
+      sidebar-width: 200px
 
 knitr:
   opts_chunk:

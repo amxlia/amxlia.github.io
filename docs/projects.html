@@ -7,7 +7,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
 
 
-<title>Amelia Henry</title>
+<title>Projects – Amelia Henry</title>
 <style>
 /* Default styles provided by pandoc.
 ** See https://pandoc.org/MANUAL.html#variables-for-html for config info.
@@ -28,6 +28,8 @@ ul.task-list li input[type="checkbox"] {
 
 <script src="site_libs/quarto-nav/quarto-nav.js"></script>
 <script src="site_libs/quarto-nav/headroom.min.js"></script>
+<script src="site_libs/quarto-listing/list.min.js"></script>
+<script src="site_libs/quarto-listing/quarto-listing.js"></script>
 <script src="site_libs/clipboard/clipboard.min.js"></script>
 <script src="site_libs/quarto-html/quarto.js" type="module"></script>
 <script src="site_libs/quarto-html/tabsets/tabsets.js" type="module"></script>
@@ -58,11 +60,69 @@ ul.task-list li input[type="checkbox"] {
     "search-label": "Search"
   }
 }</script>
+<script>
 
+  window.document.addEventListener("DOMContentLoaded", function (_event) {
+    const listingTargetEl = window.document.querySelector('#listing-listing .list');
+    if (!listingTargetEl) {
+      // No listing discovered, do not attach.
+      return; 
+    }
+
+    const options = {
+      valueNames: ['listing-date','listing-title','listing-author','listing-image','listing-description','listing-categories',{ data: ['index'] },{ data: ['categories'] },{ data: ['listing-date-sort'] },{ data: ['listing-file-modified-sort'] }],
+      
+      searchColumns: ["listing-date","listing-title","listing-author","listing-image","listing-description","listing-categories"],
+    };
+
+    window['quarto-listings'] = window['quarto-listings'] || {};
+    window['quarto-listings']['listing-listing'] = new List('listing-listing', options);
+
+    if (window['quarto-listing-loaded']) {
+      window['quarto-listing-loaded']();
+    }
+  });
+
+  window.addEventListener('hashchange',() => {
+    if (window['quarto-listing-loaded']) {
+      window['quarto-listing-loaded']();
+    }
+  })
+  </script>
+
+  <script src="https://cdnjs.cloudflare.com/polyfill/v3/polyfill.min.js?features=es6"></script>
+  <script defer="" src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-chtml-full.js" type="text/javascript"></script>
+
+<script type="text/javascript">
+const typesetMath = (el) => {
+  if (window.MathJax) {
+    // MathJax Typeset
+    window.MathJax.typeset([el]);
+  } else if (window.katex) {
+    // KaTeX Render
+    var mathElements = el.getElementsByClassName("math");
+    var macros = [];
+    for (var i = 0; i < mathElements.length; i++) {
+      var texText = mathElements[i].firstChild;
+      if (mathElements[i].tagName == "SPAN" && texText && texText.data) {
+        window.katex.render(texText.data, mathElements[i], {
+          displayMode: mathElements[i].classList.contains('display'),
+          throwOnError: false,
+          macros: macros,
+          fleqn: false
+        });
+      }
+    }
+  }
+}
+window.Quarto = {
+  typesetMath
+};
+</script>
 
 </head>
 
-<body class="floating nav-fixed fullcontent quarto-light"><script id="quarto-html-before-body" type="application/javascript">
+<body class="floating nav-fixed quarto-light"><script id="quarto-html-before-body" type="application/javascript">
     const toggleBodyColorMode = (bsSheetEl) => {
       const mode = bsSheetEl.getAttribute("data-mode");
       const bodyEl = window.document.querySelector("body");
@@ -241,7 +301,7 @@ ul.task-list li input[type="checkbox"] {
           <div class="collapse navbar-collapse" id="navbarCollapse">
             <ul class="navbar-nav navbar-nav-scroll ms-auto">
   <li class="nav-item">
-    <a class="nav-link active" href="./index.html" aria-current="page"> 
+    <a class="nav-link" href="./index.html"> 
 <span class="menu-text">Home</span></a>
   </li>  
   <li class="nav-item">
@@ -249,7 +309,7 @@ ul.task-list li input[type="checkbox"] {
 <span class="menu-text">About Me</span></a>
   </li>  
   <li class="nav-item">
-    <a class="nav-link" href="./projects.html"> 
+    <a class="nav-link active" href="./projects.html" aria-current="page"> 
 <span class="menu-text">Projects</span></a>
   </li>  
   <li class="nav-item">
@@ -272,26 +332,106 @@ ul.task-list li input[type="checkbox"] {
 </nav>
 <div id="quarto-sidebar-glass" class="quarto-sidebar-collapse-item" data-bs-toggle="collapse" data-bs-target=".quarto-sidebar-collapse-item"></div>
 <!-- margin-sidebar -->
-    
+    <div id="quarto-margin-sidebar" class="sidebar margin-sidebar">
+    <h5 class="quarto-listing-category-title">Categories</h5><div class="quarto-listing-category category-unnumbered"><div class="category" data-category="QWxjb2hvbCUyMFVzZQ==">Alcohol Use</div><div class="category" data-category="Q2x1c3RlciUyMEFuYWx5c2lz">Cluster Analysis</div><div class="category" data-category="RGVwcmVzc2lvbg==">Depression</div><div class="category" data-category="SHVyZGxlJTIwTW9kZWxz">Hurdle Models</div><div class="category" data-category="TW9kZWxsaW5n">Modelling</div><div class="category" data-category="UHN5Y2hvbG9naWNhbCUyMERpc3RyZXNz">Psychological Distress</div><div class="category" data-category="U2VxdWVuY2UlMjBBbmFseXNpcw==">Sequence Analysis</div></div></div>
 <!-- main -->
-<main class="content" id="quarto-document-content"><header id="title-block-header" class="quarto-title-block"></header>
+<main class="content" id="quarto-document-content">
+
+
+<header id="title-block-header" class="quarto-title-block default">
+<div class="quarto-title">
+<h1 class="title">Projects</h1>
+</div>
+
+
+
+<div class="quarto-title-meta">
+
+    
+  
+    
+  </div>
+  
+
+
+</header>
 
 
 
 
 
-<section id="welcome" class="level1 unnumbered">
-<h1 class="unnumbered">Welcome</h1>
-<p>This site is essentially a living lab notebook; a running collection of how I work with data over time. I like to think of this as a mix between a portfolio and a working record.</p>
-<p><em>I am slowly migrating all my existing work to this site - bear with me!</em></p>
-<p>It brings together my approaches, projects, and things I have learned along the way. Everything here is built openly and documented as I go. The focus is on my <strong>approach</strong> and <strong>processes</strong> to conducting transparent and reproducible research, rather than on particular findings.</p>
-<p>If you find something useful, have any questions, notice something is off/spotted an error, or just want to chat, feel free to reach out!</p>
-<p>You can find me on <a href="https://www.linkedin.com/in/amelia-henry/">LinkedIn</a> or you <a href="mailto:amelia.henry@sydney.edu.au">email</a> me.</p>
 
+<div class="quarto-listing quarto-listing-container-default" id="listing-listing">
+<div class="list quarto-listing-default">
+<div class="quarto-post image-right" data-index="0" data-categories="TW9kZWxsaW5nJTJDSHVyZGxlJTIwTW9kZWxzJTJDQWxjb2hvbCUyMFVzZSUyQ1BzeWNob2xvZ2ljYWwlMjBEaXN0cmVzcw==" data-listing-date-sort="1774875600000" data-listing-file-modified-sort="1776240113657" data-listing-date-modified-sort="NaN" data-listing-reading-time-sort="43" data-listing-word-count-sort="8429">
+<div class="thumbnail"><a href="./projects/hurdles/index.html" class="no-external">
 
-</section>
+<img loading="lazy" src="./projects/hurdles/fig-interaction-1.png" class="thumbnail-image">
 
-</main> <!-- /main -->
+</a></div>
+<div class="body">
+<h3 class="no-anchor listing-title">
+<a href="./projects/hurdles/index.html" class="no-external">Negative Binomial Hurdle Models</a>
+</h3>
+<div class="listing-categories">
+
+<div class="listing-category" onclick="window.quartoListingCategory('TW9kZWxsaW5n'); return false;">Modelling</div>
+
+<div class="listing-category" onclick="window.quartoListingCategory('SHVyZGxlJTIwTW9kZWxz'); return false;">Hurdle Models</div>
+
+<div class="listing-category" onclick="window.quartoListingCategory('QWxjb2hvbCUyMFVzZQ=='); return false;">Alcohol Use</div>
+
+<div class="listing-category" onclick="window.quartoListingCategory('UHN5Y2hvbG9naWNhbCUyMERpc3RyZXNz'); return false;">Psychological Distress</div>
+
+</div>
+<div class="delink listing-description"><a href="./projects/hurdles/index.html" class="no-external">
+<p>Modelling psychological distress, alcohol and other drug use, and occupational functioning in Australian Public Safety Personnel</p>
+</a></div>
+</div>
+<div class="metadata">
+<a href="./projects/hurdles/index.html" class="no-external">
+<div class="listing-date">
+Mar 31, 2026
+</div>
+</a>
+</div>
+</div>
+<div class="quarto-post image-right" data-index="1" data-categories="U2VxdWVuY2UlMjBBbmFseXNpcyUyQ0NsdXN0ZXIlMjBBbmFseXNpcyUyQ0FsY29ob2wlMjBVc2UlMkNEZXByZXNzaW9u" data-listing-date-sort="1773925200000" data-listing-file-modified-sort="1776241439906" data-listing-date-modified-sort="NaN" data-listing-reading-time-sort="13" data-listing-word-count-sort="2436">
+<div class="thumbnail"><a href="./projects/sequenceandcluster/index.html" class="no-external">
+
+<img loading="lazy" src="./projects/sequenceandcluster/Figure_1.png" class="thumbnail-image">
+
+</a></div>
+<div class="body">
+<h3 class="no-anchor listing-title">
+<a href="./projects/sequenceandcluster/index.html" class="no-external">Sequence and Cluster Analysis</a>
+</h3>
+<div class="listing-categories">
+
+<div class="listing-category" onclick="window.quartoListingCategory('U2VxdWVuY2UlMjBBbmFseXNpcw=='); return false;">Sequence Analysis</div>
+
+<div class="listing-category" onclick="window.quartoListingCategory('Q2x1c3RlciUyMEFuYWx5c2lz'); return false;">Cluster Analysis</div>
+
+<div class="listing-category" onclick="window.quartoListingCategory('QWxjb2hvbCUyMFVzZQ=='); return false;">Alcohol Use</div>
+
+<div class="listing-category" onclick="window.quartoListingCategory('RGVwcmVzc2lvbg=='); return false;">Depression</div>
+
+</div>
+<div class="delink listing-description"><a href="./projects/sequenceandcluster/index.html" class="no-external">
+<p>Sequence and cluster analysis of daily time use data on a nationally representative sample of Australian adolescents</p>
+</a></div>
+</div>
+<div class="metadata">
+<a href="./projects/sequenceandcluster/index.html" class="no-external">
+<div class="listing-date">
+Mar 20, 2026
+</div>
+</a>
+</div>
+</div>
+</div>
+<div class="listing-no-matching d-none">No matching items</div>
+</div></main> <!-- /main -->
 <script id="quarto-html-after-body" type="application/javascript">
   window.document.addEventListener("DOMContentLoaded", function (event) {
     // Ensure there is a toggle, if there isn't float one in the top right
