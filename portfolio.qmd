@@ -24,7 +24,7 @@ Australian population based surveys
 
 - **Daily time use and co-occurring depression and alcohol consumption - results from a representative sample of Australian adolescents**: [partial code here](https://amxlia.github.io/projects/sequenceandcluster)
 - **Alcohol and other drug use, psychological distress, and occupational functioning in Australian public safety personnel**: [code here](https://amxlia.github.io/projects/hurdles/)
-- **EHealth approaches to reduce depression and alcohol use among older adults: A randomised controlled trial of online cognitive behaviour therapy and social networking among Australians over 60**
+- **EHealth approaches to reduce depression and alcohol use among older adults: A randomised controlled trial of online cognitive behaviour therapy and social networking among Australians over 60**: [code here](https://amxlia.github.io/projects/mixedeffects/)
 - The descriptive epidemiology of panic attacks and panic
 disorder in Australia 2020-22: Prevalence, correlates, age of onset, and changes over time
 -  **Barriers and facilitators to help-seeking for alcohol and other drug use among Australian public safety personnel**

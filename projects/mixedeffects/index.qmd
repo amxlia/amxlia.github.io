@@ -1,0 +1,11 @@
+---
+title: Linear Mixed Effects Models
+description: "Modelling data from an RCT examining digital interventions for depression, alcohol use, suicide risk, and loneliness in older adults"
+categories: [Modelling, Mixed Effects, Alcohol Use, Depression, Loneliness, Suicide Risk]
+date: "2026-04-14"
+image: plot-183.png
+grid:
+    margin-width: 50px
+---
+
+_code migration in process_ 
