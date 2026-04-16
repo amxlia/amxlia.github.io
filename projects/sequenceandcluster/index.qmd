@@ -8,6 +8,7 @@ grid:
     margin-width: 50px
 ---
 
+![](Figure_1.png)
 _to continue moving across from old notes_
 
 ## Introduction 

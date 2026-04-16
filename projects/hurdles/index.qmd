@@ -7,6 +7,7 @@ image: fig-interaction-1.png
 grid:
     margin-width: 50px
 ---
+![](fig-interaction-1.png)
 ## Introduction 
 In this analysis, I model alcohol and other drug use, psychological distress, and occupational functioning in Australian public safety personnel (PSP). The aims of the analysis are to: 
 
