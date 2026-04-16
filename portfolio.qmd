@@ -11,7 +11,7 @@ grid:
 
 - **Co-Occurring Psychological Distress and Alcohol Use Among Australian Adults with ADHD: A scoping review**
 - **The descriptive epidemiology of generalised anxiety disorder in Australia 2020-22** 
-- The Triple E Project: A factorial randomised controlled trial to enhance engagement with eHealth approaches to improve health risk behaviours among adolescents (**lead analyst/biostatistician**)
+- The Triple E Project: A factorial randomised controlled trial to enhance engagement with eHealth approaches to improve health risk behaviours among adolescents (**lead analyst/biostatistician**): [code here](https://amxlia.github.io/projects/engagement)
 - Psychometric properties of instruments used to measure psychological distress in Australia: A systematic review
 - Harmonising and equating psychological distress data from
 Australian population based surveys
@@ -22,8 +22,8 @@ Australian population based surveys
 
 **bolded titles indicate lead or senior role**
 
-- **Daily time use and co-occurring depression and alcohol consumption - results from a representative sample of Australian adolescents** 
-- **Alcohol and other drug use, psychological distress, and occupational functioning in Australian public safety personnel**
+- **Daily time use and co-occurring depression and alcohol consumption - results from a representative sample of Australian adolescents**: [partial code here](https://amxlia.github.io/projects/sequenceandcluster)
+- **Alcohol and other drug use, psychological distress, and occupational functioning in Australian public safety personnel**: [code here](https://amxlia.github.io/projects/hurdles/)
 - **EHealth approaches to reduce depression and alcohol use among older adults: A randomised controlled trial of online cognitive behaviour therapy and social networking among Australians over 60**
 - The descriptive epidemiology of panic attacks and panic
 disorder in Australia 2020-22: Prevalence, correlates, age of onset, and changes over time

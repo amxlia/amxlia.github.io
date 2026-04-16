@@ -1,0 +1,15 @@
+---
+title: "Factorial randomised controlled trial" 
+description: "Factorial RCT to enhance engagement with eHealth approaches to improve health risk behaviours among adolescents"
+categories: [eHealth, Prevention, Engagement, Mixed Effects, Modelling] 
+date: "2026-04-16"
+image: triplee.png
+grid:
+    margin-width: 50px
+---
+
+*Ongoing research. The details will be available soon* 
+
+I am the lead analyst/biostatistician on the Triple E project. The published protocol can be viewed [here @ BMC Public Health](https://link.springer.com/article/10.1186/s12889-024-20124-5) 
+
+The trial is registered at the Australian New Zealand Clinical Trials Registry (ACTRN12623000399695). Date registered: 19/04/2023.
