@@ -5,6 +5,8 @@ code-fold: false
 categories: [Project Management, Workflow, Organisation]
 date: "2026-03-31"
 image: files.jpg
+grid:
+    margin-width: 50px
 ---
 ## Structure 
 - create project root folder

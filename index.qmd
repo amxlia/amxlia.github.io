@@ -1,10 +1,10 @@
 ---
+title: Welcome
 toc: false
 grid:
     sidebar-width: 10px
+    margin-width: 50px
 --- 
-# Welcome {.unnumbered}
-
 This site is essentially a living lab notebook; a running collection of how I work with data over time. I like to think of this as a mix between a portfolio and a working record. 
 
 It brings together my approaches, projects, and things I have learned along the way. Everything here is built openly and documented as I go. The focus is on my **approach** and **processes** to conducting transparent and reproducible research, rather than on particular findings. 

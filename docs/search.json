@@ -158,7 +158,7 @@
     "href": "projects/sequenceandcluster/index.html",
     "title": "Sequence and Cluster Analysis",
     "section": "",
-    "text": "to continue moving across from old notes ## Introduction This analysis aims to identify distinct clusters of daily time use patterns and to examine how cluster membership is associated with depression and alcohol use, as well as their co-occurrence.\nUsing data from the Longitudinal Study of Australian Children (Wave 8, B cohort, aged 14-15), I employed sequence analysis of daily time use diary data to identify homogenous clusters of adolescents with common time use patterns.\nSubsequently, I explored membership in these clusters and their associations with depression, alcohol use, and their co-occurrence to gain insight into how daily patterns may relate to the combined challenges of depression and alcohol related issues in adolescence (document to come)\nAll analyses are split by day type (school day vs non school day)"
+    "text": "to continue moving across from old notes"
   },
   {
     "objectID": "projects/sequenceandcluster/index.html#set-up",
@@ -207,7 +207,7 @@
     "href": "index.html",
     "title": "Welcome",
     "section": "",
-    "text": "Welcome\nThis site is essentially a living lab notebook; a running collection of how I work with data over time. I like to think of this as a mix between a portfolio and a working record.\nIt brings together my approaches, projects, and things I have learned along the way. Everything here is built openly and documented as I go. The focus is on my approach and processes to conducting transparent and reproducible research, rather than on particular findings.\nIf you find something useful, have any questions, notice something is off/spotted an error, or just want to chat, feel free to reach out!\nYou can find me on LinkedIn or you can email me."
+    "text": "This site is essentially a living lab notebook; a running collection of how I work with data over time. I like to think of this as a mix between a portfolio and a working record.\nIt brings together my approaches, projects, and things I have learned along the way. Everything here is built openly and documented as I go. The focus is on my approach and processes to conducting transparent and reproducible research, rather than on particular findings.\nIf you find something useful, have any questions, notice something is off/spotted an error, or just want to chat, feel free to reach out!\nYou can find me on LinkedIn or you can email me."
   },
   {
     "objectID": "extras/project-setup/index.html",
@@ -243,5 +243,54 @@
     "title": "How I Set Up Projects",
     "section": "Secrets",
     "text": "Secrets\n\nuse usethis to create .Renviron file in root folder and add secrets in there\nfor example: API keys, database credentials etc.\ngithub will ignore this file so its not shared with collaborators\n\n\nusethis::edit_r_environ()\n\n\nafter running, edit .Renviron file\nformat specifically:\n\nAPI_KEY=\"your_api_key_here\"\nDB_USERNAME=\"your_db_username_here\"\nDB_PASSWORD=\"your_db_password_here\"\nafter saving the .Renviron file, access the secrets in your R code:\n\napi_key &lt;- Sys.getenv(\"API_KEY\")\ndb_username &lt;- Sys.getenv(\"DB_USERNAME\")\ndb_password &lt;- Sys.getenv(\"DB_PASSWORD\")"
+  },
+  {
+    "objectID": "portfolio.html",
+    "href": "portfolio.html",
+    "title": "Portfolio",
+    "section": "",
+    "text": "bolded titles indicate lead or senior role\n\nCo-Occurring Psychological Distress and Alcohol Use Among Australian Adults with ADHD: A scoping review\nThe descriptive epidemiology of generalised anxiety disorder in Australia 2020-22\nThe Triple E Project: A factorial randomised controlled trial to enhance engagement with eHealth approaches to improve health risk behaviours among adolescents (lead analyst/biostatistician)\nPsychometric properties of instruments used to measure psychological distress in Australia: A systematic review\nHarmonising and equating psychological distress data from Australian population based surveys\nShifting profiles of distress and drinking: Life course and cohort trends in psychological distress and risky alcohol consumption among adults in Australia\n\n\n\nbolded titles indicate lead or senior role\n\nDaily time use and co-occurring depression and alcohol consumption - results from a representative sample of Australian adolescents\nAlcohol and other drug use, psychological distress, and occupational functioning in Australian public safety personnel\nEHealth approaches to reduce depression and alcohol use among older adults: A randomised controlled trial of online cognitive behaviour therapy and social networking among Australians over 60\nThe descriptive epidemiology of panic attacks and panic disorder in Australia 2020-22: Prevalence, correlates, age of onset, and changes over time\nBarriers and facilitators to help-seeking for alcohol and other drug use among Australian public safety personnel"
+  },
+  {
+    "objectID": "portfolio.html#current-research",
+    "href": "portfolio.html#current-research",
+    "title": "Portfolio",
+    "section": "",
+    "text": "bolded titles indicate lead or senior role\n\nCo-Occurring Psychological Distress and Alcohol Use Among Australian Adults with ADHD: A scoping review\nThe descriptive epidemiology of generalised anxiety disorder in Australia 2020-22\nThe Triple E Project: A factorial randomised controlled trial to enhance engagement with eHealth approaches to improve health risk behaviours among adolescents (lead analyst/biostatistician)\nPsychometric properties of instruments used to measure psychological distress in Australia: A systematic review\nHarmonising and equating psychological distress data from Australian population based surveys\nShifting profiles of distress and drinking: Life course and cohort trends in psychological distress and risky alcohol consumption among adults in Australia\n\n\n\nbolded titles indicate lead or senior role\n\nDaily time use and co-occurring depression and alcohol consumption - results from a representative sample of Australian adolescents\nAlcohol and other drug use, psychological distress, and occupational functioning in Australian public safety personnel\nEHealth approaches to reduce depression and alcohol use among older adults: A randomised controlled trial of online cognitive behaviour therapy and social networking among Australians over 60\nThe descriptive epidemiology of panic attacks and panic disorder in Australia 2020-22: Prevalence, correlates, age of onset, and changes over time\nBarriers and facilitators to help-seeking for alcohol and other drug use among Australian public safety personnel"
+  },
+  {
+    "objectID": "portfolio.html#peer-reviewed-publications",
+    "href": "portfolio.html#peer-reviewed-publications",
+    "title": "Portfolio",
+    "section": "Peer-Reviewed Publications",
+    "text": "Peer-Reviewed Publications\nbolded titles indicate lead or senior role\n\nIdentifying psychological distress data available in nationally representative surveys: A scoping review and case study of Australian surveys: link\nTrauma exposure, post-traumatic stress disorder and alcohol and other drug use among Australian public safety personnel: link\nMedia representation of methamphetamine-related deaths: Exploring links to public stigma and support for harm reduction: link"
+  },
+  {
+    "objectID": "portfolio.html#other-research-outputs",
+    "href": "portfolio.html#other-research-outputs",
+    "title": "Portfolio",
+    "section": "Other Research Outputs",
+    "text": "Other Research Outputs\nbolded titles indicate lead or senior role\n\nStable Ground: Providing free resources and support information for NSW government agencies\nA searchable repository of metadata for psychological distress datasets\nYou’ve got a friend. Young people help each other with their mental health for 3.5 hours every week. The Conversation\nNSW Youth Health and Wellbeing Strategy: Consultation Report. NSW Ministry of Health\nNSW Youth Health and Wellbeing Strategy: An Evidence Summary. NSW Ministry of Health\nThe challenges and opportunities for law enforcement in addressing Australia’s illicit drug problem. Submission into the Parliamentary Joint Committee on Law Enforcement - The Matilda Centre for Research in Mental Health and Substance Use: link\nResults from a pilot implementation trial of Stable Ground: A report for icare NSW\nResults from a pilot implementation trial of Stable Ground: A report for NSW Ambulance\nResults from a pilot implementation trial of Stable Ground: A report for Corrective Services NSW"
+  },
+  {
+    "objectID": "portfolio.html#talks-and-presentations",
+    "href": "portfolio.html#talks-and-presentations",
+    "title": "Portfolio",
+    "section": "Talks and Presentations",
+    "text": "Talks and Presentations\n\nInvited Talks\n\nStable Ground: Research and survey findings, alcohol and other drug use in emergency services. Keynote Speaker. NSW Ambulance Alcohol and Other Drug Summit\nStable Ground: An online portal for alcohol and other drug use among public safety employees. Presentation to the Public Service Association of NSW, Commissioned Officers Vocational Branch.\nStable Ground: An online portal for alcohol and other drug use among public safety employees. Presentation to the Public Service Association of NSW, Prison Officers Vocational Branch.\nThe development of a multi-modal stepped-care approach to address alcohol and other drug use in public sector employees. Presentation at the NSW Ambulance Chaplain’s Conference.\nThe development of a multi-modal stepped-care approach to address alcohol and other drug use in public sector employees. Presentation to the Council of Ambulance Authorities Mental Health and Wellbeing Forum.\n\n\n\nConferences\n\nEHealth approaches to reduce depression, alcohol use, suicide risk, and loneliness among older adults: A randomised controlled trial of online cognitive-behaviour therapy and social networking among Australians over 60. Society for Mental Health Research Annual Meeting, Adelaide, SA, Australia. 2025.\nAlcohol and other drug use and psychological distress among public safety personnel: Implications for occupational functioning. Society for Mental Health Research Annual Meeting, Adelaide, SA, Australia. 2025.\nDaily time use and co-occurring psychological distress and alcohol consumption: Results from a representative sample of Australian adolescents. Society for Mental Health Research Annual Meeting, Sydney NSW, Australia. 2024.\nInvestigating public safety personnel’s barriers and facilitators to help-seeking for alcohol and other drug use problems. Society for Mental Health Research Annual Meeting, Sydney NSW, Australia. 2024.\nPreference for alcohol and other drug use support among Australian Public Safety Personnel. Society for Mental Health Research Annual Meeting, Sydney NSW, Australia. 2024.\nDevelopment of an online brief intervention for alcohol and other drug use in public safety personnel. 12th International Society for Research on Internet Interventions (ISRII) Scientific Meeting. 2024.\nThe development of a multi-modal stepped-care approach to address alcohol and other drug use in public sector employees. In Samineh Sanatkar (Chair), Mental health at the frontlines: Prevalence of mental health conditions, barriers to care, and novel treatment modalities for Australia’s emergency service workers. Symposium conducted at the Society for Mental Health Research Annual Meeting, Perth, WA, Australia. 2023.\nThe development of a multi-modal stepped-care approach to address alcohol and other drug use in public sector employees. Poster. 23rd World Congress on Safety & Health at Work. 2023\nDevelopment of an online brief intervention for alcohol and other drug use in social and emergency services employees (Steady program). Society for Mental Health Research Annual Meeting, Perth, WA, Australia. 2023.\nTrauma exposure, post-traumatic stress disorder, and alcohol and other drug use among Australian public safety personnel. Society for Mental Health Research Annual Meeting, Perth, WA, Australia. 2023.\nAdvantaged groups use social creativity and social competition action strategies to express different forms of prejudice. In Anna Kende & Barbara Lášticová, A modest proposal to revisit theories of collective action by and for marginalized groups. Symposium conducted at the European Association of Social Psychology General Meeting, Kraków, Poland. 2023."
+  },
+  {
+    "objectID": "portfolio.html#teaching",
+    "href": "portfolio.html#teaching",
+    "title": "Portfolio",
+    "section": "Teaching",
+    "text": "Teaching\n\nBEHV 1018 Human Behaviour (1st Year) – 2018, 2019, 2020, 2021\nBEHV 1016 Behavioural Science (1st Year) – 2018, 2019, 2020, 2021\nBEHV 1021 The Individual in Society (1st Year) – 2019, 2020, 2021, 2022\nBEHV 3023 Social Psychology (3rd Year) – 2019, 2020, 2021\nBEHV 3018 Psychology and the Online World (3rd Year) – 2018, 2019, 2020, 2021\nMATH 2006 Experimental Design and Analysis (2nd Year) – 2020, 2021\nBEHV 3007 Cognitive Processes (2nd Year) – 2021\nCULT 3001 Applied Social Research (3rd Year) – 2020, 2021, 2022"
+  },
+  {
+    "objectID": "projects/sequenceandcluster/index.html#introduction",
+    "href": "projects/sequenceandcluster/index.html#introduction",
+    "title": "Sequence and Cluster Analysis",
+    "section": "Introduction",
+    "text": "Introduction\nThis analysis aims to identify distinct clusters of daily time use patterns and to examine how cluster membership is associated with depression and alcohol use, as well as their co-occurrence.\nUsing data from the Longitudinal Study of Australian Children (Wave 8, B cohort, aged 14-15), I employed sequence analysis of daily time use diary data to identify homogenous clusters of adolescents with common time use patterns.\nSubsequently, I explored membership in these clusters and their associations with depression, alcohol use, and their co-occurrence to gain insight into how daily patterns may relate to the combined challenges of depression and alcohol related issues in adolescence (document to come)\nAll analyses are split by day type (school day vs non school day)"
   }
 ]

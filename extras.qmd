@@ -8,4 +8,5 @@ listing:
     grid-columns: 2
 grid:
     sidebar-width: 10px
+    margin-width: 150px
 --- 

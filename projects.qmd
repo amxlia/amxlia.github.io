@@ -7,4 +7,5 @@ listing:
     type: default
 grid:
     sidebar-width: 10px
+    margin-width: 150px
 --- 

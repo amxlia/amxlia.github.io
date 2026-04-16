@@ -1,0 +1,85 @@
+---
+title: "Portfolio"
+format: html
+grid:
+    margin-width: 10px
+--- 
+
+## Current Research
+
+**bolded titles indicate lead or senior role**
+
+- **Co-Occurring Psychological Distress and Alcohol Use Among Australian Adults with ADHD: A scoping review**
+- **The descriptive epidemiology of generalised anxiety disorder in Australia 2020-22** 
+- The Triple E Project: A factorial randomised controlled trial to enhance engagement with eHealth approaches to improve health risk behaviours among adolescents (**lead analyst/biostatistician**)
+- Psychometric properties of instruments used to measure psychological distress in Australia: A systematic review
+- Harmonising and equating psychological distress data from
+Australian population based surveys
+- Shifting profiles of distress and drinking: Life course and cohort trends in psychological distress and risky alcohol consumption among adults in Australia
+
+
+### Current Research Under Review
+
+**bolded titles indicate lead or senior role**
+
+- **Daily time use and co-occurring depression and alcohol consumption - results from a representative sample of Australian adolescents** 
+- **Alcohol and other drug use, psychological distress, and occupational functioning in Australian public safety personnel**
+- **EHealth approaches to reduce depression and alcohol use among older adults: A randomised controlled trial of online cognitive behaviour therapy and social networking among Australians over 60**
+- The descriptive epidemiology of panic attacks and panic
+disorder in Australia 2020-22: Prevalence, correlates, age of onset, and changes over time
+-  **Barriers and facilitators to help-seeking for alcohol and other drug use among Australian public safety personnel**
+
+
+## Peer-Reviewed Publications 
+
+**bolded titles indicate lead or senior role**
+
+- Identifying psychological distress data available in nationally representative surveys: A scoping review and case study of Australian surveys: [link](https://pmc.ncbi.nlm.nih.gov/articles/PMC12855228/)
+- **Trauma exposure, post-traumatic stress disorder and alcohol and other drug use among Australian public safety personnel**: [link](https://pmc.ncbi.nlm.nih.gov/articles/PMC12022364/)
+- Media representation of methamphetamine-related deaths: Exploring links to public stigma and support for harm reduction: [link](https://pubmed.ncbi.nlm.nih.gov/40913896/)
+
+
+## Other Research Outputs 
+
+**bolded titles indicate lead or senior role**
+
+- **[Stable Ground](https://stableground.org.au): Providing free resources and support information for NSW government agencies**
+- [A searchable repository](https://deannavarley.shinyapps.io/the_australian_psychological_distress_data_search_tool/) of metadata for psychological distress datasets 
+- **You’ve got a friend. Young people help each other with their mental health for 3.5 hours every week. [The Conversation](https://theconversation.com/youve-got-a-friend-young-people-help-each-other-with-their-mental-health-for-3-5-hours-every-week-194530)**
+- NSW Youth Health and Wellbeing Strategy: Consultation Report. NSW Ministry of Health
+- NSW Youth Health and Wellbeing Strategy: An Evidence Summary. NSW Ministry of Health
+- The challenges and opportunities for law enforcement in addressing Australia’s illicit drug problem. Submission into the Parliamentary Joint Committee on Law Enforcement - The Matilda Centre for Research in Mental Health and Substance Use: [link](https://www.aph.gov.au/Parliamentary_Business/Committees/Joint/Law_Enforcement/IllicitDrugs/Submissions)
+- **Results from a pilot implementation trial of Stable Ground: A report for icare NSW**
+- **Results from a pilot implementation trial of Stable Ground: A report for NSW Ambulance**
+- **Results from a pilot implementation trial of Stable Ground: A report for Corrective Services NSW**
+
+## Talks and Presentations
+### Invited Talks 
+- Stable Ground: Research and survey findings, alcohol and other drug use in emergency services. **Keynote Speaker. NSW Ambulance Alcohol and Other Drug Summit**
+- Stable Ground: An online portal for alcohol and other drug use among public safety employees. **Presentation to the Public Service Association of NSW, Commissioned Officers Vocational Branch**.
+- Stable Ground: An online portal for alcohol and other drug use among public safety employees. **Presentation to the Public Service Association of NSW, Prison Officers Vocational Branch.**
+- The development of a multi-modal stepped-care approach to address alcohol and other drug use in public sector employees. **Presentation at the NSW Ambulance Chaplain’s Conference**.
+- The development of a multi-modal stepped-care approach to address alcohol and other drug use in public sector employees. **Presentation to the Council of Ambulance Authorities Mental Health and Wellbeing Forum.**
+
+### Conferences 
+- EHealth approaches to reduce depression, alcohol use, suicide risk, and loneliness among older adults: A randomised controlled trial of online cognitive-behaviour therapy and social networking among Australians over 60. Society for Mental Health Research Annual Meeting, Adelaide, SA, Australia. 2025. 
+- Alcohol and other drug use and psychological distress among public safety personnel: Implications for occupational functioning. Society for Mental Health Research Annual Meeting, Adelaide, SA, Australia. 2025.
+- Daily time use and co-occurring psychological distress and alcohol consumption: Results from a representative sample of Australian adolescents. Society for Mental Health Research Annual Meeting, Sydney NSW, Australia. 2024.
+- Investigating public safety personnel’s barriers and facilitators to help-seeking for alcohol and other drug use problems. Society for Mental Health Research Annual Meeting, Sydney NSW, Australia. 2024.
+- Preference for alcohol and other drug use support among Australian Public Safety Personnel. Society for Mental Health Research Annual Meeting, Sydney NSW, Australia. 2024.
+- Development of an online brief intervention for alcohol and other drug use in public safety personnel. 12th International Society for Research on Internet Interventions (ISRII) Scientific Meeting. 2024. 
+- The development of a multi-modal stepped-care approach to address alcohol and other drug use in public sector employees. In Samineh Sanatkar (Chair), Mental health at the frontlines: Prevalence of mental health conditions, barriers to care, and novel treatment modalities for Australia’s emergency service workers. Symposium conducted at the Society for Mental Health Research Annual Meeting, Perth, WA, Australia. 2023.
+- The development of a multi-modal stepped-care approach to address alcohol and other drug use in public sector employees. Poster. 23rd World Congress on Safety & Health at Work. 2023
+- Development of an online brief intervention for alcohol and other drug use in social and emergency services employees (Steady program). Society for Mental Health Research Annual Meeting, Perth, WA, Australia. 2023.
+- Trauma exposure, post-traumatic stress disorder, and alcohol and other drug use among Australian public safety personnel. Society for Mental Health Research Annual Meeting, Perth, WA, Australia. 2023.
+- Advantaged groups use social creativity and social competition action strategies to express different forms of prejudice. In Anna Kende & Barbara Lášticová, A modest proposal to revisit theories of collective action by and for marginalized groups. Symposium conducted at the European Association of Social Psychology General Meeting, Kraków, Poland. 2023. 
+
+## Teaching 
+- BEHV 1018 Human Behaviour (1st Year) – 2018, 2019, 2020, 2021
+- BEHV 1016 Behavioural Science (1st Year) – 2018, 2019, 2020, 2021
+- BEHV 1021 The Individual in Society (1st Year) – 2019, 2020, 2021, 2022
+- BEHV 3023 Social Psychology (3rd Year) – 2019, 2020, 2021
+- BEHV 3018 Psychology and the Online World (3rd Year) – 2018, 2019, 2020, 2021
+- MATH 2006 Experimental Design and Analysis (2nd Year) – 2020, 2021
+- BEHV 3007 Cognitive Processes (2nd Year) – 2021 
+- CULT 3001 Applied Social Research (3rd Year) – 2020, 2021, 2022

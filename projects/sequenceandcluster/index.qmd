@@ -4,8 +4,12 @@ description: Sequence and cluster analysis of daily time use data on a nationall
 categories: [Sequence Analysis, Cluster Analysis, Alcohol Use, Depression]
 date: "2026-03-20"
 image: Figure_1.png
+grid:
+    margin-width: 50px
 ---
+
 _to continue moving across from old notes_
+
 ## Introduction 
 This analysis aims to identify distinct clusters of daily time use patterns and to examine how cluster membership is associated with depression and alcohol use, as well as their co-occurrence. 
 
@@ -21,7 +25,7 @@ Four items were loaded:
 - `tuddatab.csv` — the time-use diary data at the episode level (one row per activity episode per participant)
 - `lsacdatab.csv` — LSAC wave-level data providing demographic covariates and survey weights
 - `act_dict.RDS` - the recoded activities into collapsed/shorter list
-- `my_flextable()` - [my custom function](https://amxlia.github.io/posts/customflextable.html) for formatting flextables
+- `my_flextable()` - [my custom function](https://amxlia.github.io/extras/flextablefunction/) for formatting flextables
 
 ```{r}
 #| label: setup-packages

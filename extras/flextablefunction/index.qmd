@@ -6,6 +6,9 @@ categories: [Functions, Formatting, Tables]
 date: "2026-04-01"
 image: tbl1.png
 toc: false
+grid:
+    sidebar-width: 10px
+    margin-width: 10px
 ---
 *Purpose:* Styling functions for producing publication-ready tables. All tables follow APA-adjacent formatting
 

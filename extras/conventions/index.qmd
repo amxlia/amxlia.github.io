@@ -5,6 +5,8 @@ code-fold: false
 categories: [Project Management, Workflow, Organisation]
 date: "2026-03-31"
 image: scripts.avif
+grid:
+    margin-width: 50px
 ---
 
 ## Scripts

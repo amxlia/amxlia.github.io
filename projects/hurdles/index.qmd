@@ -4,6 +4,8 @@ description: Modelling psychological distress, alcohol and other drug use, and o
 categories: [Modelling, Hurdle Models, Alcohol Use, Psychological Distress]
 date: "2026-03-31"
 image: fig-interaction-1.png
+grid:
+    margin-width: 50px
 ---
 ## Introduction 
 In this analysis, I model alcohol and other drug use, psychological distress, and occupational functioning in Australian public safety personnel (PSP). The aims of the analysis are to: 
