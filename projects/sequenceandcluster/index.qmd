@@ -21,13 +21,6 @@ Subsequently, I explored membership in these clusters and their associations wit
 All analyses are split by day type (school day vs non school day)
 
 ## Set-Up 
-Four items were loaded:
-
-- `tuddatab.csv` — the time-use diary data at the episode level (one row per activity episode per participant)
-- `lsacdatab.csv` — LSAC wave-level data providing demographic covariates and survey weights
-- `act_dict.RDS` - the recoded activities into collapsed/shorter list
-- `my_flextable()` - [my custom function](https://amxlia.github.io/extras/flextablefunction/) for formatting flextables
-
 ```{r}
 #| label: setup-packages
 #| results: hide
@@ -65,46 +58,40 @@ source(here("R/customflextable.R"))
 ```
 
 ## Data processing 
-First we need to filter for accurate diaries. This involves flagging those who did not have problematic diary entries (e.g., out of order, incorrect, or with activity outside of 'awake' hours).
+Filter for accurate diaries and flag school/non-school days. 
 ```{r}
 # filter for accurate diaries
-data1 <- data0 |> 
-    # group by individual 
-  group_by(hicid) |> 
-    # flag cases to keep 
+data1 <- data0 |>
+  # group by individual
+  group_by(hicid) |>
+  # flag cases to keep
   mutate(
-    keep_school = any(school == 1 & alarm1 == 2 & alarm2 == 2), 
+    keep_school = any(school == 1 & alarm1 == 2 & alarm2 == 2),
     keep_nonschool = any(
       (school == -9 | school == 2) & alarm1 == 2 & alarm2 == 2
     ),
     keep_any = keep_school | keep_nonschool
   ) |>
   ungroup() |>
-  # filter the data 
-  filter(keep_any) 
-```
+  # filter the data
+  filter(keep_any)
 
-We need to create an indicator that classifies the diary entry as either a school or non-school day diary 
-```{r}
-#| label: day-type
+# create indicator that classifies diary as either a school or non-school day diary
 id_daytype <- data1 |>
   group_by(hicid) |>
   summarise(
     day_type = case_when(
-      any(school == 1)            ~ "school",
-      any(school %in% c(-9, 2))  ~ "nonschool",
-      TRUE                        ~ NA_character_
+      any(school == 1) ~ "school",
+      any(school %in% c(-9, 2)) ~ "nonschool",
+      TRUE ~ NA_character_
     ),
     .groups = "drop"
   )
 ```
 
-::: {.callout-note}
-## sample size 
-at this stage, we have 1321 valid diaries on school days and 1435 on non-school days 
-:::
+At this stage, we have 1321 valid diaries on school days and 1435 on non-school days. 
 
-Now we need to convert episode start times and wake/sleep times. Needed to write a custom function to convert episode start times from character format to `POSIXct`, to deal the PM-to-AM transition across midnight (diaries run from 4am to 4am the following day)
+Convert episode start times and wake/sleep times and deal with the PM-to-AM transition after midnight as diaries run from 4am to 4am the following day. 
 
 ```{r}
 # function for converting times 
@@ -138,19 +125,23 @@ data2$sleept <- if_else(
 
 ```
 
-Because sleep episodes aren't captured as diariy entries, I had to incorporate wake and sleep times as explicit episodes (coded as `mainact == 0`, i.e., sleep). I also needed to have a fixed 4:00AM start and 4:00AM finish. 
+Sleep episodes aren't captured as diariy entries. Incorporate wake and sleep times as explicit episodes force a fixed 4:00AM start and 4:00AM finish. 
 
 ```{r}
-# select subset of data to use with sequence analysis 
+# select subset of data to use with sequence analysis
 data3 <- data2 |>
   select(hicid, stimet, mainact) |>
   left_join(id_daytype, by = "hicid")
-# incorporate sleeptimes into main activities vector 
+
+# incorporate sleeptimes into main activities vector
 # add the first awake time and first sleep time per id when main act == 0 (sleep)
-awake_times <- data2 |> 
-  group_by(hicid) |> 
+awake_times <- data2 |>
+  group_by(hicid) |>
   summarise(
-    stimet = first(awaket), mainact = 0, .groups = "drop") |> 
+    stimet = first(awaket),
+    mainact = 0,
+    .groups = "drop"
+  ) |>
   left_join(id_daytype, by = "hicid")
 
 sleep_times <- data2 %>%
@@ -158,27 +149,35 @@ sleep_times <- data2 %>%
   summarise(stimet = first(sleept), mainact = 0, .groups = "drop") %>%
   left_join(id_daytype, by = "hicid")
 
-# bind the data 
-data4 <- bind_rows(data3, awake_times, sleep_times) |> 
+# bind the data
+data4 <- bind_rows(data3, awake_times, sleep_times) |>
   arrange(hicid, stimet)
 
 # add start and stop times (4am to 4am next day) for each id
 start_time <- data2 %>%
   group_by(hicid) %>%
-  summarise(stimet = parse_date_time("04:00 AM", "%I:%M: %p"), mainact = 0, .groups = "drop") %>%
+  summarise(
+    stimet = parse_date_time("04:00 AM", "%I:%M: %p"),
+    mainact = 0,
+    .groups = "drop"
+  ) %>%
   left_join(id_daytype, by = "hicid")
 
 stop_times <- data2 %>%
   group_by(hicid) %>%
-  summarise(stimet = parse_date_time("04:00 AM", "%I:%M: %p") + days(1), mainact = 0, .groups = "drop") %>%
+  summarise(
+    stimet = parse_date_time("04:00 AM", "%I:%M: %p") + days(1),
+    mainact = 0,
+    .groups = "drop"
+  ) %>%
   left_join(id_daytype, by = "hicid")
 
-# bind to data 
-data5 <- bind_rows(data4, start_time, stop_times) |> 
+# bind to data
+data5 <- bind_rows(data4, start_time, stop_times) |>
   arrange(hicid, stimet)
 ```
 
-Then we need to compute durations of each activity (difference btw episode start/finish time) 
+Compute durations of each activity 
 ```{r}
 # filter out stop and start times that are the same for each id
 # calculate the duration between start_time and stop_time 
@@ -209,24 +208,21 @@ Original activity codes were mapped to ten aggregate activity categories (in `ac
 | 10   | Travel                |
 
 ```{r}
-# recode the activities into a smaller number of grouped activities 
+# recode the activities into a smaller number of grouped activities
 data6$act_rec <- recode(data6$mainact, !!!act_dict)
 
-# remove cases with NA codes for recoded activities 
+# remove cases with NA codes for recoded activities
 filtered_data6 <- data6 %>%
   group_by(hicid) %>%
   filter(!any(is.na(act_rec))) %>%
   ungroup()
-```
 
-Ran a quick completion check to make sure all diaries summed to exactly 1440 mins (24 hours). Those who's exceeded this duration were removed. 
-```{r}
 # check that all cases sum to 1440 mins (24 hours)
 sumtime <- filtered_data6 %>%
   group_by(hicid) %>%
   summarise(sumtime = sum(duration))
 
-# remove cases with sum of the duration longer than 1440 
+# remove cases with sum of the duration longer than 1440
 filtered_data7 <- filtered_data6 %>%
   group_by(hicid) %>%
   filter(sum(duration) <= 1440) %>%
@@ -236,33 +232,30 @@ sumtime <- filtered_data7 %>%
   group_by(hicid) %>%
   summarise(sumtime = sum(duration))
 ```
-We have 2641 unique diaries at this stage. n = 1270 on school days and 1371 on non school days 
+
+Final analytic sample n = 2641. n = 1270 on school days and n = 1371 on non school days 
 
 ## Sequence Construction 
-Created a data frame where ach participant's activity was expanded to a matrix with 1440 columns, and each activity code was repeated for its duration in minutes (1 col = 1 minute)
-
 ```{r}
 # create the sequence dataframe with one long vector of activities repeated by their duration (minutes)
 sequences <- rep(
-  as.numeric(filtered_data7$act_rec), 
+  as.numeric(filtered_data7$act_rec),
   as.numeric(filtered_data7$duration)
 )
 
 # reshape the matrix where each row = participant, column = minute (1440 columns)
 seq <- matrix(
   sequences,
-  nrow = length(sequences)/1440,
+  nrow = length(sequences) / 1440,
   ncol = 1440,
   byrow = TRUE
 )
-
 
 # create variable names for each of the minutes
 activities <- c()
 for (i in 0:1439) {
   activities <- c(activities, paste("var", i, sep = ""))
 }
-
 
 # transform matrix to dataframe and label rows by participant id
 # get the same ordering as the constructed rows
@@ -271,7 +264,7 @@ id_order <- filtered_data7 |>
   pull(hicid)
 stopifnot(length(id_order) == nrow(seq))
 
-# used created vars names to name the columns in the dataframe and hicid for row names 
+# used created vars names to name the columns in the dataframe and hicid for row names
 data <- as.data.frame(seq, row.names = id_order)
 colnames(data) <- activities
 
@@ -298,30 +291,28 @@ labels <- c(
   "Socialising",
   "Travel"
 )
-
 ```
 
-Survey weights (`hweights`) from the LSAC data were merged. The matrix was then split into school and non-school days. 
+Join to survey data 
 ```{r}
-
 # get the day from the main data set
 day_week <- data2 %>%
   select(hicid, day, school, nosch) %>%
   group_by(hicid) %>%
   summarise(day = first(day), school = first(school), nosch = first(nosch))
-# link data back to the ids in the sequence matrix 
+# link data back to the ids in the sequence matrix
 data_day <- data.frame(hicid = as.numeric(rownames(data)))
 data_day <- left_join(data_day, day_week, by = "hicid")
 
-# merge survey weights into the data 
+# merge survey weights into the data
 lsacweights <- data.frame(hicid = datalsac$hicid, hweights = datalsac$hweights)
 data_day <- left_join(data_day, lsacweights, by = "hicid")
 
-# create day type factor 
-data_day <- data_day |> 
+# create day type factor
+data_day <- data_day |>
   mutate(
     day_rec = case_when(
-      school == 1 ~ "School", 
+      school == 1 ~ "School",
       school %in% c(-9, 2) ~ "Non-school",
       TRUE ~ NA_character_
     ),
@@ -337,21 +328,27 @@ s_data <- data[as.character(s_id), , drop = FALSE]
 n_data <- data[as.character(n_id), , drop = FALSE]
 
 # keep weights separately
-s_w <- data_day |> filter(hicid %in% s_id) |> arrange(match(hicid, s_id)) |> pull(hweights)
-n_w <- data_day |> filter(hicid %in% n_id) |> arrange(match(hicid, n_id)) |> pull(hweights)
+s_w <- data_day |>
+  filter(hicid %in% s_id) |>
+  arrange(match(hicid, s_id)) |>
+  pull(hweights)
+n_w <- data_day |>
+  filter(hicid %in% n_id) |>
+  arrange(match(hicid, n_id)) |>
+  pull(hweights)
 
 stopifnot(nrow(s_data) == length(s_w))
 stopifnot(nrow(n_data) == length(n_w))
+
 # create sequence object for each group
 # Make `activities` match the s_data columns
 activities <- colnames(s_data)
 stopifnot(length(activities) == ncol(s_data))
 ```
 
-## Sequence objects
-`seqdef()` from `TraMineR` was then used to create sequence objects for each day-type group. Sequences were defined over the ten aggregate activity states
-
+Create sequence objects
 ```{r}
+# create sequence objects
 seqs <- seqdef(
   s_data,
   var = activities,
@@ -373,22 +370,20 @@ seqn <- seqdef(
 )
 ```
 
-Sequences were then collapsed into 5-min intervals to reduce the compositional burden and then a substitution cost matrix was built to calculate distance (through optimal matching with an indel cost of 1)
-
+Collapse into 5minute intervals for computation purposes and get substitution cost matrix based on observed transition rates 
 ```{r}
 #| eval: false 
-# collapse into 5-min intervals (from 1 minute intervals); matches old scripts
+# collapse into 5-min intervals (from 1 minute intervals);
 seqs5 <- seqgranularity(seqs, tspan = 5, method = "mostfreq")
 seqn5 <- seqgranularity(seqn, tspan = 5, method = "mostfreq")
 
-# compute substitution cost matrix based on observed transition rates; do per group, matches old scripts
+# compute substitution cost matrix based on observed transition rates;
 scosts <- seqsubm(seqs5, method = "TRATE")
 scostn <- seqsubm(seqn5, method = "TRATE")
 
-# optimal matching; indel cost = 1, matches old scripts
+# optimal matching; indel cost = 1,
 om_times <- seqdist(seqs5, method = "OM", indel = 1, sm = scosts)
 om_timen <- seqdist(seqn5, method = "OM", indel = 1, sm = scostn)
-
 ```
 
 ```{r}
@@ -406,6 +401,7 @@ sequence_objects <- readRDS(here("R/sequence_objects.RDS"))
 ```
 
 ## Descriptives of Sequences 
+Across both day types, sleep made up the largest proportion of daily time, ranging from 6 – 10.5 hours. 
 ```{r}
 # school days
 statemeans <- as_tibble(
@@ -429,7 +425,7 @@ statemeans <- as_tibble(
   select(-SD) |>
   rename(`Mean minutes (SD)` = Mean, `% of Day` = Percent)
 
-# non school days 
+# non school days
 statemeann <- as_tibble(
   round(seqmeant(seqn, serr = TRUE), 1),
   rownames = "State"
@@ -454,32 +450,118 @@ statemeann <- as_tibble(
 
 # create overall descriptives table
 descriptives <- statemeans |> left_join(statemeann, by = "State")
-descriptives <- descriptives |> 
+descriptives <- descriptives |>
   rename(
-    minss = `Mean minutes (SD).x`, 
+    minss = `Mean minutes (SD).x`,
     percs = `% of Day.x`,
-    minsn = `Mean minutes (SD).y`, 
+    minsn = `Mean minutes (SD).y`,
     percn = `% of Day.y`,
- )
+  )
 
 descriptives_tbl <- descriptives |> flextable()
 
 typology <- data.frame(
   col_keys = names(descriptives_tbl$body$dataset),
-  head = c("", rep("School days", 2), rep("Non-school days",2)),
+  head = c("", rep("School days", 2), rep("Non-school days", 2)),
   head2 = c(
-    "Activity", rep(c("Mean minutes (SD)", "% of Day"), 2)))
+    "Activity",
+    rep(c("Mean minutes (SD)", "% of Day"), 2)
+  )
+)
 descriptives_tbl <- descriptives_tbl |>
-  set_header_df(mapping = typology, key = "col_keys") |> 
+  set_header_df(mapping = typology, key = "col_keys") |>
   merge_at(i = 1, j = c(2:3), part = "header") |>
-  merge_at(i = 1, j = c(4:5), part = "header") |> 
-  align(align = "center", part = "all") |>
-  my_flextable() |> 
-  hline(i = c(1,2), part = "header", border = fp_border(color = "black")) %>%
+  merge_at(i = 1, j = c(4:5), part = "header") |>
+  align(align = "center", j = c(2:5), part = "all") |>
+  my_flextable() |>
+  hline(i = c(1, 2), part = "header", border = fp_border(color = "black")) %>%
   hline_top(border = fp_border(color = "black"), part = "all") |>
-  hline_bottom(border = fp_border(color = "black"), part = "all") 
+  hline_bottom(border = fp_border(color = "black"), part = "all")
 
 descriptives_tbl
+```
+
+## Sequence Plots 
+```{r}
+# set colour palette for plots
+colourCount = length(labels)
+getPalette = colorRampPalette(brewer.pal(10, "Set3"))
+colours <- getPalette(colourCount)
+colours <- c("#8DD3C7", "#FFFFB3", "#BEBADA", "#FB8072", "#80B1D3", "#FDB462", "#B3DE69", "#D9D9D9", "#FCCDE5",  "#BC80BD")
+
+cpal(seqs) <- colours
+cpal(seqn) <- colours
+
+# create labels
+behaviour_labs <- c(
+  "1" = "Sleep",
+  "2" = "Education",
+  "3" = "Work (paid/unpaid)",
+  "4" = "Personal care",
+  "5" = "Eating and drinking",
+  "6" = "Sedentary behaviour",
+  "7" = "Physical activity",
+  "8" = "Leisure",
+  "9" = "Socialising",
+  "10" = "Travel"
+)
+
+plot_labs <- c(
+  "Sleep",
+  "Education",
+  "Work",
+  "Personal\ncare",
+  "Eating and\ndrinking",
+  "Sedentary\nbehaviour",
+  "Physical\nactivity",
+  "Leisure",
+  "Socialising",
+  "Travel"
+)
+
+common_theme <- theme(plot.margin = margin(8, 10, 12, 12))
+```
+
+### Transversal plots
+Mean time plot displaying the average amount of time in each activity state
+```{r}
+#| label: fig-1
+#| fig-cap: "Mean time plots on school and non-school days"
+#| fig-width: 8
+#| fig-height: 8
+meantimeplot1 <- ggseqmtplot(seqs, weighted = TRUE) +
+  scale_y_continuous(breaks = seq(0, 700, 50), limits = c(0, 700)) +
+  labs(title = "School days", y = "Mean minutes per day") +
+  scale_x_discrete(labels = plot_labs) +
+  labs_pubr() +
+  theme_pubclean() +
+   theme(
+    plot.title = element_text(size = 12, hjust = 0.5, face = "bold"),
+    legend.position = "none",
+    axis.title = element_text(size = 10, face = "bold"),
+    axis.text = element_text(size = 9, face = "bold"),
+    panel.border = element_rect(colour = "black", fill = NA, linewidth = 0.8)
+  
+   ) + common_theme
+ 
+meantimeplot2 <- ggseqmtplot(seqn, weighted = TRUE) +
+  scale_y_continuous(breaks = seq(0, 700, 50), limits = c(0, 700)) +
+  labs(title = "Non-school days", y = "Mean minutes per day") +
+ scale_x_discrete(labels = plot_labs) +
+   labs_pubr() +
+  theme_pubclean() +
+   theme(
+    plot.title = element_text(size = 12, hjust = 0.5, face = "bold"),
+    legend.position = "none",
+    axis.title = element_text(size = 10, face = "bold"),
+    axis.text = element_text(size = 9, face = "bold"),
+    panel.border = element_rect(colour = "black", fill = NA, linewidth = 0.8)
+  
+   ) + common_theme
+
+meantimeplot <- wrap_elements(full = meantimeplot1) / wrap_elements(full = meantimeplot2)
+
+meantimeplot
 ```
 
 _to be continued_

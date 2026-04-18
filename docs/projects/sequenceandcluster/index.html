@@ -319,8 +319,11 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
   <li><a href="#set-up" id="toc-set-up" class="nav-link" data-scroll-target="#set-up">Set-Up</a></li>
   <li><a href="#data-processing" id="toc-data-processing" class="nav-link" data-scroll-target="#data-processing">Data processing</a></li>
   <li><a href="#sequence-construction" id="toc-sequence-construction" class="nav-link" data-scroll-target="#sequence-construction">Sequence Construction</a></li>
-  <li><a href="#sequence-objects" id="toc-sequence-objects" class="nav-link" data-scroll-target="#sequence-objects">Sequence objects</a></li>
   <li><a href="#descriptives-of-sequences" id="toc-descriptives-of-sequences" class="nav-link" data-scroll-target="#descriptives-of-sequences">Descriptives of Sequences</a></li>
+  <li><a href="#sequence-plots" id="toc-sequence-plots" class="nav-link" data-scroll-target="#sequence-plots">Sequence Plots</a>
+  <ul class="collapse">
+  <li><a href="#transversal-plots" id="toc-transversal-plots" class="nav-link" data-scroll-target="#transversal-plots">Transversal plots</a></li>
+  </ul></li>
   </ul>
 </nav>
 </nav>
@@ -378,13 +381,6 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 </section>
 <section id="set-up" class="level2">
 <h2 class="anchored" data-anchor-id="set-up">Set-Up</h2>
-<p>Four items were loaded:</p>
-<ul>
-<li><code>tuddatab.csv</code> — the time-use diary data at the episode level (one row per activity episode per participant)</li>
-<li><code>lsacdatab.csv</code> — LSAC wave-level data providing demographic covariates and survey weights</li>
-<li><code>act_dict.RDS</code> - the recoded activities into collapsed/shorter list</li>
-<li><code>my_flextable()</code> - <a href="https://amxlia.github.io/extras/flextablefunction/">my custom function</a> for formatting flextables</li>
-</ul>
 <div class="cell">
 <details class="code-fold">
 <summary>Show/hide the code</summary>
@@ -423,145 +419,141 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 </section>
 <section id="data-processing" class="level2">
 <h2 class="anchored" data-anchor-id="data-processing">Data processing</h2>
-<p>First we need to filter for accurate diaries. This involves flagging those who did not have problematic diary entries (e.g., out of order, incorrect, or with activity outside of ‘awake’ hours).</p>
+<p>Filter for accurate diaries and flag school/non-school days.</p>
 <div class="cell">
 <details class="code-fold">
 <summary>Show/hide the code</summary>
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb2"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="co"># filter for accurate diaries</span></span>
-<span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a>data1 <span class="ot">&lt;-</span> data0 <span class="sc">|&gt;</span> </span>
-<span id="cb2-3"><a href="#cb2-3" aria-hidden="true" tabindex="-1"></a>    <span class="co"># group by individual </span></span>
-<span id="cb2-4"><a href="#cb2-4" aria-hidden="true" tabindex="-1"></a>  <span class="fu">group_by</span>(hicid) <span class="sc">|&gt;</span> </span>
-<span id="cb2-5"><a href="#cb2-5" aria-hidden="true" tabindex="-1"></a>    <span class="co"># flag cases to keep </span></span>
+<span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a>data1 <span class="ot">&lt;-</span> data0 <span class="sc">|&gt;</span></span>
+<span id="cb2-3"><a href="#cb2-3" aria-hidden="true" tabindex="-1"></a>  <span class="co"># group by individual</span></span>
+<span id="cb2-4"><a href="#cb2-4" aria-hidden="true" tabindex="-1"></a>  <span class="fu">group_by</span>(hicid) <span class="sc">|&gt;</span></span>
+<span id="cb2-5"><a href="#cb2-5" aria-hidden="true" tabindex="-1"></a>  <span class="co"># flag cases to keep</span></span>
 <span id="cb2-6"><a href="#cb2-6" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(</span>
-<span id="cb2-7"><a href="#cb2-7" aria-hidden="true" tabindex="-1"></a>    <span class="at">keep_school =</span> <span class="fu">any</span>(school <span class="sc">==</span> <span class="dv">1</span> <span class="sc">&amp;</span> alarm1 <span class="sc">==</span> <span class="dv">2</span> <span class="sc">&amp;</span> alarm2 <span class="sc">==</span> <span class="dv">2</span>), </span>
+<span id="cb2-7"><a href="#cb2-7" aria-hidden="true" tabindex="-1"></a>    <span class="at">keep_school =</span> <span class="fu">any</span>(school <span class="sc">==</span> <span class="dv">1</span> <span class="sc">&amp;</span> alarm1 <span class="sc">==</span> <span class="dv">2</span> <span class="sc">&amp;</span> alarm2 <span class="sc">==</span> <span class="dv">2</span>),</span>
 <span id="cb2-8"><a href="#cb2-8" aria-hidden="true" tabindex="-1"></a>    <span class="at">keep_nonschool =</span> <span class="fu">any</span>(</span>
 <span id="cb2-9"><a href="#cb2-9" aria-hidden="true" tabindex="-1"></a>      (school <span class="sc">==</span> <span class="sc">-</span><span class="dv">9</span> <span class="sc">|</span> school <span class="sc">==</span> <span class="dv">2</span>) <span class="sc">&amp;</span> alarm1 <span class="sc">==</span> <span class="dv">2</span> <span class="sc">&amp;</span> alarm2 <span class="sc">==</span> <span class="dv">2</span></span>
 <span id="cb2-10"><a href="#cb2-10" aria-hidden="true" tabindex="-1"></a>    ),</span>
 <span id="cb2-11"><a href="#cb2-11" aria-hidden="true" tabindex="-1"></a>    <span class="at">keep_any =</span> keep_school <span class="sc">|</span> keep_nonschool</span>
 <span id="cb2-12"><a href="#cb2-12" aria-hidden="true" tabindex="-1"></a>  ) <span class="sc">|&gt;</span></span>
 <span id="cb2-13"><a href="#cb2-13" aria-hidden="true" tabindex="-1"></a>  <span class="fu">ungroup</span>() <span class="sc">|&gt;</span></span>
-<span id="cb2-14"><a href="#cb2-14" aria-hidden="true" tabindex="-1"></a>  <span class="co"># filter the data </span></span>
-<span id="cb2-15"><a href="#cb2-15" aria-hidden="true" tabindex="-1"></a>  <span class="fu">filter</span>(keep_any) </span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<span id="cb2-14"><a href="#cb2-14" aria-hidden="true" tabindex="-1"></a>  <span class="co"># filter the data</span></span>
+<span id="cb2-15"><a href="#cb2-15" aria-hidden="true" tabindex="-1"></a>  <span class="fu">filter</span>(keep_any)</span>
+<span id="cb2-16"><a href="#cb2-16" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-17"><a href="#cb2-17" aria-hidden="true" tabindex="-1"></a><span class="co"># create indicator that classifies diary as either a school or non-school day diary</span></span>
+<span id="cb2-18"><a href="#cb2-18" aria-hidden="true" tabindex="-1"></a>id_daytype <span class="ot">&lt;-</span> data1 <span class="sc">|&gt;</span></span>
+<span id="cb2-19"><a href="#cb2-19" aria-hidden="true" tabindex="-1"></a>  <span class="fu">group_by</span>(hicid) <span class="sc">|&gt;</span></span>
+<span id="cb2-20"><a href="#cb2-20" aria-hidden="true" tabindex="-1"></a>  <span class="fu">summarise</span>(</span>
+<span id="cb2-21"><a href="#cb2-21" aria-hidden="true" tabindex="-1"></a>    <span class="at">day_type =</span> <span class="fu">case_when</span>(</span>
+<span id="cb2-22"><a href="#cb2-22" aria-hidden="true" tabindex="-1"></a>      <span class="fu">any</span>(school <span class="sc">==</span> <span class="dv">1</span>) <span class="sc">~</span> <span class="st">"school"</span>,</span>
+<span id="cb2-23"><a href="#cb2-23" aria-hidden="true" tabindex="-1"></a>      <span class="fu">any</span>(school <span class="sc">%in%</span> <span class="fu">c</span>(<span class="sc">-</span><span class="dv">9</span>, <span class="dv">2</span>)) <span class="sc">~</span> <span class="st">"nonschool"</span>,</span>
+<span id="cb2-24"><a href="#cb2-24" aria-hidden="true" tabindex="-1"></a>      <span class="cn">TRUE</span> <span class="sc">~</span> <span class="cn">NA_character_</span></span>
+<span id="cb2-25"><a href="#cb2-25" aria-hidden="true" tabindex="-1"></a>    ),</span>
+<span id="cb2-26"><a href="#cb2-26" aria-hidden="true" tabindex="-1"></a>    <span class="at">.groups =</span> <span class="st">"drop"</span></span>
+<span id="cb2-27"><a href="#cb2-27" aria-hidden="true" tabindex="-1"></a>  )</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </details>
 </div>
-<p>We need to create an indicator that classifies the diary entry as either a school or non-school day diary</p>
+<p>At this stage, we have 1321 valid diaries on school days and 1435 on non-school days.</p>
+<p>Convert episode start times and wake/sleep times and deal with the PM-to-AM transition after midnight as diaries run from 4am to 4am the following day.</p>
 <div class="cell">
 <details class="code-fold">
 <summary>Show/hide the code</summary>
-<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb3"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a>id_daytype <span class="ot">&lt;-</span> data1 <span class="sc">|&gt;</span></span>
-<span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">group_by</span>(hicid) <span class="sc">|&gt;</span></span>
-<span id="cb3-3"><a href="#cb3-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">summarise</span>(</span>
-<span id="cb3-4"><a href="#cb3-4" aria-hidden="true" tabindex="-1"></a>    <span class="at">day_type =</span> <span class="fu">case_when</span>(</span>
-<span id="cb3-5"><a href="#cb3-5" aria-hidden="true" tabindex="-1"></a>      <span class="fu">any</span>(school <span class="sc">==</span> <span class="dv">1</span>)            <span class="sc">~</span> <span class="st">"school"</span>,</span>
-<span id="cb3-6"><a href="#cb3-6" aria-hidden="true" tabindex="-1"></a>      <span class="fu">any</span>(school <span class="sc">%in%</span> <span class="fu">c</span>(<span class="sc">-</span><span class="dv">9</span>, <span class="dv">2</span>))  <span class="sc">~</span> <span class="st">"nonschool"</span>,</span>
-<span id="cb3-7"><a href="#cb3-7" aria-hidden="true" tabindex="-1"></a>      <span class="cn">TRUE</span>                        <span class="sc">~</span> <span class="cn">NA_character_</span></span>
-<span id="cb3-8"><a href="#cb3-8" aria-hidden="true" tabindex="-1"></a>    ),</span>
-<span id="cb3-9"><a href="#cb3-9" aria-hidden="true" tabindex="-1"></a>    <span class="at">.groups =</span> <span class="st">"drop"</span></span>
-<span id="cb3-10"><a href="#cb3-10" aria-hidden="true" tabindex="-1"></a>  )</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb3"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a><span class="co"># function for converting times </span></span>
+<span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a>convert_time <span class="ot">&lt;-</span> <span class="cf">function</span>(time_vector) {</span>
+<span id="cb3-3"><a href="#cb3-3" aria-hidden="true" tabindex="-1"></a>  time_vector <span class="ot">&lt;-</span> <span class="fu">parse_date_time</span>(time_vector, <span class="st">"%I %M %p"</span>)</span>
+<span id="cb3-4"><a href="#cb3-4" aria-hidden="true" tabindex="-1"></a>  transitions <span class="ot">&lt;-</span> <span class="fu">which</span>(</span>
+<span id="cb3-5"><a href="#cb3-5" aria-hidden="true" tabindex="-1"></a>    <span class="fu">hour</span>(time_vector[<span class="sc">-</span><span class="dv">1</span>]) <span class="sc">&lt;</span> <span class="dv">12</span> <span class="sc">&amp;</span></span>
+<span id="cb3-6"><a href="#cb3-6" aria-hidden="true" tabindex="-1"></a>      <span class="fu">hour</span>(time_vector[<span class="sc">-</span><span class="fu">length</span>(time_vector)]) <span class="sc">&gt;=</span> <span class="dv">12</span></span>
+<span id="cb3-7"><a href="#cb3-7" aria-hidden="true" tabindex="-1"></a>  )</span>
+<span id="cb3-8"><a href="#cb3-8" aria-hidden="true" tabindex="-1"></a>  <span class="cf">for</span> (transition_row <span class="cf">in</span> transitions) {</span>
+<span id="cb3-9"><a href="#cb3-9" aria-hidden="true" tabindex="-1"></a>    time_vector[(transition_row <span class="sc">+</span> <span class="dv">1</span>)<span class="sc">:</span><span class="fu">length</span>(time_vector)] <span class="ot">&lt;-</span></span>
+<span id="cb3-10"><a href="#cb3-10" aria-hidden="true" tabindex="-1"></a>      time_vector[(transition_row <span class="sc">+</span> <span class="dv">1</span>)<span class="sc">:</span><span class="fu">length</span>(time_vector)] <span class="sc">+</span> <span class="fu">days</span>(<span class="dv">1</span>)</span>
+<span id="cb3-11"><a href="#cb3-11" aria-hidden="true" tabindex="-1"></a>  }</span>
+<span id="cb3-12"><a href="#cb3-12" aria-hidden="true" tabindex="-1"></a>  <span class="fu">return</span>(time_vector)</span>
+<span id="cb3-13"><a href="#cb3-13" aria-hidden="true" tabindex="-1"></a>}</span>
+<span id="cb3-14"><a href="#cb3-14" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb3-15"><a href="#cb3-15" aria-hidden="true" tabindex="-1"></a>data2 <span class="ot">&lt;-</span> data1 <span class="sc">|&gt;</span></span>
+<span id="cb3-16"><a href="#cb3-16" aria-hidden="true" tabindex="-1"></a>  <span class="fu">group_by</span>(hicid) <span class="sc">|&gt;</span></span>
+<span id="cb3-17"><a href="#cb3-17" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(</span>
+<span id="cb3-18"><a href="#cb3-18" aria-hidden="true" tabindex="-1"></a>    <span class="at">awaket =</span> <span class="fu">parse_date_time</span>(awake, <span class="st">"%I:%M: %p"</span>),</span>
+<span id="cb3-19"><a href="#cb3-19" aria-hidden="true" tabindex="-1"></a>    <span class="at">sleept =</span> <span class="fu">parse_date_time</span>(sleep, <span class="st">"%I:%M: %p"</span>),</span>
+<span id="cb3-20"><a href="#cb3-20" aria-hidden="true" tabindex="-1"></a>    <span class="at">stimet =</span> <span class="fu">convert_time</span>(stime)</span>
+<span id="cb3-21"><a href="#cb3-21" aria-hidden="true" tabindex="-1"></a>  ) <span class="sc">|&gt;</span></span>
+<span id="cb3-22"><a href="#cb3-22" aria-hidden="true" tabindex="-1"></a>  <span class="fu">ungroup</span>()</span>
+<span id="cb3-23"><a href="#cb3-23" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb3-24"><a href="#cb3-24" aria-hidden="true" tabindex="-1"></a>data2<span class="sc">$</span>sleept <span class="ot">&lt;-</span> <span class="fu">if_else</span>(</span>
+<span id="cb3-25"><a href="#cb3-25" aria-hidden="true" tabindex="-1"></a>  <span class="fu">format</span>(data2<span class="sc">$</span>sleept, <span class="at">format =</span> <span class="st">"%p"</span>) <span class="sc">==</span> <span class="st">"AM"</span>,</span>
+<span id="cb3-26"><a href="#cb3-26" aria-hidden="true" tabindex="-1"></a>  data2<span class="sc">$</span>sleept <span class="sc">+</span> <span class="fu">days</span>(<span class="dv">1</span>),</span>
+<span id="cb3-27"><a href="#cb3-27" aria-hidden="true" tabindex="-1"></a>  data2<span class="sc">$</span>sleept</span>
+<span id="cb3-28"><a href="#cb3-28" aria-hidden="true" tabindex="-1"></a>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </details>
 </div>
-<div class="callout callout-style-default callout-note callout-titled">
-<div class="callout-header d-flex align-content-center">
-<div class="callout-icon-container">
-<i class="callout-icon"></i>
-</div>
-<div class="callout-title-container flex-fill">
-<span class="screen-reader-only">Note</span>sample size
-</div>
-</div>
-<div class="callout-body-container callout-body">
-<p>at this stage, we have 1321 valid diaries on school days and 1435 on non-school days</p>
-</div>
-</div>
-<p>Now we need to convert episode start times and wake/sleep times. Needed to write a custom function to convert episode start times from character format to <code>POSIXct</code>, to deal the PM-to-AM transition across midnight (diaries run from 4am to 4am the following day)</p>
+<p>Sleep episodes aren’t captured as diariy entries. Incorporate wake and sleep times as explicit episodes force a fixed 4:00AM start and 4:00AM finish.</p>
 <div class="cell">
 <details class="code-fold">
 <summary>Show/hide the code</summary>
-<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb4"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a><span class="co"># function for converting times </span></span>
-<span id="cb4-2"><a href="#cb4-2" aria-hidden="true" tabindex="-1"></a>convert_time <span class="ot">&lt;-</span> <span class="cf">function</span>(time_vector) {</span>
-<span id="cb4-3"><a href="#cb4-3" aria-hidden="true" tabindex="-1"></a>  time_vector <span class="ot">&lt;-</span> <span class="fu">parse_date_time</span>(time_vector, <span class="st">"%I %M %p"</span>)</span>
-<span id="cb4-4"><a href="#cb4-4" aria-hidden="true" tabindex="-1"></a>  transitions <span class="ot">&lt;-</span> <span class="fu">which</span>(</span>
-<span id="cb4-5"><a href="#cb4-5" aria-hidden="true" tabindex="-1"></a>    <span class="fu">hour</span>(time_vector[<span class="sc">-</span><span class="dv">1</span>]) <span class="sc">&lt;</span> <span class="dv">12</span> <span class="sc">&amp;</span></span>
-<span id="cb4-6"><a href="#cb4-6" aria-hidden="true" tabindex="-1"></a>      <span class="fu">hour</span>(time_vector[<span class="sc">-</span><span class="fu">length</span>(time_vector)]) <span class="sc">&gt;=</span> <span class="dv">12</span></span>
-<span id="cb4-7"><a href="#cb4-7" aria-hidden="true" tabindex="-1"></a>  )</span>
-<span id="cb4-8"><a href="#cb4-8" aria-hidden="true" tabindex="-1"></a>  <span class="cf">for</span> (transition_row <span class="cf">in</span> transitions) {</span>
-<span id="cb4-9"><a href="#cb4-9" aria-hidden="true" tabindex="-1"></a>    time_vector[(transition_row <span class="sc">+</span> <span class="dv">1</span>)<span class="sc">:</span><span class="fu">length</span>(time_vector)] <span class="ot">&lt;-</span></span>
-<span id="cb4-10"><a href="#cb4-10" aria-hidden="true" tabindex="-1"></a>      time_vector[(transition_row <span class="sc">+</span> <span class="dv">1</span>)<span class="sc">:</span><span class="fu">length</span>(time_vector)] <span class="sc">+</span> <span class="fu">days</span>(<span class="dv">1</span>)</span>
-<span id="cb4-11"><a href="#cb4-11" aria-hidden="true" tabindex="-1"></a>  }</span>
-<span id="cb4-12"><a href="#cb4-12" aria-hidden="true" tabindex="-1"></a>  <span class="fu">return</span>(time_vector)</span>
-<span id="cb4-13"><a href="#cb4-13" aria-hidden="true" tabindex="-1"></a>}</span>
-<span id="cb4-14"><a href="#cb4-14" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb4-15"><a href="#cb4-15" aria-hidden="true" tabindex="-1"></a>data2 <span class="ot">&lt;-</span> data1 <span class="sc">|&gt;</span></span>
-<span id="cb4-16"><a href="#cb4-16" aria-hidden="true" tabindex="-1"></a>  <span class="fu">group_by</span>(hicid) <span class="sc">|&gt;</span></span>
-<span id="cb4-17"><a href="#cb4-17" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(</span>
-<span id="cb4-18"><a href="#cb4-18" aria-hidden="true" tabindex="-1"></a>    <span class="at">awaket =</span> <span class="fu">parse_date_time</span>(awake, <span class="st">"%I:%M: %p"</span>),</span>
-<span id="cb4-19"><a href="#cb4-19" aria-hidden="true" tabindex="-1"></a>    <span class="at">sleept =</span> <span class="fu">parse_date_time</span>(sleep, <span class="st">"%I:%M: %p"</span>),</span>
-<span id="cb4-20"><a href="#cb4-20" aria-hidden="true" tabindex="-1"></a>    <span class="at">stimet =</span> <span class="fu">convert_time</span>(stime)</span>
-<span id="cb4-21"><a href="#cb4-21" aria-hidden="true" tabindex="-1"></a>  ) <span class="sc">|&gt;</span></span>
-<span id="cb4-22"><a href="#cb4-22" aria-hidden="true" tabindex="-1"></a>  <span class="fu">ungroup</span>()</span>
-<span id="cb4-23"><a href="#cb4-23" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb4-24"><a href="#cb4-24" aria-hidden="true" tabindex="-1"></a>data2<span class="sc">$</span>sleept <span class="ot">&lt;-</span> <span class="fu">if_else</span>(</span>
-<span id="cb4-25"><a href="#cb4-25" aria-hidden="true" tabindex="-1"></a>  <span class="fu">format</span>(data2<span class="sc">$</span>sleept, <span class="at">format =</span> <span class="st">"%p"</span>) <span class="sc">==</span> <span class="st">"AM"</span>,</span>
-<span id="cb4-26"><a href="#cb4-26" aria-hidden="true" tabindex="-1"></a>  data2<span class="sc">$</span>sleept <span class="sc">+</span> <span class="fu">days</span>(<span class="dv">1</span>),</span>
-<span id="cb4-27"><a href="#cb4-27" aria-hidden="true" tabindex="-1"></a>  data2<span class="sc">$</span>sleept</span>
-<span id="cb4-28"><a href="#cb4-28" aria-hidden="true" tabindex="-1"></a>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb4"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a><span class="co"># select subset of data to use with sequence analysis</span></span>
+<span id="cb4-2"><a href="#cb4-2" aria-hidden="true" tabindex="-1"></a>data3 <span class="ot">&lt;-</span> data2 <span class="sc">|&gt;</span></span>
+<span id="cb4-3"><a href="#cb4-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">select</span>(hicid, stimet, mainact) <span class="sc">|&gt;</span></span>
+<span id="cb4-4"><a href="#cb4-4" aria-hidden="true" tabindex="-1"></a>  <span class="fu">left_join</span>(id_daytype, <span class="at">by =</span> <span class="st">"hicid"</span>)</span>
+<span id="cb4-5"><a href="#cb4-5" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-6"><a href="#cb4-6" aria-hidden="true" tabindex="-1"></a><span class="co"># incorporate sleeptimes into main activities vector</span></span>
+<span id="cb4-7"><a href="#cb4-7" aria-hidden="true" tabindex="-1"></a><span class="co"># add the first awake time and first sleep time per id when main act == 0 (sleep)</span></span>
+<span id="cb4-8"><a href="#cb4-8" aria-hidden="true" tabindex="-1"></a>awake_times <span class="ot">&lt;-</span> data2 <span class="sc">|&gt;</span></span>
+<span id="cb4-9"><a href="#cb4-9" aria-hidden="true" tabindex="-1"></a>  <span class="fu">group_by</span>(hicid) <span class="sc">|&gt;</span></span>
+<span id="cb4-10"><a href="#cb4-10" aria-hidden="true" tabindex="-1"></a>  <span class="fu">summarise</span>(</span>
+<span id="cb4-11"><a href="#cb4-11" aria-hidden="true" tabindex="-1"></a>    <span class="at">stimet =</span> <span class="fu">first</span>(awaket),</span>
+<span id="cb4-12"><a href="#cb4-12" aria-hidden="true" tabindex="-1"></a>    <span class="at">mainact =</span> <span class="dv">0</span>,</span>
+<span id="cb4-13"><a href="#cb4-13" aria-hidden="true" tabindex="-1"></a>    <span class="at">.groups =</span> <span class="st">"drop"</span></span>
+<span id="cb4-14"><a href="#cb4-14" aria-hidden="true" tabindex="-1"></a>  ) <span class="sc">|&gt;</span></span>
+<span id="cb4-15"><a href="#cb4-15" aria-hidden="true" tabindex="-1"></a>  <span class="fu">left_join</span>(id_daytype, <span class="at">by =</span> <span class="st">"hicid"</span>)</span>
+<span id="cb4-16"><a href="#cb4-16" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-17"><a href="#cb4-17" aria-hidden="true" tabindex="-1"></a>sleep_times <span class="ot">&lt;-</span> data2 <span class="sc">%&gt;%</span></span>
+<span id="cb4-18"><a href="#cb4-18" aria-hidden="true" tabindex="-1"></a>  <span class="fu">group_by</span>(hicid) <span class="sc">%&gt;%</span></span>
+<span id="cb4-19"><a href="#cb4-19" aria-hidden="true" tabindex="-1"></a>  <span class="fu">summarise</span>(<span class="at">stimet =</span> <span class="fu">first</span>(sleept), <span class="at">mainact =</span> <span class="dv">0</span>, <span class="at">.groups =</span> <span class="st">"drop"</span>) <span class="sc">%&gt;%</span></span>
+<span id="cb4-20"><a href="#cb4-20" aria-hidden="true" tabindex="-1"></a>  <span class="fu">left_join</span>(id_daytype, <span class="at">by =</span> <span class="st">"hicid"</span>)</span>
+<span id="cb4-21"><a href="#cb4-21" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-22"><a href="#cb4-22" aria-hidden="true" tabindex="-1"></a><span class="co"># bind the data</span></span>
+<span id="cb4-23"><a href="#cb4-23" aria-hidden="true" tabindex="-1"></a>data4 <span class="ot">&lt;-</span> <span class="fu">bind_rows</span>(data3, awake_times, sleep_times) <span class="sc">|&gt;</span></span>
+<span id="cb4-24"><a href="#cb4-24" aria-hidden="true" tabindex="-1"></a>  <span class="fu">arrange</span>(hicid, stimet)</span>
+<span id="cb4-25"><a href="#cb4-25" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-26"><a href="#cb4-26" aria-hidden="true" tabindex="-1"></a><span class="co"># add start and stop times (4am to 4am next day) for each id</span></span>
+<span id="cb4-27"><a href="#cb4-27" aria-hidden="true" tabindex="-1"></a>start_time <span class="ot">&lt;-</span> data2 <span class="sc">%&gt;%</span></span>
+<span id="cb4-28"><a href="#cb4-28" aria-hidden="true" tabindex="-1"></a>  <span class="fu">group_by</span>(hicid) <span class="sc">%&gt;%</span></span>
+<span id="cb4-29"><a href="#cb4-29" aria-hidden="true" tabindex="-1"></a>  <span class="fu">summarise</span>(</span>
+<span id="cb4-30"><a href="#cb4-30" aria-hidden="true" tabindex="-1"></a>    <span class="at">stimet =</span> <span class="fu">parse_date_time</span>(<span class="st">"04:00 AM"</span>, <span class="st">"%I:%M: %p"</span>),</span>
+<span id="cb4-31"><a href="#cb4-31" aria-hidden="true" tabindex="-1"></a>    <span class="at">mainact =</span> <span class="dv">0</span>,</span>
+<span id="cb4-32"><a href="#cb4-32" aria-hidden="true" tabindex="-1"></a>    <span class="at">.groups =</span> <span class="st">"drop"</span></span>
+<span id="cb4-33"><a href="#cb4-33" aria-hidden="true" tabindex="-1"></a>  ) <span class="sc">%&gt;%</span></span>
+<span id="cb4-34"><a href="#cb4-34" aria-hidden="true" tabindex="-1"></a>  <span class="fu">left_join</span>(id_daytype, <span class="at">by =</span> <span class="st">"hicid"</span>)</span>
+<span id="cb4-35"><a href="#cb4-35" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-36"><a href="#cb4-36" aria-hidden="true" tabindex="-1"></a>stop_times <span class="ot">&lt;-</span> data2 <span class="sc">%&gt;%</span></span>
+<span id="cb4-37"><a href="#cb4-37" aria-hidden="true" tabindex="-1"></a>  <span class="fu">group_by</span>(hicid) <span class="sc">%&gt;%</span></span>
+<span id="cb4-38"><a href="#cb4-38" aria-hidden="true" tabindex="-1"></a>  <span class="fu">summarise</span>(</span>
+<span id="cb4-39"><a href="#cb4-39" aria-hidden="true" tabindex="-1"></a>    <span class="at">stimet =</span> <span class="fu">parse_date_time</span>(<span class="st">"04:00 AM"</span>, <span class="st">"%I:%M: %p"</span>) <span class="sc">+</span> <span class="fu">days</span>(<span class="dv">1</span>),</span>
+<span id="cb4-40"><a href="#cb4-40" aria-hidden="true" tabindex="-1"></a>    <span class="at">mainact =</span> <span class="dv">0</span>,</span>
+<span id="cb4-41"><a href="#cb4-41" aria-hidden="true" tabindex="-1"></a>    <span class="at">.groups =</span> <span class="st">"drop"</span></span>
+<span id="cb4-42"><a href="#cb4-42" aria-hidden="true" tabindex="-1"></a>  ) <span class="sc">%&gt;%</span></span>
+<span id="cb4-43"><a href="#cb4-43" aria-hidden="true" tabindex="-1"></a>  <span class="fu">left_join</span>(id_daytype, <span class="at">by =</span> <span class="st">"hicid"</span>)</span>
+<span id="cb4-44"><a href="#cb4-44" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-45"><a href="#cb4-45" aria-hidden="true" tabindex="-1"></a><span class="co"># bind to data</span></span>
+<span id="cb4-46"><a href="#cb4-46" aria-hidden="true" tabindex="-1"></a>data5 <span class="ot">&lt;-</span> <span class="fu">bind_rows</span>(data4, start_time, stop_times) <span class="sc">|&gt;</span></span>
+<span id="cb4-47"><a href="#cb4-47" aria-hidden="true" tabindex="-1"></a>  <span class="fu">arrange</span>(hicid, stimet)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </details>
 </div>
-<p>Because sleep episodes aren’t captured as diariy entries, I had to incorporate wake and sleep times as explicit episodes (coded as <code>mainact == 0</code>, i.e., sleep). I also needed to have a fixed 4:00AM start and 4:00AM finish.</p>
+<p>Compute durations of each activity</p>
 <div class="cell">
 <details class="code-fold">
 <summary>Show/hide the code</summary>
-<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb5"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a><span class="co"># select subset of data to use with sequence analysis </span></span>
-<span id="cb5-2"><a href="#cb5-2" aria-hidden="true" tabindex="-1"></a>data3 <span class="ot">&lt;-</span> data2 <span class="sc">|&gt;</span></span>
-<span id="cb5-3"><a href="#cb5-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">select</span>(hicid, stimet, mainact) <span class="sc">|&gt;</span></span>
-<span id="cb5-4"><a href="#cb5-4" aria-hidden="true" tabindex="-1"></a>  <span class="fu">left_join</span>(id_daytype, <span class="at">by =</span> <span class="st">"hicid"</span>)</span>
-<span id="cb5-5"><a href="#cb5-5" aria-hidden="true" tabindex="-1"></a><span class="co"># incorporate sleeptimes into main activities vector </span></span>
-<span id="cb5-6"><a href="#cb5-6" aria-hidden="true" tabindex="-1"></a><span class="co"># add the first awake time and first sleep time per id when main act == 0 (sleep)</span></span>
-<span id="cb5-7"><a href="#cb5-7" aria-hidden="true" tabindex="-1"></a>awake_times <span class="ot">&lt;-</span> data2 <span class="sc">|&gt;</span> </span>
-<span id="cb5-8"><a href="#cb5-8" aria-hidden="true" tabindex="-1"></a>  <span class="fu">group_by</span>(hicid) <span class="sc">|&gt;</span> </span>
-<span id="cb5-9"><a href="#cb5-9" aria-hidden="true" tabindex="-1"></a>  <span class="fu">summarise</span>(</span>
-<span id="cb5-10"><a href="#cb5-10" aria-hidden="true" tabindex="-1"></a>    <span class="at">stimet =</span> <span class="fu">first</span>(awaket), <span class="at">mainact =</span> <span class="dv">0</span>, <span class="at">.groups =</span> <span class="st">"drop"</span>) <span class="sc">|&gt;</span> </span>
-<span id="cb5-11"><a href="#cb5-11" aria-hidden="true" tabindex="-1"></a>  <span class="fu">left_join</span>(id_daytype, <span class="at">by =</span> <span class="st">"hicid"</span>)</span>
-<span id="cb5-12"><a href="#cb5-12" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb5-13"><a href="#cb5-13" aria-hidden="true" tabindex="-1"></a>sleep_times <span class="ot">&lt;-</span> data2 <span class="sc">%&gt;%</span></span>
-<span id="cb5-14"><a href="#cb5-14" aria-hidden="true" tabindex="-1"></a>  <span class="fu">group_by</span>(hicid) <span class="sc">%&gt;%</span></span>
-<span id="cb5-15"><a href="#cb5-15" aria-hidden="true" tabindex="-1"></a>  <span class="fu">summarise</span>(<span class="at">stimet =</span> <span class="fu">first</span>(sleept), <span class="at">mainact =</span> <span class="dv">0</span>, <span class="at">.groups =</span> <span class="st">"drop"</span>) <span class="sc">%&gt;%</span></span>
-<span id="cb5-16"><a href="#cb5-16" aria-hidden="true" tabindex="-1"></a>  <span class="fu">left_join</span>(id_daytype, <span class="at">by =</span> <span class="st">"hicid"</span>)</span>
-<span id="cb5-17"><a href="#cb5-17" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb5-18"><a href="#cb5-18" aria-hidden="true" tabindex="-1"></a><span class="co"># bind the data </span></span>
-<span id="cb5-19"><a href="#cb5-19" aria-hidden="true" tabindex="-1"></a>data4 <span class="ot">&lt;-</span> <span class="fu">bind_rows</span>(data3, awake_times, sleep_times) <span class="sc">|&gt;</span> </span>
-<span id="cb5-20"><a href="#cb5-20" aria-hidden="true" tabindex="-1"></a>  <span class="fu">arrange</span>(hicid, stimet)</span>
-<span id="cb5-21"><a href="#cb5-21" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb5-22"><a href="#cb5-22" aria-hidden="true" tabindex="-1"></a><span class="co"># add start and stop times (4am to 4am next day) for each id</span></span>
-<span id="cb5-23"><a href="#cb5-23" aria-hidden="true" tabindex="-1"></a>start_time <span class="ot">&lt;-</span> data2 <span class="sc">%&gt;%</span></span>
-<span id="cb5-24"><a href="#cb5-24" aria-hidden="true" tabindex="-1"></a>  <span class="fu">group_by</span>(hicid) <span class="sc">%&gt;%</span></span>
-<span id="cb5-25"><a href="#cb5-25" aria-hidden="true" tabindex="-1"></a>  <span class="fu">summarise</span>(<span class="at">stimet =</span> <span class="fu">parse_date_time</span>(<span class="st">"04:00 AM"</span>, <span class="st">"%I:%M: %p"</span>), <span class="at">mainact =</span> <span class="dv">0</span>, <span class="at">.groups =</span> <span class="st">"drop"</span>) <span class="sc">%&gt;%</span></span>
-<span id="cb5-26"><a href="#cb5-26" aria-hidden="true" tabindex="-1"></a>  <span class="fu">left_join</span>(id_daytype, <span class="at">by =</span> <span class="st">"hicid"</span>)</span>
-<span id="cb5-27"><a href="#cb5-27" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb5-28"><a href="#cb5-28" aria-hidden="true" tabindex="-1"></a>stop_times <span class="ot">&lt;-</span> data2 <span class="sc">%&gt;%</span></span>
-<span id="cb5-29"><a href="#cb5-29" aria-hidden="true" tabindex="-1"></a>  <span class="fu">group_by</span>(hicid) <span class="sc">%&gt;%</span></span>
-<span id="cb5-30"><a href="#cb5-30" aria-hidden="true" tabindex="-1"></a>  <span class="fu">summarise</span>(<span class="at">stimet =</span> <span class="fu">parse_date_time</span>(<span class="st">"04:00 AM"</span>, <span class="st">"%I:%M: %p"</span>) <span class="sc">+</span> <span class="fu">days</span>(<span class="dv">1</span>), <span class="at">mainact =</span> <span class="dv">0</span>, <span class="at">.groups =</span> <span class="st">"drop"</span>) <span class="sc">%&gt;%</span></span>
-<span id="cb5-31"><a href="#cb5-31" aria-hidden="true" tabindex="-1"></a>  <span class="fu">left_join</span>(id_daytype, <span class="at">by =</span> <span class="st">"hicid"</span>)</span>
-<span id="cb5-32"><a href="#cb5-32" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb5-33"><a href="#cb5-33" aria-hidden="true" tabindex="-1"></a><span class="co"># bind to data </span></span>
-<span id="cb5-34"><a href="#cb5-34" aria-hidden="true" tabindex="-1"></a>data5 <span class="ot">&lt;-</span> <span class="fu">bind_rows</span>(data4, start_time, stop_times) <span class="sc">|&gt;</span> </span>
-<span id="cb5-35"><a href="#cb5-35" aria-hidden="true" tabindex="-1"></a>  <span class="fu">arrange</span>(hicid, stimet)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
-</details>
-</div>
-<p>Then we need to compute durations of each activity (difference btw episode start/finish time)</p>
-<div class="cell">
-<details class="code-fold">
-<summary>Show/hide the code</summary>
-<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb6"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a><span class="co"># filter out stop and start times that are the same for each id</span></span>
-<span id="cb6-2"><a href="#cb6-2" aria-hidden="true" tabindex="-1"></a><span class="co"># calculate the duration between start_time and stop_time </span></span>
-<span id="cb6-3"><a href="#cb6-3" aria-hidden="true" tabindex="-1"></a>data6 <span class="ot">&lt;-</span> data5 <span class="sc">%&gt;%</span></span>
-<span id="cb6-4"><a href="#cb6-4" aria-hidden="true" tabindex="-1"></a>  <span class="fu">group_by</span>(hicid) <span class="sc">%&gt;%</span></span>
-<span id="cb6-5"><a href="#cb6-5" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">stop_time =</span> <span class="fu">if_else</span>(<span class="fu">row_number</span>() <span class="sc">==</span> <span class="fu">n</span>(), stimet, <span class="fu">lead</span>(stimet))) <span class="sc">%&gt;%</span></span>
-<span id="cb6-6"><a href="#cb6-6" aria-hidden="true" tabindex="-1"></a>  <span class="fu">ungroup</span>() <span class="sc">%&gt;%</span></span>
-<span id="cb6-7"><a href="#cb6-7" aria-hidden="true" tabindex="-1"></a>  <span class="fu">group_by</span>(hicid) <span class="sc">%&gt;%</span></span>
-<span id="cb6-8"><a href="#cb6-8" aria-hidden="true" tabindex="-1"></a>  <span class="fu">filter</span>(stimet <span class="sc">!=</span> stop_time) <span class="sc">%&gt;%</span></span>
-<span id="cb6-9"><a href="#cb6-9" aria-hidden="true" tabindex="-1"></a>  <span class="fu">ungroup</span>() <span class="sc">%&gt;%</span></span>
-<span id="cb6-10"><a href="#cb6-10" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">duration =</span> <span class="fu">difftime</span>(stop_time, stimet, <span class="at">units =</span> <span class="st">"mins"</span>))</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb5"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a><span class="co"># filter out stop and start times that are the same for each id</span></span>
+<span id="cb5-2"><a href="#cb5-2" aria-hidden="true" tabindex="-1"></a><span class="co"># calculate the duration between start_time and stop_time </span></span>
+<span id="cb5-3"><a href="#cb5-3" aria-hidden="true" tabindex="-1"></a>data6 <span class="ot">&lt;-</span> data5 <span class="sc">%&gt;%</span></span>
+<span id="cb5-4"><a href="#cb5-4" aria-hidden="true" tabindex="-1"></a>  <span class="fu">group_by</span>(hicid) <span class="sc">%&gt;%</span></span>
+<span id="cb5-5"><a href="#cb5-5" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">stop_time =</span> <span class="fu">if_else</span>(<span class="fu">row_number</span>() <span class="sc">==</span> <span class="fu">n</span>(), stimet, <span class="fu">lead</span>(stimet))) <span class="sc">%&gt;%</span></span>
+<span id="cb5-6"><a href="#cb5-6" aria-hidden="true" tabindex="-1"></a>  <span class="fu">ungroup</span>() <span class="sc">%&gt;%</span></span>
+<span id="cb5-7"><a href="#cb5-7" aria-hidden="true" tabindex="-1"></a>  <span class="fu">group_by</span>(hicid) <span class="sc">%&gt;%</span></span>
+<span id="cb5-8"><a href="#cb5-8" aria-hidden="true" tabindex="-1"></a>  <span class="fu">filter</span>(stimet <span class="sc">!=</span> stop_time) <span class="sc">%&gt;%</span></span>
+<span id="cb5-9"><a href="#cb5-9" aria-hidden="true" tabindex="-1"></a>  <span class="fu">ungroup</span>() <span class="sc">%&gt;%</span></span>
+<span id="cb5-10"><a href="#cb5-10" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">duration =</span> <span class="fu">difftime</span>(stop_time, stimet, <span class="at">units =</span> <span class="st">"mins"</span>))</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </details>
 </div>
 <p>Original activity codes were mapped to ten aggregate activity categories (in <code>act_dict</code>). The ten categories are:</p>
@@ -618,282 +610,382 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <div class="cell">
 <details class="code-fold">
 <summary>Show/hide the code</summary>
-<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb7"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true" tabindex="-1"></a><span class="co"># recode the activities into a smaller number of grouped activities </span></span>
-<span id="cb7-2"><a href="#cb7-2" aria-hidden="true" tabindex="-1"></a>data6<span class="sc">$</span>act_rec <span class="ot">&lt;-</span> <span class="fu">recode</span>(data6<span class="sc">$</span>mainact, <span class="sc">!!!</span>act_dict)</span>
-<span id="cb7-3"><a href="#cb7-3" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb7-4"><a href="#cb7-4" aria-hidden="true" tabindex="-1"></a><span class="co"># remove cases with NA codes for recoded activities </span></span>
-<span id="cb7-5"><a href="#cb7-5" aria-hidden="true" tabindex="-1"></a>filtered_data6 <span class="ot">&lt;-</span> data6 <span class="sc">%&gt;%</span></span>
-<span id="cb7-6"><a href="#cb7-6" aria-hidden="true" tabindex="-1"></a>  <span class="fu">group_by</span>(hicid) <span class="sc">%&gt;%</span></span>
-<span id="cb7-7"><a href="#cb7-7" aria-hidden="true" tabindex="-1"></a>  <span class="fu">filter</span>(<span class="sc">!</span><span class="fu">any</span>(<span class="fu">is.na</span>(act_rec))) <span class="sc">%&gt;%</span></span>
-<span id="cb7-8"><a href="#cb7-8" aria-hidden="true" tabindex="-1"></a>  <span class="fu">ungroup</span>()</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb6"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a><span class="co"># recode the activities into a smaller number of grouped activities</span></span>
+<span id="cb6-2"><a href="#cb6-2" aria-hidden="true" tabindex="-1"></a>data6<span class="sc">$</span>act_rec <span class="ot">&lt;-</span> <span class="fu">recode</span>(data6<span class="sc">$</span>mainact, <span class="sc">!!!</span>act_dict)</span>
+<span id="cb6-3"><a href="#cb6-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb6-4"><a href="#cb6-4" aria-hidden="true" tabindex="-1"></a><span class="co"># remove cases with NA codes for recoded activities</span></span>
+<span id="cb6-5"><a href="#cb6-5" aria-hidden="true" tabindex="-1"></a>filtered_data6 <span class="ot">&lt;-</span> data6 <span class="sc">%&gt;%</span></span>
+<span id="cb6-6"><a href="#cb6-6" aria-hidden="true" tabindex="-1"></a>  <span class="fu">group_by</span>(hicid) <span class="sc">%&gt;%</span></span>
+<span id="cb6-7"><a href="#cb6-7" aria-hidden="true" tabindex="-1"></a>  <span class="fu">filter</span>(<span class="sc">!</span><span class="fu">any</span>(<span class="fu">is.na</span>(act_rec))) <span class="sc">%&gt;%</span></span>
+<span id="cb6-8"><a href="#cb6-8" aria-hidden="true" tabindex="-1"></a>  <span class="fu">ungroup</span>()</span>
+<span id="cb6-9"><a href="#cb6-9" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb6-10"><a href="#cb6-10" aria-hidden="true" tabindex="-1"></a><span class="co"># check that all cases sum to 1440 mins (24 hours)</span></span>
+<span id="cb6-11"><a href="#cb6-11" aria-hidden="true" tabindex="-1"></a>sumtime <span class="ot">&lt;-</span> filtered_data6 <span class="sc">%&gt;%</span></span>
+<span id="cb6-12"><a href="#cb6-12" aria-hidden="true" tabindex="-1"></a>  <span class="fu">group_by</span>(hicid) <span class="sc">%&gt;%</span></span>
+<span id="cb6-13"><a href="#cb6-13" aria-hidden="true" tabindex="-1"></a>  <span class="fu">summarise</span>(<span class="at">sumtime =</span> <span class="fu">sum</span>(duration))</span>
+<span id="cb6-14"><a href="#cb6-14" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb6-15"><a href="#cb6-15" aria-hidden="true" tabindex="-1"></a><span class="co"># remove cases with sum of the duration longer than 1440</span></span>
+<span id="cb6-16"><a href="#cb6-16" aria-hidden="true" tabindex="-1"></a>filtered_data7 <span class="ot">&lt;-</span> filtered_data6 <span class="sc">%&gt;%</span></span>
+<span id="cb6-17"><a href="#cb6-17" aria-hidden="true" tabindex="-1"></a>  <span class="fu">group_by</span>(hicid) <span class="sc">%&gt;%</span></span>
+<span id="cb6-18"><a href="#cb6-18" aria-hidden="true" tabindex="-1"></a>  <span class="fu">filter</span>(<span class="fu">sum</span>(duration) <span class="sc">&lt;=</span> <span class="dv">1440</span>) <span class="sc">%&gt;%</span></span>
+<span id="cb6-19"><a href="#cb6-19" aria-hidden="true" tabindex="-1"></a>  <span class="fu">ungroup</span>()</span>
+<span id="cb6-20"><a href="#cb6-20" aria-hidden="true" tabindex="-1"></a><span class="co"># check that all cases sum to 1440 mins (24 hours)</span></span>
+<span id="cb6-21"><a href="#cb6-21" aria-hidden="true" tabindex="-1"></a>sumtime <span class="ot">&lt;-</span> filtered_data7 <span class="sc">%&gt;%</span></span>
+<span id="cb6-22"><a href="#cb6-22" aria-hidden="true" tabindex="-1"></a>  <span class="fu">group_by</span>(hicid) <span class="sc">%&gt;%</span></span>
+<span id="cb6-23"><a href="#cb6-23" aria-hidden="true" tabindex="-1"></a>  <span class="fu">summarise</span>(<span class="at">sumtime =</span> <span class="fu">sum</span>(duration))</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </details>
 </div>
-<p>Ran a quick completion check to make sure all diaries summed to exactly 1440 mins (24 hours). Those who’s exceeded this duration were removed.</p>
-<div class="cell">
-<details class="code-fold">
-<summary>Show/hide the code</summary>
-<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb8"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb8-1"><a href="#cb8-1" aria-hidden="true" tabindex="-1"></a><span class="co"># check that all cases sum to 1440 mins (24 hours)</span></span>
-<span id="cb8-2"><a href="#cb8-2" aria-hidden="true" tabindex="-1"></a>sumtime <span class="ot">&lt;-</span> filtered_data6 <span class="sc">%&gt;%</span></span>
-<span id="cb8-3"><a href="#cb8-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">group_by</span>(hicid) <span class="sc">%&gt;%</span></span>
-<span id="cb8-4"><a href="#cb8-4" aria-hidden="true" tabindex="-1"></a>  <span class="fu">summarise</span>(<span class="at">sumtime =</span> <span class="fu">sum</span>(duration))</span>
-<span id="cb8-5"><a href="#cb8-5" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb8-6"><a href="#cb8-6" aria-hidden="true" tabindex="-1"></a><span class="co"># remove cases with sum of the duration longer than 1440 </span></span>
-<span id="cb8-7"><a href="#cb8-7" aria-hidden="true" tabindex="-1"></a>filtered_data7 <span class="ot">&lt;-</span> filtered_data6 <span class="sc">%&gt;%</span></span>
-<span id="cb8-8"><a href="#cb8-8" aria-hidden="true" tabindex="-1"></a>  <span class="fu">group_by</span>(hicid) <span class="sc">%&gt;%</span></span>
-<span id="cb8-9"><a href="#cb8-9" aria-hidden="true" tabindex="-1"></a>  <span class="fu">filter</span>(<span class="fu">sum</span>(duration) <span class="sc">&lt;=</span> <span class="dv">1440</span>) <span class="sc">%&gt;%</span></span>
-<span id="cb8-10"><a href="#cb8-10" aria-hidden="true" tabindex="-1"></a>  <span class="fu">ungroup</span>()</span>
-<span id="cb8-11"><a href="#cb8-11" aria-hidden="true" tabindex="-1"></a><span class="co"># check that all cases sum to 1440 mins (24 hours)</span></span>
-<span id="cb8-12"><a href="#cb8-12" aria-hidden="true" tabindex="-1"></a>sumtime <span class="ot">&lt;-</span> filtered_data7 <span class="sc">%&gt;%</span></span>
-<span id="cb8-13"><a href="#cb8-13" aria-hidden="true" tabindex="-1"></a>  <span class="fu">group_by</span>(hicid) <span class="sc">%&gt;%</span></span>
-<span id="cb8-14"><a href="#cb8-14" aria-hidden="true" tabindex="-1"></a>  <span class="fu">summarise</span>(<span class="at">sumtime =</span> <span class="fu">sum</span>(duration))</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
-</details>
-</div>
-<p>We have 2641 unique diaries at this stage. n = 1270 on school days and 1371 on non school days</p>
+<p>Final analytic sample n = 2641. n = 1270 on school days and n = 1371 on non school days</p>
 </section>
 <section id="sequence-construction" class="level2">
 <h2 class="anchored" data-anchor-id="sequence-construction">Sequence Construction</h2>
-<p>Created a data frame where ach participant’s activity was expanded to a matrix with 1440 columns, and each activity code was repeated for its duration in minutes (1 col = 1 minute)</p>
 <div class="cell">
 <details class="code-fold">
 <summary>Show/hide the code</summary>
-<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb9"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb9-1"><a href="#cb9-1" aria-hidden="true" tabindex="-1"></a><span class="co"># create the sequence dataframe with one long vector of activities repeated by their duration (minutes)</span></span>
-<span id="cb9-2"><a href="#cb9-2" aria-hidden="true" tabindex="-1"></a>sequences <span class="ot">&lt;-</span> <span class="fu">rep</span>(</span>
-<span id="cb9-3"><a href="#cb9-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">as.numeric</span>(filtered_data7<span class="sc">$</span>act_rec), </span>
-<span id="cb9-4"><a href="#cb9-4" aria-hidden="true" tabindex="-1"></a>  <span class="fu">as.numeric</span>(filtered_data7<span class="sc">$</span>duration)</span>
-<span id="cb9-5"><a href="#cb9-5" aria-hidden="true" tabindex="-1"></a>)</span>
-<span id="cb9-6"><a href="#cb9-6" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb9-7"><a href="#cb9-7" aria-hidden="true" tabindex="-1"></a><span class="co"># reshape the matrix where each row = participant, column = minute (1440 columns)</span></span>
-<span id="cb9-8"><a href="#cb9-8" aria-hidden="true" tabindex="-1"></a>seq <span class="ot">&lt;-</span> <span class="fu">matrix</span>(</span>
-<span id="cb9-9"><a href="#cb9-9" aria-hidden="true" tabindex="-1"></a>  sequences,</span>
-<span id="cb9-10"><a href="#cb9-10" aria-hidden="true" tabindex="-1"></a>  <span class="at">nrow =</span> <span class="fu">length</span>(sequences)<span class="sc">/</span><span class="dv">1440</span>,</span>
-<span id="cb9-11"><a href="#cb9-11" aria-hidden="true" tabindex="-1"></a>  <span class="at">ncol =</span> <span class="dv">1440</span>,</span>
-<span id="cb9-12"><a href="#cb9-12" aria-hidden="true" tabindex="-1"></a>  <span class="at">byrow =</span> <span class="cn">TRUE</span></span>
-<span id="cb9-13"><a href="#cb9-13" aria-hidden="true" tabindex="-1"></a>)</span>
-<span id="cb9-14"><a href="#cb9-14" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb9-15"><a href="#cb9-15" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb9-16"><a href="#cb9-16" aria-hidden="true" tabindex="-1"></a><span class="co"># create variable names for each of the minutes</span></span>
-<span id="cb9-17"><a href="#cb9-17" aria-hidden="true" tabindex="-1"></a>activities <span class="ot">&lt;-</span> <span class="fu">c</span>()</span>
-<span id="cb9-18"><a href="#cb9-18" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span> (i <span class="cf">in</span> <span class="dv">0</span><span class="sc">:</span><span class="dv">1439</span>) {</span>
-<span id="cb9-19"><a href="#cb9-19" aria-hidden="true" tabindex="-1"></a>  activities <span class="ot">&lt;-</span> <span class="fu">c</span>(activities, <span class="fu">paste</span>(<span class="st">"var"</span>, i, <span class="at">sep =</span> <span class="st">""</span>))</span>
-<span id="cb9-20"><a href="#cb9-20" aria-hidden="true" tabindex="-1"></a>}</span>
-<span id="cb9-21"><a href="#cb9-21" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb9-22"><a href="#cb9-22" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb9-23"><a href="#cb9-23" aria-hidden="true" tabindex="-1"></a><span class="co"># transform matrix to dataframe and label rows by participant id</span></span>
-<span id="cb9-24"><a href="#cb9-24" aria-hidden="true" tabindex="-1"></a><span class="co"># get the same ordering as the constructed rows</span></span>
-<span id="cb9-25"><a href="#cb9-25" aria-hidden="true" tabindex="-1"></a>id_order <span class="ot">&lt;-</span> filtered_data7 <span class="sc">|&gt;</span></span>
-<span id="cb9-26"><a href="#cb9-26" aria-hidden="true" tabindex="-1"></a>  <span class="fu">distinct</span>(hicid) <span class="sc">|&gt;</span></span>
-<span id="cb9-27"><a href="#cb9-27" aria-hidden="true" tabindex="-1"></a>  <span class="fu">pull</span>(hicid)</span>
-<span id="cb9-28"><a href="#cb9-28" aria-hidden="true" tabindex="-1"></a><span class="fu">stopifnot</span>(<span class="fu">length</span>(id_order) <span class="sc">==</span> <span class="fu">nrow</span>(seq))</span>
-<span id="cb9-29"><a href="#cb9-29" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb9-30"><a href="#cb9-30" aria-hidden="true" tabindex="-1"></a><span class="co"># used created vars names to name the columns in the dataframe and hicid for row names </span></span>
-<span id="cb9-31"><a href="#cb9-31" aria-hidden="true" tabindex="-1"></a>data <span class="ot">&lt;-</span> <span class="fu">as.data.frame</span>(seq, <span class="at">row.names =</span> id_order)</span>
-<span id="cb9-32"><a href="#cb9-32" aria-hidden="true" tabindex="-1"></a><span class="fu">colnames</span>(data) <span class="ot">&lt;-</span> activities</span>
-<span id="cb9-33"><a href="#cb9-33" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb9-34"><a href="#cb9-34" aria-hidden="true" tabindex="-1"></a><span class="co"># create vector of time labels</span></span>
-<span id="cb9-35"><a href="#cb9-35" aria-hidden="true" tabindex="-1"></a>t_intervals_labels <span class="ot">&lt;-</span> <span class="fu">format</span>(</span>
-<span id="cb9-36"><a href="#cb9-36" aria-hidden="true" tabindex="-1"></a>  <span class="fu">seq.POSIXt</span>(</span>
-<span id="cb9-37"><a href="#cb9-37" aria-hidden="true" tabindex="-1"></a>    <span class="fu">as.POSIXct</span>(<span class="st">"2023-09-05 04:00:00"</span>),</span>
-<span id="cb9-38"><a href="#cb9-38" aria-hidden="true" tabindex="-1"></a>    <span class="fu">as.POSIXct</span>(<span class="st">"2023-09-06 03:59:00"</span>),</span>
-<span id="cb9-39"><a href="#cb9-39" aria-hidden="true" tabindex="-1"></a>    <span class="at">by =</span> <span class="st">"1 min"</span></span>
-<span id="cb9-40"><a href="#cb9-40" aria-hidden="true" tabindex="-1"></a>  ),</span>
-<span id="cb9-41"><a href="#cb9-41" aria-hidden="true" tabindex="-1"></a>  <span class="st">"%H:%M"</span></span>
-<span id="cb9-42"><a href="#cb9-42" aria-hidden="true" tabindex="-1"></a>)</span>
-<span id="cb9-43"><a href="#cb9-43" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb9-44"><a href="#cb9-44" aria-hidden="true" tabindex="-1"></a><span class="co"># define labels for each activity category</span></span>
-<span id="cb9-45"><a href="#cb9-45" aria-hidden="true" tabindex="-1"></a>labels <span class="ot">&lt;-</span> <span class="fu">c</span>(</span>
-<span id="cb9-46"><a href="#cb9-46" aria-hidden="true" tabindex="-1"></a>  <span class="st">"Sleep"</span>,</span>
-<span id="cb9-47"><a href="#cb9-47" aria-hidden="true" tabindex="-1"></a>  <span class="st">"Education"</span>,</span>
-<span id="cb9-48"><a href="#cb9-48" aria-hidden="true" tabindex="-1"></a>  <span class="st">"Work (paid/unpaid)"</span>,</span>
-<span id="cb9-49"><a href="#cb9-49" aria-hidden="true" tabindex="-1"></a>  <span class="st">"Personal care"</span>,</span>
-<span id="cb9-50"><a href="#cb9-50" aria-hidden="true" tabindex="-1"></a>  <span class="st">"Eating and drinking"</span>,</span>
-<span id="cb9-51"><a href="#cb9-51" aria-hidden="true" tabindex="-1"></a>  <span class="st">"Sedentary behaviour"</span>,</span>
-<span id="cb9-52"><a href="#cb9-52" aria-hidden="true" tabindex="-1"></a>  <span class="st">"Physical activity"</span>,</span>
-<span id="cb9-53"><a href="#cb9-53" aria-hidden="true" tabindex="-1"></a>  <span class="st">"Leisure"</span>,</span>
-<span id="cb9-54"><a href="#cb9-54" aria-hidden="true" tabindex="-1"></a>  <span class="st">"Socialising"</span>,</span>
-<span id="cb9-55"><a href="#cb9-55" aria-hidden="true" tabindex="-1"></a>  <span class="st">"Travel"</span></span>
-<span id="cb9-56"><a href="#cb9-56" aria-hidden="true" tabindex="-1"></a>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb7"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true" tabindex="-1"></a><span class="co"># create the sequence dataframe with one long vector of activities repeated by their duration (minutes)</span></span>
+<span id="cb7-2"><a href="#cb7-2" aria-hidden="true" tabindex="-1"></a>sequences <span class="ot">&lt;-</span> <span class="fu">rep</span>(</span>
+<span id="cb7-3"><a href="#cb7-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">as.numeric</span>(filtered_data7<span class="sc">$</span>act_rec),</span>
+<span id="cb7-4"><a href="#cb7-4" aria-hidden="true" tabindex="-1"></a>  <span class="fu">as.numeric</span>(filtered_data7<span class="sc">$</span>duration)</span>
+<span id="cb7-5"><a href="#cb7-5" aria-hidden="true" tabindex="-1"></a>)</span>
+<span id="cb7-6"><a href="#cb7-6" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-7"><a href="#cb7-7" aria-hidden="true" tabindex="-1"></a><span class="co"># reshape the matrix where each row = participant, column = minute (1440 columns)</span></span>
+<span id="cb7-8"><a href="#cb7-8" aria-hidden="true" tabindex="-1"></a>seq <span class="ot">&lt;-</span> <span class="fu">matrix</span>(</span>
+<span id="cb7-9"><a href="#cb7-9" aria-hidden="true" tabindex="-1"></a>  sequences,</span>
+<span id="cb7-10"><a href="#cb7-10" aria-hidden="true" tabindex="-1"></a>  <span class="at">nrow =</span> <span class="fu">length</span>(sequences) <span class="sc">/</span> <span class="dv">1440</span>,</span>
+<span id="cb7-11"><a href="#cb7-11" aria-hidden="true" tabindex="-1"></a>  <span class="at">ncol =</span> <span class="dv">1440</span>,</span>
+<span id="cb7-12"><a href="#cb7-12" aria-hidden="true" tabindex="-1"></a>  <span class="at">byrow =</span> <span class="cn">TRUE</span></span>
+<span id="cb7-13"><a href="#cb7-13" aria-hidden="true" tabindex="-1"></a>)</span>
+<span id="cb7-14"><a href="#cb7-14" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-15"><a href="#cb7-15" aria-hidden="true" tabindex="-1"></a><span class="co"># create variable names for each of the minutes</span></span>
+<span id="cb7-16"><a href="#cb7-16" aria-hidden="true" tabindex="-1"></a>activities <span class="ot">&lt;-</span> <span class="fu">c</span>()</span>
+<span id="cb7-17"><a href="#cb7-17" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span> (i <span class="cf">in</span> <span class="dv">0</span><span class="sc">:</span><span class="dv">1439</span>) {</span>
+<span id="cb7-18"><a href="#cb7-18" aria-hidden="true" tabindex="-1"></a>  activities <span class="ot">&lt;-</span> <span class="fu">c</span>(activities, <span class="fu">paste</span>(<span class="st">"var"</span>, i, <span class="at">sep =</span> <span class="st">""</span>))</span>
+<span id="cb7-19"><a href="#cb7-19" aria-hidden="true" tabindex="-1"></a>}</span>
+<span id="cb7-20"><a href="#cb7-20" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-21"><a href="#cb7-21" aria-hidden="true" tabindex="-1"></a><span class="co"># transform matrix to dataframe and label rows by participant id</span></span>
+<span id="cb7-22"><a href="#cb7-22" aria-hidden="true" tabindex="-1"></a><span class="co"># get the same ordering as the constructed rows</span></span>
+<span id="cb7-23"><a href="#cb7-23" aria-hidden="true" tabindex="-1"></a>id_order <span class="ot">&lt;-</span> filtered_data7 <span class="sc">|&gt;</span></span>
+<span id="cb7-24"><a href="#cb7-24" aria-hidden="true" tabindex="-1"></a>  <span class="fu">distinct</span>(hicid) <span class="sc">|&gt;</span></span>
+<span id="cb7-25"><a href="#cb7-25" aria-hidden="true" tabindex="-1"></a>  <span class="fu">pull</span>(hicid)</span>
+<span id="cb7-26"><a href="#cb7-26" aria-hidden="true" tabindex="-1"></a><span class="fu">stopifnot</span>(<span class="fu">length</span>(id_order) <span class="sc">==</span> <span class="fu">nrow</span>(seq))</span>
+<span id="cb7-27"><a href="#cb7-27" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-28"><a href="#cb7-28" aria-hidden="true" tabindex="-1"></a><span class="co"># used created vars names to name the columns in the dataframe and hicid for row names</span></span>
+<span id="cb7-29"><a href="#cb7-29" aria-hidden="true" tabindex="-1"></a>data <span class="ot">&lt;-</span> <span class="fu">as.data.frame</span>(seq, <span class="at">row.names =</span> id_order)</span>
+<span id="cb7-30"><a href="#cb7-30" aria-hidden="true" tabindex="-1"></a><span class="fu">colnames</span>(data) <span class="ot">&lt;-</span> activities</span>
+<span id="cb7-31"><a href="#cb7-31" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-32"><a href="#cb7-32" aria-hidden="true" tabindex="-1"></a><span class="co"># create vector of time labels</span></span>
+<span id="cb7-33"><a href="#cb7-33" aria-hidden="true" tabindex="-1"></a>t_intervals_labels <span class="ot">&lt;-</span> <span class="fu">format</span>(</span>
+<span id="cb7-34"><a href="#cb7-34" aria-hidden="true" tabindex="-1"></a>  <span class="fu">seq.POSIXt</span>(</span>
+<span id="cb7-35"><a href="#cb7-35" aria-hidden="true" tabindex="-1"></a>    <span class="fu">as.POSIXct</span>(<span class="st">"2023-09-05 04:00:00"</span>),</span>
+<span id="cb7-36"><a href="#cb7-36" aria-hidden="true" tabindex="-1"></a>    <span class="fu">as.POSIXct</span>(<span class="st">"2023-09-06 03:59:00"</span>),</span>
+<span id="cb7-37"><a href="#cb7-37" aria-hidden="true" tabindex="-1"></a>    <span class="at">by =</span> <span class="st">"1 min"</span></span>
+<span id="cb7-38"><a href="#cb7-38" aria-hidden="true" tabindex="-1"></a>  ),</span>
+<span id="cb7-39"><a href="#cb7-39" aria-hidden="true" tabindex="-1"></a>  <span class="st">"%H:%M"</span></span>
+<span id="cb7-40"><a href="#cb7-40" aria-hidden="true" tabindex="-1"></a>)</span>
+<span id="cb7-41"><a href="#cb7-41" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-42"><a href="#cb7-42" aria-hidden="true" tabindex="-1"></a><span class="co"># define labels for each activity category</span></span>
+<span id="cb7-43"><a href="#cb7-43" aria-hidden="true" tabindex="-1"></a>labels <span class="ot">&lt;-</span> <span class="fu">c</span>(</span>
+<span id="cb7-44"><a href="#cb7-44" aria-hidden="true" tabindex="-1"></a>  <span class="st">"Sleep"</span>,</span>
+<span id="cb7-45"><a href="#cb7-45" aria-hidden="true" tabindex="-1"></a>  <span class="st">"Education"</span>,</span>
+<span id="cb7-46"><a href="#cb7-46" aria-hidden="true" tabindex="-1"></a>  <span class="st">"Work (paid/unpaid)"</span>,</span>
+<span id="cb7-47"><a href="#cb7-47" aria-hidden="true" tabindex="-1"></a>  <span class="st">"Personal care"</span>,</span>
+<span id="cb7-48"><a href="#cb7-48" aria-hidden="true" tabindex="-1"></a>  <span class="st">"Eating and drinking"</span>,</span>
+<span id="cb7-49"><a href="#cb7-49" aria-hidden="true" tabindex="-1"></a>  <span class="st">"Sedentary behaviour"</span>,</span>
+<span id="cb7-50"><a href="#cb7-50" aria-hidden="true" tabindex="-1"></a>  <span class="st">"Physical activity"</span>,</span>
+<span id="cb7-51"><a href="#cb7-51" aria-hidden="true" tabindex="-1"></a>  <span class="st">"Leisure"</span>,</span>
+<span id="cb7-52"><a href="#cb7-52" aria-hidden="true" tabindex="-1"></a>  <span class="st">"Socialising"</span>,</span>
+<span id="cb7-53"><a href="#cb7-53" aria-hidden="true" tabindex="-1"></a>  <span class="st">"Travel"</span></span>
+<span id="cb7-54"><a href="#cb7-54" aria-hidden="true" tabindex="-1"></a>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </details>
 </div>
-<p>Survey weights (<code>hweights</code>) from the LSAC data were merged. The matrix was then split into school and non-school days.</p>
+<p>Join to survey data</p>
 <div class="cell">
 <details class="code-fold">
 <summary>Show/hide the code</summary>
-<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb10"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb10-1"><a href="#cb10-1" aria-hidden="true" tabindex="-1"></a><span class="co"># get the day from the main data set</span></span>
-<span id="cb10-2"><a href="#cb10-2" aria-hidden="true" tabindex="-1"></a>day_week <span class="ot">&lt;-</span> data2 <span class="sc">%&gt;%</span></span>
-<span id="cb10-3"><a href="#cb10-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">select</span>(hicid, day, school, nosch) <span class="sc">%&gt;%</span></span>
-<span id="cb10-4"><a href="#cb10-4" aria-hidden="true" tabindex="-1"></a>  <span class="fu">group_by</span>(hicid) <span class="sc">%&gt;%</span></span>
-<span id="cb10-5"><a href="#cb10-5" aria-hidden="true" tabindex="-1"></a>  <span class="fu">summarise</span>(<span class="at">day =</span> <span class="fu">first</span>(day), <span class="at">school =</span> <span class="fu">first</span>(school), <span class="at">nosch =</span> <span class="fu">first</span>(nosch))</span>
-<span id="cb10-6"><a href="#cb10-6" aria-hidden="true" tabindex="-1"></a><span class="co"># link data back to the ids in the sequence matrix </span></span>
-<span id="cb10-7"><a href="#cb10-7" aria-hidden="true" tabindex="-1"></a>data_day <span class="ot">&lt;-</span> <span class="fu">data.frame</span>(<span class="at">hicid =</span> <span class="fu">as.numeric</span>(<span class="fu">rownames</span>(data)))</span>
-<span id="cb10-8"><a href="#cb10-8" aria-hidden="true" tabindex="-1"></a>data_day <span class="ot">&lt;-</span> <span class="fu">left_join</span>(data_day, day_week, <span class="at">by =</span> <span class="st">"hicid"</span>)</span>
-<span id="cb10-9"><a href="#cb10-9" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb10-10"><a href="#cb10-10" aria-hidden="true" tabindex="-1"></a><span class="co"># merge survey weights into the data </span></span>
-<span id="cb10-11"><a href="#cb10-11" aria-hidden="true" tabindex="-1"></a>lsacweights <span class="ot">&lt;-</span> <span class="fu">data.frame</span>(<span class="at">hicid =</span> datalsac<span class="sc">$</span>hicid, <span class="at">hweights =</span> datalsac<span class="sc">$</span>hweights)</span>
-<span id="cb10-12"><a href="#cb10-12" aria-hidden="true" tabindex="-1"></a>data_day <span class="ot">&lt;-</span> <span class="fu">left_join</span>(data_day, lsacweights, <span class="at">by =</span> <span class="st">"hicid"</span>)</span>
-<span id="cb10-13"><a href="#cb10-13" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb10-14"><a href="#cb10-14" aria-hidden="true" tabindex="-1"></a><span class="co"># create day type factor </span></span>
-<span id="cb10-15"><a href="#cb10-15" aria-hidden="true" tabindex="-1"></a>data_day <span class="ot">&lt;-</span> data_day <span class="sc">|&gt;</span> </span>
-<span id="cb10-16"><a href="#cb10-16" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(</span>
-<span id="cb10-17"><a href="#cb10-17" aria-hidden="true" tabindex="-1"></a>    <span class="at">day_rec =</span> <span class="fu">case_when</span>(</span>
-<span id="cb10-18"><a href="#cb10-18" aria-hidden="true" tabindex="-1"></a>      school <span class="sc">==</span> <span class="dv">1</span> <span class="sc">~</span> <span class="st">"School"</span>, </span>
-<span id="cb10-19"><a href="#cb10-19" aria-hidden="true" tabindex="-1"></a>      school <span class="sc">%in%</span> <span class="fu">c</span>(<span class="sc">-</span><span class="dv">9</span>, <span class="dv">2</span>) <span class="sc">~</span> <span class="st">"Non-school"</span>,</span>
-<span id="cb10-20"><a href="#cb10-20" aria-hidden="true" tabindex="-1"></a>      <span class="cn">TRUE</span> <span class="sc">~</span> <span class="cn">NA_character_</span></span>
-<span id="cb10-21"><a href="#cb10-21" aria-hidden="true" tabindex="-1"></a>    ),</span>
-<span id="cb10-22"><a href="#cb10-22" aria-hidden="true" tabindex="-1"></a>    <span class="at">day_rec =</span> <span class="fu">factor</span>(day_rec, <span class="at">levels =</span> <span class="fu">c</span>(<span class="st">"School"</span>, <span class="st">"Non-school"</span>))</span>
-<span id="cb10-23"><a href="#cb10-23" aria-hidden="true" tabindex="-1"></a>  )</span>
-<span id="cb10-24"><a href="#cb10-24" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb10-25"><a href="#cb10-25" aria-hidden="true" tabindex="-1"></a><span class="co"># get ids for school and non-school days seperately</span></span>
-<span id="cb10-26"><a href="#cb10-26" aria-hidden="true" tabindex="-1"></a>s_id <span class="ot">&lt;-</span> data_day <span class="sc">|&gt;</span> <span class="fu">filter</span>(day_rec <span class="sc">==</span> <span class="st">"School"</span>) <span class="sc">|&gt;</span> <span class="fu">pull</span>(hicid)</span>
-<span id="cb10-27"><a href="#cb10-27" aria-hidden="true" tabindex="-1"></a>n_id <span class="ot">&lt;-</span> data_day <span class="sc">|&gt;</span> <span class="fu">filter</span>(day_rec <span class="sc">==</span> <span class="st">"Non-school"</span>) <span class="sc">|&gt;</span> <span class="fu">pull</span>(hicid)</span>
-<span id="cb10-28"><a href="#cb10-28" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb10-29"><a href="#cb10-29" aria-hidden="true" tabindex="-1"></a><span class="co"># split the wide activity matrix by id; keep only activity columns for seqdef</span></span>
-<span id="cb10-30"><a href="#cb10-30" aria-hidden="true" tabindex="-1"></a>s_data <span class="ot">&lt;-</span> data[<span class="fu">as.character</span>(s_id), , drop <span class="ot">=</span> <span class="cn">FALSE</span>]</span>
-<span id="cb10-31"><a href="#cb10-31" aria-hidden="true" tabindex="-1"></a>n_data <span class="ot">&lt;-</span> data[<span class="fu">as.character</span>(n_id), , drop <span class="ot">=</span> <span class="cn">FALSE</span>]</span>
-<span id="cb10-32"><a href="#cb10-32" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb10-33"><a href="#cb10-33" aria-hidden="true" tabindex="-1"></a><span class="co"># keep weights separately</span></span>
-<span id="cb10-34"><a href="#cb10-34" aria-hidden="true" tabindex="-1"></a>s_w <span class="ot">&lt;-</span> data_day <span class="sc">|&gt;</span> <span class="fu">filter</span>(hicid <span class="sc">%in%</span> s_id) <span class="sc">|&gt;</span> <span class="fu">arrange</span>(<span class="fu">match</span>(hicid, s_id)) <span class="sc">|&gt;</span> <span class="fu">pull</span>(hweights)</span>
-<span id="cb10-35"><a href="#cb10-35" aria-hidden="true" tabindex="-1"></a>n_w <span class="ot">&lt;-</span> data_day <span class="sc">|&gt;</span> <span class="fu">filter</span>(hicid <span class="sc">%in%</span> n_id) <span class="sc">|&gt;</span> <span class="fu">arrange</span>(<span class="fu">match</span>(hicid, n_id)) <span class="sc">|&gt;</span> <span class="fu">pull</span>(hweights)</span>
-<span id="cb10-36"><a href="#cb10-36" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb10-37"><a href="#cb10-37" aria-hidden="true" tabindex="-1"></a><span class="fu">stopifnot</span>(<span class="fu">nrow</span>(s_data) <span class="sc">==</span> <span class="fu">length</span>(s_w))</span>
-<span id="cb10-38"><a href="#cb10-38" aria-hidden="true" tabindex="-1"></a><span class="fu">stopifnot</span>(<span class="fu">nrow</span>(n_data) <span class="sc">==</span> <span class="fu">length</span>(n_w))</span>
-<span id="cb10-39"><a href="#cb10-39" aria-hidden="true" tabindex="-1"></a><span class="co"># create sequence object for each group</span></span>
-<span id="cb10-40"><a href="#cb10-40" aria-hidden="true" tabindex="-1"></a><span class="co"># Make `activities` match the s_data columns</span></span>
-<span id="cb10-41"><a href="#cb10-41" aria-hidden="true" tabindex="-1"></a>activities <span class="ot">&lt;-</span> <span class="fu">colnames</span>(s_data)</span>
-<span id="cb10-42"><a href="#cb10-42" aria-hidden="true" tabindex="-1"></a><span class="fu">stopifnot</span>(<span class="fu">length</span>(activities) <span class="sc">==</span> <span class="fu">ncol</span>(s_data))</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb8"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb8-1"><a href="#cb8-1" aria-hidden="true" tabindex="-1"></a><span class="co"># get the day from the main data set</span></span>
+<span id="cb8-2"><a href="#cb8-2" aria-hidden="true" tabindex="-1"></a>day_week <span class="ot">&lt;-</span> data2 <span class="sc">%&gt;%</span></span>
+<span id="cb8-3"><a href="#cb8-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">select</span>(hicid, day, school, nosch) <span class="sc">%&gt;%</span></span>
+<span id="cb8-4"><a href="#cb8-4" aria-hidden="true" tabindex="-1"></a>  <span class="fu">group_by</span>(hicid) <span class="sc">%&gt;%</span></span>
+<span id="cb8-5"><a href="#cb8-5" aria-hidden="true" tabindex="-1"></a>  <span class="fu">summarise</span>(<span class="at">day =</span> <span class="fu">first</span>(day), <span class="at">school =</span> <span class="fu">first</span>(school), <span class="at">nosch =</span> <span class="fu">first</span>(nosch))</span>
+<span id="cb8-6"><a href="#cb8-6" aria-hidden="true" tabindex="-1"></a><span class="co"># link data back to the ids in the sequence matrix</span></span>
+<span id="cb8-7"><a href="#cb8-7" aria-hidden="true" tabindex="-1"></a>data_day <span class="ot">&lt;-</span> <span class="fu">data.frame</span>(<span class="at">hicid =</span> <span class="fu">as.numeric</span>(<span class="fu">rownames</span>(data)))</span>
+<span id="cb8-8"><a href="#cb8-8" aria-hidden="true" tabindex="-1"></a>data_day <span class="ot">&lt;-</span> <span class="fu">left_join</span>(data_day, day_week, <span class="at">by =</span> <span class="st">"hicid"</span>)</span>
+<span id="cb8-9"><a href="#cb8-9" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb8-10"><a href="#cb8-10" aria-hidden="true" tabindex="-1"></a><span class="co"># merge survey weights into the data</span></span>
+<span id="cb8-11"><a href="#cb8-11" aria-hidden="true" tabindex="-1"></a>lsacweights <span class="ot">&lt;-</span> <span class="fu">data.frame</span>(<span class="at">hicid =</span> datalsac<span class="sc">$</span>hicid, <span class="at">hweights =</span> datalsac<span class="sc">$</span>hweights)</span>
+<span id="cb8-12"><a href="#cb8-12" aria-hidden="true" tabindex="-1"></a>data_day <span class="ot">&lt;-</span> <span class="fu">left_join</span>(data_day, lsacweights, <span class="at">by =</span> <span class="st">"hicid"</span>)</span>
+<span id="cb8-13"><a href="#cb8-13" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb8-14"><a href="#cb8-14" aria-hidden="true" tabindex="-1"></a><span class="co"># create day type factor</span></span>
+<span id="cb8-15"><a href="#cb8-15" aria-hidden="true" tabindex="-1"></a>data_day <span class="ot">&lt;-</span> data_day <span class="sc">|&gt;</span></span>
+<span id="cb8-16"><a href="#cb8-16" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(</span>
+<span id="cb8-17"><a href="#cb8-17" aria-hidden="true" tabindex="-1"></a>    <span class="at">day_rec =</span> <span class="fu">case_when</span>(</span>
+<span id="cb8-18"><a href="#cb8-18" aria-hidden="true" tabindex="-1"></a>      school <span class="sc">==</span> <span class="dv">1</span> <span class="sc">~</span> <span class="st">"School"</span>,</span>
+<span id="cb8-19"><a href="#cb8-19" aria-hidden="true" tabindex="-1"></a>      school <span class="sc">%in%</span> <span class="fu">c</span>(<span class="sc">-</span><span class="dv">9</span>, <span class="dv">2</span>) <span class="sc">~</span> <span class="st">"Non-school"</span>,</span>
+<span id="cb8-20"><a href="#cb8-20" aria-hidden="true" tabindex="-1"></a>      <span class="cn">TRUE</span> <span class="sc">~</span> <span class="cn">NA_character_</span></span>
+<span id="cb8-21"><a href="#cb8-21" aria-hidden="true" tabindex="-1"></a>    ),</span>
+<span id="cb8-22"><a href="#cb8-22" aria-hidden="true" tabindex="-1"></a>    <span class="at">day_rec =</span> <span class="fu">factor</span>(day_rec, <span class="at">levels =</span> <span class="fu">c</span>(<span class="st">"School"</span>, <span class="st">"Non-school"</span>))</span>
+<span id="cb8-23"><a href="#cb8-23" aria-hidden="true" tabindex="-1"></a>  )</span>
+<span id="cb8-24"><a href="#cb8-24" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb8-25"><a href="#cb8-25" aria-hidden="true" tabindex="-1"></a><span class="co"># get ids for school and non-school days seperately</span></span>
+<span id="cb8-26"><a href="#cb8-26" aria-hidden="true" tabindex="-1"></a>s_id <span class="ot">&lt;-</span> data_day <span class="sc">|&gt;</span> <span class="fu">filter</span>(day_rec <span class="sc">==</span> <span class="st">"School"</span>) <span class="sc">|&gt;</span> <span class="fu">pull</span>(hicid)</span>
+<span id="cb8-27"><a href="#cb8-27" aria-hidden="true" tabindex="-1"></a>n_id <span class="ot">&lt;-</span> data_day <span class="sc">|&gt;</span> <span class="fu">filter</span>(day_rec <span class="sc">==</span> <span class="st">"Non-school"</span>) <span class="sc">|&gt;</span> <span class="fu">pull</span>(hicid)</span>
+<span id="cb8-28"><a href="#cb8-28" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb8-29"><a href="#cb8-29" aria-hidden="true" tabindex="-1"></a><span class="co"># split the wide activity matrix by id; keep only activity columns for seqdef</span></span>
+<span id="cb8-30"><a href="#cb8-30" aria-hidden="true" tabindex="-1"></a>s_data <span class="ot">&lt;-</span> data[<span class="fu">as.character</span>(s_id), , drop <span class="ot">=</span> <span class="cn">FALSE</span>]</span>
+<span id="cb8-31"><a href="#cb8-31" aria-hidden="true" tabindex="-1"></a>n_data <span class="ot">&lt;-</span> data[<span class="fu">as.character</span>(n_id), , drop <span class="ot">=</span> <span class="cn">FALSE</span>]</span>
+<span id="cb8-32"><a href="#cb8-32" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb8-33"><a href="#cb8-33" aria-hidden="true" tabindex="-1"></a><span class="co"># keep weights separately</span></span>
+<span id="cb8-34"><a href="#cb8-34" aria-hidden="true" tabindex="-1"></a>s_w <span class="ot">&lt;-</span> data_day <span class="sc">|&gt;</span></span>
+<span id="cb8-35"><a href="#cb8-35" aria-hidden="true" tabindex="-1"></a>  <span class="fu">filter</span>(hicid <span class="sc">%in%</span> s_id) <span class="sc">|&gt;</span></span>
+<span id="cb8-36"><a href="#cb8-36" aria-hidden="true" tabindex="-1"></a>  <span class="fu">arrange</span>(<span class="fu">match</span>(hicid, s_id)) <span class="sc">|&gt;</span></span>
+<span id="cb8-37"><a href="#cb8-37" aria-hidden="true" tabindex="-1"></a>  <span class="fu">pull</span>(hweights)</span>
+<span id="cb8-38"><a href="#cb8-38" aria-hidden="true" tabindex="-1"></a>n_w <span class="ot">&lt;-</span> data_day <span class="sc">|&gt;</span></span>
+<span id="cb8-39"><a href="#cb8-39" aria-hidden="true" tabindex="-1"></a>  <span class="fu">filter</span>(hicid <span class="sc">%in%</span> n_id) <span class="sc">|&gt;</span></span>
+<span id="cb8-40"><a href="#cb8-40" aria-hidden="true" tabindex="-1"></a>  <span class="fu">arrange</span>(<span class="fu">match</span>(hicid, n_id)) <span class="sc">|&gt;</span></span>
+<span id="cb8-41"><a href="#cb8-41" aria-hidden="true" tabindex="-1"></a>  <span class="fu">pull</span>(hweights)</span>
+<span id="cb8-42"><a href="#cb8-42" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb8-43"><a href="#cb8-43" aria-hidden="true" tabindex="-1"></a><span class="fu">stopifnot</span>(<span class="fu">nrow</span>(s_data) <span class="sc">==</span> <span class="fu">length</span>(s_w))</span>
+<span id="cb8-44"><a href="#cb8-44" aria-hidden="true" tabindex="-1"></a><span class="fu">stopifnot</span>(<span class="fu">nrow</span>(n_data) <span class="sc">==</span> <span class="fu">length</span>(n_w))</span>
+<span id="cb8-45"><a href="#cb8-45" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb8-46"><a href="#cb8-46" aria-hidden="true" tabindex="-1"></a><span class="co"># create sequence object for each group</span></span>
+<span id="cb8-47"><a href="#cb8-47" aria-hidden="true" tabindex="-1"></a><span class="co"># Make `activities` match the s_data columns</span></span>
+<span id="cb8-48"><a href="#cb8-48" aria-hidden="true" tabindex="-1"></a>activities <span class="ot">&lt;-</span> <span class="fu">colnames</span>(s_data)</span>
+<span id="cb8-49"><a href="#cb8-49" aria-hidden="true" tabindex="-1"></a><span class="fu">stopifnot</span>(<span class="fu">length</span>(activities) <span class="sc">==</span> <span class="fu">ncol</span>(s_data))</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </details>
 </div>
-</section>
-<section id="sequence-objects" class="level2">
-<h2 class="anchored" data-anchor-id="sequence-objects">Sequence objects</h2>
-<p><code>seqdef()</code> from <code>TraMineR</code> was then used to create sequence objects for each day-type group. Sequences were defined over the ten aggregate activity states</p>
+<p>Create sequence objects</p>
 <div class="cell">
 <details class="code-fold">
 <summary>Show/hide the code</summary>
-<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb11"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb11-1"><a href="#cb11-1" aria-hidden="true" tabindex="-1"></a>seqs <span class="ot">&lt;-</span> <span class="fu">seqdef</span>(</span>
-<span id="cb11-2"><a href="#cb11-2" aria-hidden="true" tabindex="-1"></a>  s_data,</span>
-<span id="cb11-3"><a href="#cb11-3" aria-hidden="true" tabindex="-1"></a>  <span class="at">var =</span> activities,</span>
-<span id="cb11-4"><a href="#cb11-4" aria-hidden="true" tabindex="-1"></a>  <span class="at">cnames =</span> t_intervals_labels,</span>
-<span id="cb11-5"><a href="#cb11-5" aria-hidden="true" tabindex="-1"></a>  <span class="at">alphabet =</span> <span class="fu">c</span>(<span class="st">"1"</span>, <span class="st">"2"</span>, <span class="st">"3"</span>, <span class="st">"4"</span>, <span class="st">"5"</span>, <span class="st">"6"</span>, <span class="st">"7"</span>, <span class="st">"8"</span>, <span class="st">"9"</span>, <span class="st">"10"</span>),</span>
-<span id="cb11-6"><a href="#cb11-6" aria-hidden="true" tabindex="-1"></a>  <span class="at">labels =</span> labels,</span>
-<span id="cb11-7"><a href="#cb11-7" aria-hidden="true" tabindex="-1"></a>  <span class="at">xtstep =</span> <span class="dv">18</span>,</span>
-<span id="cb11-8"><a href="#cb11-8" aria-hidden="true" tabindex="-1"></a>  <span class="at">id =</span> <span class="fu">rownames</span>(s_data)</span>
-<span id="cb11-9"><a href="#cb11-9" aria-hidden="true" tabindex="-1"></a>)</span>
-<span id="cb11-10"><a href="#cb11-10" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb11-11"><a href="#cb11-11" aria-hidden="true" tabindex="-1"></a>seqn <span class="ot">&lt;-</span> <span class="fu">seqdef</span>(</span>
-<span id="cb11-12"><a href="#cb11-12" aria-hidden="true" tabindex="-1"></a>  n_data,</span>
-<span id="cb11-13"><a href="#cb11-13" aria-hidden="true" tabindex="-1"></a>  <span class="at">var =</span> activities,</span>
-<span id="cb11-14"><a href="#cb11-14" aria-hidden="true" tabindex="-1"></a>  <span class="at">cnames =</span> t_intervals_labels,</span>
-<span id="cb11-15"><a href="#cb11-15" aria-hidden="true" tabindex="-1"></a>  <span class="at">alphabet =</span> <span class="fu">c</span>(<span class="st">"1"</span>, <span class="st">"2"</span>, <span class="st">"3"</span>, <span class="st">"4"</span>, <span class="st">"5"</span>, <span class="st">"6"</span>, <span class="st">"7"</span>, <span class="st">"8"</span>, <span class="st">"9"</span>, <span class="st">"10"</span>),</span>
-<span id="cb11-16"><a href="#cb11-16" aria-hidden="true" tabindex="-1"></a>  <span class="at">labels =</span> labels,</span>
-<span id="cb11-17"><a href="#cb11-17" aria-hidden="true" tabindex="-1"></a>  <span class="at">xtstep =</span> <span class="dv">18</span>,</span>
-<span id="cb11-18"><a href="#cb11-18" aria-hidden="true" tabindex="-1"></a>  <span class="at">id =</span> <span class="fu">rownames</span>(n_data)</span>
-<span id="cb11-19"><a href="#cb11-19" aria-hidden="true" tabindex="-1"></a>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb9"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb9-1"><a href="#cb9-1" aria-hidden="true" tabindex="-1"></a><span class="co"># create sequence objects</span></span>
+<span id="cb9-2"><a href="#cb9-2" aria-hidden="true" tabindex="-1"></a>seqs <span class="ot">&lt;-</span> <span class="fu">seqdef</span>(</span>
+<span id="cb9-3"><a href="#cb9-3" aria-hidden="true" tabindex="-1"></a>  s_data,</span>
+<span id="cb9-4"><a href="#cb9-4" aria-hidden="true" tabindex="-1"></a>  <span class="at">var =</span> activities,</span>
+<span id="cb9-5"><a href="#cb9-5" aria-hidden="true" tabindex="-1"></a>  <span class="at">cnames =</span> t_intervals_labels,</span>
+<span id="cb9-6"><a href="#cb9-6" aria-hidden="true" tabindex="-1"></a>  <span class="at">alphabet =</span> <span class="fu">c</span>(<span class="st">"1"</span>, <span class="st">"2"</span>, <span class="st">"3"</span>, <span class="st">"4"</span>, <span class="st">"5"</span>, <span class="st">"6"</span>, <span class="st">"7"</span>, <span class="st">"8"</span>, <span class="st">"9"</span>, <span class="st">"10"</span>),</span>
+<span id="cb9-7"><a href="#cb9-7" aria-hidden="true" tabindex="-1"></a>  <span class="at">labels =</span> labels,</span>
+<span id="cb9-8"><a href="#cb9-8" aria-hidden="true" tabindex="-1"></a>  <span class="at">xtstep =</span> <span class="dv">18</span>,</span>
+<span id="cb9-9"><a href="#cb9-9" aria-hidden="true" tabindex="-1"></a>  <span class="at">id =</span> <span class="fu">rownames</span>(s_data)</span>
+<span id="cb9-10"><a href="#cb9-10" aria-hidden="true" tabindex="-1"></a>)</span>
+<span id="cb9-11"><a href="#cb9-11" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb9-12"><a href="#cb9-12" aria-hidden="true" tabindex="-1"></a>seqn <span class="ot">&lt;-</span> <span class="fu">seqdef</span>(</span>
+<span id="cb9-13"><a href="#cb9-13" aria-hidden="true" tabindex="-1"></a>  n_data,</span>
+<span id="cb9-14"><a href="#cb9-14" aria-hidden="true" tabindex="-1"></a>  <span class="at">var =</span> activities,</span>
+<span id="cb9-15"><a href="#cb9-15" aria-hidden="true" tabindex="-1"></a>  <span class="at">cnames =</span> t_intervals_labels,</span>
+<span id="cb9-16"><a href="#cb9-16" aria-hidden="true" tabindex="-1"></a>  <span class="at">alphabet =</span> <span class="fu">c</span>(<span class="st">"1"</span>, <span class="st">"2"</span>, <span class="st">"3"</span>, <span class="st">"4"</span>, <span class="st">"5"</span>, <span class="st">"6"</span>, <span class="st">"7"</span>, <span class="st">"8"</span>, <span class="st">"9"</span>, <span class="st">"10"</span>),</span>
+<span id="cb9-17"><a href="#cb9-17" aria-hidden="true" tabindex="-1"></a>  <span class="at">labels =</span> labels,</span>
+<span id="cb9-18"><a href="#cb9-18" aria-hidden="true" tabindex="-1"></a>  <span class="at">xtstep =</span> <span class="dv">18</span>,</span>
+<span id="cb9-19"><a href="#cb9-19" aria-hidden="true" tabindex="-1"></a>  <span class="at">id =</span> <span class="fu">rownames</span>(n_data)</span>
+<span id="cb9-20"><a href="#cb9-20" aria-hidden="true" tabindex="-1"></a>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </details>
 </div>
-<p>Sequences were then collapsed into 5-min intervals to reduce the compositional burden and then a substitution cost matrix was built to calculate distance (through optimal matching with an indel cost of 1)</p>
+<p>Collapse into 5minute intervals for computation purposes and get substitution cost matrix based on observed transition rates</p>
 <div class="cell">
 <details class="code-fold">
 <summary>Show/hide the code</summary>
-<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb12"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb12-1"><a href="#cb12-1" aria-hidden="true" tabindex="-1"></a><span class="co"># collapse into 5-min intervals (from 1 minute intervals); matches old scripts</span></span>
-<span id="cb12-2"><a href="#cb12-2" aria-hidden="true" tabindex="-1"></a>seqs5 <span class="ot">&lt;-</span> <span class="fu">seqgranularity</span>(seqs, <span class="at">tspan =</span> <span class="dv">5</span>, <span class="at">method =</span> <span class="st">"mostfreq"</span>)</span>
-<span id="cb12-3"><a href="#cb12-3" aria-hidden="true" tabindex="-1"></a>seqn5 <span class="ot">&lt;-</span> <span class="fu">seqgranularity</span>(seqn, <span class="at">tspan =</span> <span class="dv">5</span>, <span class="at">method =</span> <span class="st">"mostfreq"</span>)</span>
-<span id="cb12-4"><a href="#cb12-4" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb12-5"><a href="#cb12-5" aria-hidden="true" tabindex="-1"></a><span class="co"># compute substitution cost matrix based on observed transition rates; do per group, matches old scripts</span></span>
-<span id="cb12-6"><a href="#cb12-6" aria-hidden="true" tabindex="-1"></a>scosts <span class="ot">&lt;-</span> <span class="fu">seqsubm</span>(seqs5, <span class="at">method =</span> <span class="st">"TRATE"</span>)</span>
-<span id="cb12-7"><a href="#cb12-7" aria-hidden="true" tabindex="-1"></a>scostn <span class="ot">&lt;-</span> <span class="fu">seqsubm</span>(seqn5, <span class="at">method =</span> <span class="st">"TRATE"</span>)</span>
-<span id="cb12-8"><a href="#cb12-8" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb12-9"><a href="#cb12-9" aria-hidden="true" tabindex="-1"></a><span class="co"># optimal matching; indel cost = 1, matches old scripts</span></span>
-<span id="cb12-10"><a href="#cb12-10" aria-hidden="true" tabindex="-1"></a>om_times <span class="ot">&lt;-</span> <span class="fu">seqdist</span>(seqs5, <span class="at">method =</span> <span class="st">"OM"</span>, <span class="at">indel =</span> <span class="dv">1</span>, <span class="at">sm =</span> scosts)</span>
-<span id="cb12-11"><a href="#cb12-11" aria-hidden="true" tabindex="-1"></a>om_timen <span class="ot">&lt;-</span> <span class="fu">seqdist</span>(seqn5, <span class="at">method =</span> <span class="st">"OM"</span>, <span class="at">indel =</span> <span class="dv">1</span>, <span class="at">sm =</span> scostn)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb10"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb10-1"><a href="#cb10-1" aria-hidden="true" tabindex="-1"></a><span class="co"># collapse into 5-min intervals (from 1 minute intervals);</span></span>
+<span id="cb10-2"><a href="#cb10-2" aria-hidden="true" tabindex="-1"></a>seqs5 <span class="ot">&lt;-</span> <span class="fu">seqgranularity</span>(seqs, <span class="at">tspan =</span> <span class="dv">5</span>, <span class="at">method =</span> <span class="st">"mostfreq"</span>)</span>
+<span id="cb10-3"><a href="#cb10-3" aria-hidden="true" tabindex="-1"></a>seqn5 <span class="ot">&lt;-</span> <span class="fu">seqgranularity</span>(seqn, <span class="at">tspan =</span> <span class="dv">5</span>, <span class="at">method =</span> <span class="st">"mostfreq"</span>)</span>
+<span id="cb10-4"><a href="#cb10-4" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb10-5"><a href="#cb10-5" aria-hidden="true" tabindex="-1"></a><span class="co"># compute substitution cost matrix based on observed transition rates;</span></span>
+<span id="cb10-6"><a href="#cb10-6" aria-hidden="true" tabindex="-1"></a>scosts <span class="ot">&lt;-</span> <span class="fu">seqsubm</span>(seqs5, <span class="at">method =</span> <span class="st">"TRATE"</span>)</span>
+<span id="cb10-7"><a href="#cb10-7" aria-hidden="true" tabindex="-1"></a>scostn <span class="ot">&lt;-</span> <span class="fu">seqsubm</span>(seqn5, <span class="at">method =</span> <span class="st">"TRATE"</span>)</span>
+<span id="cb10-8"><a href="#cb10-8" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb10-9"><a href="#cb10-9" aria-hidden="true" tabindex="-1"></a><span class="co"># optimal matching; indel cost = 1,</span></span>
+<span id="cb10-10"><a href="#cb10-10" aria-hidden="true" tabindex="-1"></a>om_times <span class="ot">&lt;-</span> <span class="fu">seqdist</span>(seqs5, <span class="at">method =</span> <span class="st">"OM"</span>, <span class="at">indel =</span> <span class="dv">1</span>, <span class="at">sm =</span> scosts)</span>
+<span id="cb10-11"><a href="#cb10-11" aria-hidden="true" tabindex="-1"></a>om_timen <span class="ot">&lt;-</span> <span class="fu">seqdist</span>(seqn5, <span class="at">method =</span> <span class="st">"OM"</span>, <span class="at">indel =</span> <span class="dv">1</span>, <span class="at">sm =</span> scostn)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </details>
 </div>
 </section>
 <section id="descriptives-of-sequences" class="level2">
 <h2 class="anchored" data-anchor-id="descriptives-of-sequences">Descriptives of Sequences</h2>
+<p>Across both day types, sleep made up the largest proportion of daily time, ranging from 6 – 10.5 hours.</p>
 <div class="cell">
 <details class="code-fold">
 <summary>Show/hide the code</summary>
-<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb13"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb13-1"><a href="#cb13-1" aria-hidden="true" tabindex="-1"></a><span class="co"># school days</span></span>
-<span id="cb13-2"><a href="#cb13-2" aria-hidden="true" tabindex="-1"></a>statemeans <span class="ot">&lt;-</span> <span class="fu">as_tibble</span>(</span>
-<span id="cb13-3"><a href="#cb13-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">round</span>(<span class="fu">seqmeant</span>(seqs, <span class="at">serr =</span> <span class="cn">TRUE</span>), <span class="dv">1</span>),</span>
-<span id="cb13-4"><a href="#cb13-4" aria-hidden="true" tabindex="-1"></a>  <span class="at">rownames =</span> <span class="st">"State"</span></span>
-<span id="cb13-5"><a href="#cb13-5" aria-hidden="true" tabindex="-1"></a>) <span class="sc">|&gt;</span></span>
-<span id="cb13-6"><a href="#cb13-6" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">State =</span> labels) <span class="sc">|&gt;</span></span>
-<span id="cb13-7"><a href="#cb13-7" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(</span>
-<span id="cb13-8"><a href="#cb13-8" aria-hidden="true" tabindex="-1"></a>    <span class="at">Sample =</span> <span class="st">"s"</span>,</span>
-<span id="cb13-9"><a href="#cb13-9" aria-hidden="true" tabindex="-1"></a>    <span class="at">Percent =</span> <span class="fu">round</span>(Mean <span class="sc">/</span> <span class="dv">1440</span> <span class="sc">*</span> <span class="dv">100</span>, <span class="dv">1</span>),</span>
-<span id="cb13-10"><a href="#cb13-10" aria-hidden="true" tabindex="-1"></a>    <span class="fu">ifelse</span>(<span class="fu">grepl</span>(<span class="st">"</span><span class="sc">\\</span><span class="st">."</span>, Percent), Percent, <span class="fu">paste0</span>(Percent, <span class="st">".0"</span>))</span>
-<span id="cb13-11"><a href="#cb13-11" aria-hidden="true" tabindex="-1"></a>  ) <span class="sc">|&gt;</span></span>
-<span id="cb13-12"><a href="#cb13-12" aria-hidden="true" tabindex="-1"></a>  <span class="fu">as.data.frame</span>() <span class="sc">|&gt;</span></span>
-<span id="cb13-13"><a href="#cb13-13" aria-hidden="true" tabindex="-1"></a>  <span class="fu">select</span>(State, Mean, Percent, <span class="at">SD =</span> Stdev) <span class="sc">|&gt;</span></span>
-<span id="cb13-14"><a href="#cb13-14" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(</span>
-<span id="cb13-15"><a href="#cb13-15" aria-hidden="true" tabindex="-1"></a>    <span class="at">Percent =</span> <span class="fu">paste0</span>(Percent, <span class="st">"%"</span>),</span>
-<span id="cb13-16"><a href="#cb13-16" aria-hidden="true" tabindex="-1"></a>    <span class="at">Mean =</span> <span class="fu">ifelse</span>(<span class="fu">grepl</span>(<span class="st">"</span><span class="sc">\\</span><span class="st">."</span>, Mean), Mean, <span class="fu">paste0</span>(Mean, <span class="st">".0"</span>)),</span>
-<span id="cb13-17"><a href="#cb13-17" aria-hidden="true" tabindex="-1"></a>    <span class="at">SD =</span> <span class="fu">ifelse</span>(<span class="fu">grepl</span>(<span class="st">"</span><span class="sc">\\</span><span class="st">."</span>, SD), SD, <span class="fu">paste0</span>(SD, <span class="st">".0"</span>)),</span>
-<span id="cb13-18"><a href="#cb13-18" aria-hidden="true" tabindex="-1"></a>    <span class="at">Mean =</span> <span class="fu">paste0</span>(Mean, <span class="st">" ("</span>, SD, <span class="st">")"</span>)</span>
-<span id="cb13-19"><a href="#cb13-19" aria-hidden="true" tabindex="-1"></a>  ) <span class="sc">|&gt;</span></span>
-<span id="cb13-20"><a href="#cb13-20" aria-hidden="true" tabindex="-1"></a>  <span class="fu">select</span>(<span class="sc">-</span>SD) <span class="sc">|&gt;</span></span>
-<span id="cb13-21"><a href="#cb13-21" aria-hidden="true" tabindex="-1"></a>  <span class="fu">rename</span>(<span class="st">`</span><span class="at">Mean minutes (SD)</span><span class="st">`</span> <span class="ot">=</span> Mean, <span class="st">`</span><span class="at">% of Day</span><span class="st">`</span> <span class="ot">=</span> Percent)</span>
-<span id="cb13-22"><a href="#cb13-22" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb13-23"><a href="#cb13-23" aria-hidden="true" tabindex="-1"></a><span class="co"># non school days </span></span>
-<span id="cb13-24"><a href="#cb13-24" aria-hidden="true" tabindex="-1"></a>statemeann <span class="ot">&lt;-</span> <span class="fu">as_tibble</span>(</span>
-<span id="cb13-25"><a href="#cb13-25" aria-hidden="true" tabindex="-1"></a>  <span class="fu">round</span>(<span class="fu">seqmeant</span>(seqn, <span class="at">serr =</span> <span class="cn">TRUE</span>), <span class="dv">1</span>),</span>
-<span id="cb13-26"><a href="#cb13-26" aria-hidden="true" tabindex="-1"></a>  <span class="at">rownames =</span> <span class="st">"State"</span></span>
-<span id="cb13-27"><a href="#cb13-27" aria-hidden="true" tabindex="-1"></a>) <span class="sc">|&gt;</span></span>
-<span id="cb13-28"><a href="#cb13-28" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">State =</span> labels) <span class="sc">|&gt;</span></span>
-<span id="cb13-29"><a href="#cb13-29" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(</span>
-<span id="cb13-30"><a href="#cb13-30" aria-hidden="true" tabindex="-1"></a>    <span class="at">Sample =</span> <span class="st">"Non-s"</span>,</span>
-<span id="cb13-31"><a href="#cb13-31" aria-hidden="true" tabindex="-1"></a>    <span class="at">Percent =</span> <span class="fu">round</span>(Mean <span class="sc">/</span> <span class="dv">1440</span> <span class="sc">*</span> <span class="dv">100</span>, <span class="dv">1</span>),</span>
-<span id="cb13-32"><a href="#cb13-32" aria-hidden="true" tabindex="-1"></a>    <span class="fu">ifelse</span>(<span class="fu">grepl</span>(<span class="st">"</span><span class="sc">\\</span><span class="st">."</span>, Percent), Percent, <span class="fu">paste0</span>(Percent, <span class="st">".0"</span>))</span>
-<span id="cb13-33"><a href="#cb13-33" aria-hidden="true" tabindex="-1"></a>  ) <span class="sc">|&gt;</span></span>
-<span id="cb13-34"><a href="#cb13-34" aria-hidden="true" tabindex="-1"></a>  <span class="fu">as.data.frame</span>() <span class="sc">|&gt;</span></span>
-<span id="cb13-35"><a href="#cb13-35" aria-hidden="true" tabindex="-1"></a>  <span class="fu">select</span>(State, Mean, Percent, <span class="at">SD =</span> Stdev) <span class="sc">|&gt;</span></span>
-<span id="cb13-36"><a href="#cb13-36" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(</span>
-<span id="cb13-37"><a href="#cb13-37" aria-hidden="true" tabindex="-1"></a>    <span class="at">Percent =</span> <span class="fu">paste0</span>(Percent, <span class="st">"%"</span>),</span>
-<span id="cb13-38"><a href="#cb13-38" aria-hidden="true" tabindex="-1"></a>    <span class="at">Mean =</span> <span class="fu">ifelse</span>(<span class="fu">grepl</span>(<span class="st">"</span><span class="sc">\\</span><span class="st">."</span>, Mean), Mean, <span class="fu">paste0</span>(Mean, <span class="st">".0"</span>)),</span>
-<span id="cb13-39"><a href="#cb13-39" aria-hidden="true" tabindex="-1"></a>    <span class="at">SD =</span> <span class="fu">ifelse</span>(<span class="fu">grepl</span>(<span class="st">"</span><span class="sc">\\</span><span class="st">."</span>, SD), SD, <span class="fu">paste0</span>(SD, <span class="st">".0"</span>)),</span>
-<span id="cb13-40"><a href="#cb13-40" aria-hidden="true" tabindex="-1"></a>    <span class="at">Mean =</span> <span class="fu">paste0</span>(Mean, <span class="st">" ("</span>, SD, <span class="st">")"</span>)</span>
-<span id="cb13-41"><a href="#cb13-41" aria-hidden="true" tabindex="-1"></a>  ) <span class="sc">|&gt;</span></span>
-<span id="cb13-42"><a href="#cb13-42" aria-hidden="true" tabindex="-1"></a>  <span class="fu">select</span>(<span class="sc">-</span>SD) <span class="sc">|&gt;</span></span>
-<span id="cb13-43"><a href="#cb13-43" aria-hidden="true" tabindex="-1"></a>  <span class="fu">rename</span>(<span class="st">`</span><span class="at">Mean minutes (SD)</span><span class="st">`</span> <span class="ot">=</span> Mean, <span class="st">`</span><span class="at">% of Day</span><span class="st">`</span> <span class="ot">=</span> Percent)</span>
-<span id="cb13-44"><a href="#cb13-44" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb13-45"><a href="#cb13-45" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb13-46"><a href="#cb13-46" aria-hidden="true" tabindex="-1"></a><span class="co"># create overall descriptives table</span></span>
-<span id="cb13-47"><a href="#cb13-47" aria-hidden="true" tabindex="-1"></a>descriptives <span class="ot">&lt;-</span> statemeans <span class="sc">|&gt;</span> <span class="fu">left_join</span>(statemeann, <span class="at">by =</span> <span class="st">"State"</span>)</span>
-<span id="cb13-48"><a href="#cb13-48" aria-hidden="true" tabindex="-1"></a>descriptives <span class="ot">&lt;-</span> descriptives <span class="sc">|&gt;</span> </span>
-<span id="cb13-49"><a href="#cb13-49" aria-hidden="true" tabindex="-1"></a>  <span class="fu">rename</span>(</span>
-<span id="cb13-50"><a href="#cb13-50" aria-hidden="true" tabindex="-1"></a>    <span class="at">minss =</span> <span class="st">`</span><span class="at">Mean minutes (SD).x</span><span class="st">`</span>, </span>
-<span id="cb13-51"><a href="#cb13-51" aria-hidden="true" tabindex="-1"></a>    <span class="at">percs =</span> <span class="st">`</span><span class="at">% of Day.x</span><span class="st">`</span>,</span>
-<span id="cb13-52"><a href="#cb13-52" aria-hidden="true" tabindex="-1"></a>    <span class="at">minsn =</span> <span class="st">`</span><span class="at">Mean minutes (SD).y</span><span class="st">`</span>, </span>
-<span id="cb13-53"><a href="#cb13-53" aria-hidden="true" tabindex="-1"></a>    <span class="at">percn =</span> <span class="st">`</span><span class="at">% of Day.y</span><span class="st">`</span>,</span>
-<span id="cb13-54"><a href="#cb13-54" aria-hidden="true" tabindex="-1"></a> )</span>
-<span id="cb13-55"><a href="#cb13-55" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb13-56"><a href="#cb13-56" aria-hidden="true" tabindex="-1"></a>descriptives_tbl <span class="ot">&lt;-</span> descriptives <span class="sc">|&gt;</span> <span class="fu">flextable</span>()</span>
-<span id="cb13-57"><a href="#cb13-57" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb13-58"><a href="#cb13-58" aria-hidden="true" tabindex="-1"></a>typology <span class="ot">&lt;-</span> <span class="fu">data.frame</span>(</span>
-<span id="cb13-59"><a href="#cb13-59" aria-hidden="true" tabindex="-1"></a>  <span class="at">col_keys =</span> <span class="fu">names</span>(descriptives_tbl<span class="sc">$</span>body<span class="sc">$</span>dataset),</span>
-<span id="cb13-60"><a href="#cb13-60" aria-hidden="true" tabindex="-1"></a>  <span class="at">head =</span> <span class="fu">c</span>(<span class="st">""</span>, <span class="fu">rep</span>(<span class="st">"School days"</span>, <span class="dv">2</span>), <span class="fu">rep</span>(<span class="st">"Non-school days"</span>,<span class="dv">2</span>)),</span>
-<span id="cb13-61"><a href="#cb13-61" aria-hidden="true" tabindex="-1"></a>  <span class="at">head2 =</span> <span class="fu">c</span>(</span>
-<span id="cb13-62"><a href="#cb13-62" aria-hidden="true" tabindex="-1"></a>    <span class="st">"Activity"</span>, <span class="fu">rep</span>(<span class="fu">c</span>(<span class="st">"Mean minutes (SD)"</span>, <span class="st">"% of Day"</span>), <span class="dv">2</span>)))</span>
-<span id="cb13-63"><a href="#cb13-63" aria-hidden="true" tabindex="-1"></a>descriptives_tbl <span class="ot">&lt;-</span> descriptives_tbl <span class="sc">|&gt;</span></span>
-<span id="cb13-64"><a href="#cb13-64" aria-hidden="true" tabindex="-1"></a>  <span class="fu">set_header_df</span>(<span class="at">mapping =</span> typology, <span class="at">key =</span> <span class="st">"col_keys"</span>) <span class="sc">|&gt;</span> </span>
-<span id="cb13-65"><a href="#cb13-65" aria-hidden="true" tabindex="-1"></a>  <span class="fu">merge_at</span>(<span class="at">i =</span> <span class="dv">1</span>, <span class="at">j =</span> <span class="fu">c</span>(<span class="dv">2</span><span class="sc">:</span><span class="dv">3</span>), <span class="at">part =</span> <span class="st">"header"</span>) <span class="sc">|&gt;</span></span>
-<span id="cb13-66"><a href="#cb13-66" aria-hidden="true" tabindex="-1"></a>  <span class="fu">merge_at</span>(<span class="at">i =</span> <span class="dv">1</span>, <span class="at">j =</span> <span class="fu">c</span>(<span class="dv">4</span><span class="sc">:</span><span class="dv">5</span>), <span class="at">part =</span> <span class="st">"header"</span>) <span class="sc">|&gt;</span> </span>
-<span id="cb13-67"><a href="#cb13-67" aria-hidden="true" tabindex="-1"></a>  <span class="fu">align</span>(<span class="at">align =</span> <span class="st">"center"</span>, <span class="at">part =</span> <span class="st">"all"</span>) <span class="sc">|&gt;</span></span>
-<span id="cb13-68"><a href="#cb13-68" aria-hidden="true" tabindex="-1"></a>  <span class="fu">my_flextable</span>() <span class="sc">|&gt;</span> </span>
-<span id="cb13-69"><a href="#cb13-69" aria-hidden="true" tabindex="-1"></a>  <span class="fu">hline</span>(<span class="at">i =</span> <span class="fu">c</span>(<span class="dv">1</span>,<span class="dv">2</span>), <span class="at">part =</span> <span class="st">"header"</span>, <span class="at">border =</span> <span class="fu">fp_border</span>(<span class="at">color =</span> <span class="st">"black"</span>)) <span class="sc">%&gt;%</span></span>
-<span id="cb13-70"><a href="#cb13-70" aria-hidden="true" tabindex="-1"></a>  <span class="fu">hline_top</span>(<span class="at">border =</span> <span class="fu">fp_border</span>(<span class="at">color =</span> <span class="st">"black"</span>), <span class="at">part =</span> <span class="st">"all"</span>) <span class="sc">|&gt;</span></span>
-<span id="cb13-71"><a href="#cb13-71" aria-hidden="true" tabindex="-1"></a>  <span class="fu">hline_bottom</span>(<span class="at">border =</span> <span class="fu">fp_border</span>(<span class="at">color =</span> <span class="st">"black"</span>), <span class="at">part =</span> <span class="st">"all"</span>) </span>
-<span id="cb13-72"><a href="#cb13-72" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb13-73"><a href="#cb13-73" aria-hidden="true" tabindex="-1"></a>descriptives_tbl</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb11"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb11-1"><a href="#cb11-1" aria-hidden="true" tabindex="-1"></a><span class="co"># school days</span></span>
+<span id="cb11-2"><a href="#cb11-2" aria-hidden="true" tabindex="-1"></a>statemeans <span class="ot">&lt;-</span> <span class="fu">as_tibble</span>(</span>
+<span id="cb11-3"><a href="#cb11-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">round</span>(<span class="fu">seqmeant</span>(seqs, <span class="at">serr =</span> <span class="cn">TRUE</span>), <span class="dv">1</span>),</span>
+<span id="cb11-4"><a href="#cb11-4" aria-hidden="true" tabindex="-1"></a>  <span class="at">rownames =</span> <span class="st">"State"</span></span>
+<span id="cb11-5"><a href="#cb11-5" aria-hidden="true" tabindex="-1"></a>) <span class="sc">|&gt;</span></span>
+<span id="cb11-6"><a href="#cb11-6" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">State =</span> labels) <span class="sc">|&gt;</span></span>
+<span id="cb11-7"><a href="#cb11-7" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(</span>
+<span id="cb11-8"><a href="#cb11-8" aria-hidden="true" tabindex="-1"></a>    <span class="at">Sample =</span> <span class="st">"s"</span>,</span>
+<span id="cb11-9"><a href="#cb11-9" aria-hidden="true" tabindex="-1"></a>    <span class="at">Percent =</span> <span class="fu">round</span>(Mean <span class="sc">/</span> <span class="dv">1440</span> <span class="sc">*</span> <span class="dv">100</span>, <span class="dv">1</span>),</span>
+<span id="cb11-10"><a href="#cb11-10" aria-hidden="true" tabindex="-1"></a>    <span class="fu">ifelse</span>(<span class="fu">grepl</span>(<span class="st">"</span><span class="sc">\\</span><span class="st">."</span>, Percent), Percent, <span class="fu">paste0</span>(Percent, <span class="st">".0"</span>))</span>
+<span id="cb11-11"><a href="#cb11-11" aria-hidden="true" tabindex="-1"></a>  ) <span class="sc">|&gt;</span></span>
+<span id="cb11-12"><a href="#cb11-12" aria-hidden="true" tabindex="-1"></a>  <span class="fu">as.data.frame</span>() <span class="sc">|&gt;</span></span>
+<span id="cb11-13"><a href="#cb11-13" aria-hidden="true" tabindex="-1"></a>  <span class="fu">select</span>(State, Mean, Percent, <span class="at">SD =</span> Stdev) <span class="sc">|&gt;</span></span>
+<span id="cb11-14"><a href="#cb11-14" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(</span>
+<span id="cb11-15"><a href="#cb11-15" aria-hidden="true" tabindex="-1"></a>    <span class="at">Percent =</span> <span class="fu">paste0</span>(Percent, <span class="st">"%"</span>),</span>
+<span id="cb11-16"><a href="#cb11-16" aria-hidden="true" tabindex="-1"></a>    <span class="at">Mean =</span> <span class="fu">ifelse</span>(<span class="fu">grepl</span>(<span class="st">"</span><span class="sc">\\</span><span class="st">."</span>, Mean), Mean, <span class="fu">paste0</span>(Mean, <span class="st">".0"</span>)),</span>
+<span id="cb11-17"><a href="#cb11-17" aria-hidden="true" tabindex="-1"></a>    <span class="at">SD =</span> <span class="fu">ifelse</span>(<span class="fu">grepl</span>(<span class="st">"</span><span class="sc">\\</span><span class="st">."</span>, SD), SD, <span class="fu">paste0</span>(SD, <span class="st">".0"</span>)),</span>
+<span id="cb11-18"><a href="#cb11-18" aria-hidden="true" tabindex="-1"></a>    <span class="at">Mean =</span> <span class="fu">paste0</span>(Mean, <span class="st">" ("</span>, SD, <span class="st">")"</span>)</span>
+<span id="cb11-19"><a href="#cb11-19" aria-hidden="true" tabindex="-1"></a>  ) <span class="sc">|&gt;</span></span>
+<span id="cb11-20"><a href="#cb11-20" aria-hidden="true" tabindex="-1"></a>  <span class="fu">select</span>(<span class="sc">-</span>SD) <span class="sc">|&gt;</span></span>
+<span id="cb11-21"><a href="#cb11-21" aria-hidden="true" tabindex="-1"></a>  <span class="fu">rename</span>(<span class="st">`</span><span class="at">Mean minutes (SD)</span><span class="st">`</span> <span class="ot">=</span> Mean, <span class="st">`</span><span class="at">% of Day</span><span class="st">`</span> <span class="ot">=</span> Percent)</span>
+<span id="cb11-22"><a href="#cb11-22" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb11-23"><a href="#cb11-23" aria-hidden="true" tabindex="-1"></a><span class="co"># non school days</span></span>
+<span id="cb11-24"><a href="#cb11-24" aria-hidden="true" tabindex="-1"></a>statemeann <span class="ot">&lt;-</span> <span class="fu">as_tibble</span>(</span>
+<span id="cb11-25"><a href="#cb11-25" aria-hidden="true" tabindex="-1"></a>  <span class="fu">round</span>(<span class="fu">seqmeant</span>(seqn, <span class="at">serr =</span> <span class="cn">TRUE</span>), <span class="dv">1</span>),</span>
+<span id="cb11-26"><a href="#cb11-26" aria-hidden="true" tabindex="-1"></a>  <span class="at">rownames =</span> <span class="st">"State"</span></span>
+<span id="cb11-27"><a href="#cb11-27" aria-hidden="true" tabindex="-1"></a>) <span class="sc">|&gt;</span></span>
+<span id="cb11-28"><a href="#cb11-28" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">State =</span> labels) <span class="sc">|&gt;</span></span>
+<span id="cb11-29"><a href="#cb11-29" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(</span>
+<span id="cb11-30"><a href="#cb11-30" aria-hidden="true" tabindex="-1"></a>    <span class="at">Sample =</span> <span class="st">"Non-s"</span>,</span>
+<span id="cb11-31"><a href="#cb11-31" aria-hidden="true" tabindex="-1"></a>    <span class="at">Percent =</span> <span class="fu">round</span>(Mean <span class="sc">/</span> <span class="dv">1440</span> <span class="sc">*</span> <span class="dv">100</span>, <span class="dv">1</span>),</span>
+<span id="cb11-32"><a href="#cb11-32" aria-hidden="true" tabindex="-1"></a>    <span class="fu">ifelse</span>(<span class="fu">grepl</span>(<span class="st">"</span><span class="sc">\\</span><span class="st">."</span>, Percent), Percent, <span class="fu">paste0</span>(Percent, <span class="st">".0"</span>))</span>
+<span id="cb11-33"><a href="#cb11-33" aria-hidden="true" tabindex="-1"></a>  ) <span class="sc">|&gt;</span></span>
+<span id="cb11-34"><a href="#cb11-34" aria-hidden="true" tabindex="-1"></a>  <span class="fu">as.data.frame</span>() <span class="sc">|&gt;</span></span>
+<span id="cb11-35"><a href="#cb11-35" aria-hidden="true" tabindex="-1"></a>  <span class="fu">select</span>(State, Mean, Percent, <span class="at">SD =</span> Stdev) <span class="sc">|&gt;</span></span>
+<span id="cb11-36"><a href="#cb11-36" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(</span>
+<span id="cb11-37"><a href="#cb11-37" aria-hidden="true" tabindex="-1"></a>    <span class="at">Percent =</span> <span class="fu">paste0</span>(Percent, <span class="st">"%"</span>),</span>
+<span id="cb11-38"><a href="#cb11-38" aria-hidden="true" tabindex="-1"></a>    <span class="at">Mean =</span> <span class="fu">ifelse</span>(<span class="fu">grepl</span>(<span class="st">"</span><span class="sc">\\</span><span class="st">."</span>, Mean), Mean, <span class="fu">paste0</span>(Mean, <span class="st">".0"</span>)),</span>
+<span id="cb11-39"><a href="#cb11-39" aria-hidden="true" tabindex="-1"></a>    <span class="at">SD =</span> <span class="fu">ifelse</span>(<span class="fu">grepl</span>(<span class="st">"</span><span class="sc">\\</span><span class="st">."</span>, SD), SD, <span class="fu">paste0</span>(SD, <span class="st">".0"</span>)),</span>
+<span id="cb11-40"><a href="#cb11-40" aria-hidden="true" tabindex="-1"></a>    <span class="at">Mean =</span> <span class="fu">paste0</span>(Mean, <span class="st">" ("</span>, SD, <span class="st">")"</span>)</span>
+<span id="cb11-41"><a href="#cb11-41" aria-hidden="true" tabindex="-1"></a>  ) <span class="sc">|&gt;</span></span>
+<span id="cb11-42"><a href="#cb11-42" aria-hidden="true" tabindex="-1"></a>  <span class="fu">select</span>(<span class="sc">-</span>SD) <span class="sc">|&gt;</span></span>
+<span id="cb11-43"><a href="#cb11-43" aria-hidden="true" tabindex="-1"></a>  <span class="fu">rename</span>(<span class="st">`</span><span class="at">Mean minutes (SD)</span><span class="st">`</span> <span class="ot">=</span> Mean, <span class="st">`</span><span class="at">% of Day</span><span class="st">`</span> <span class="ot">=</span> Percent)</span>
+<span id="cb11-44"><a href="#cb11-44" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb11-45"><a href="#cb11-45" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb11-46"><a href="#cb11-46" aria-hidden="true" tabindex="-1"></a><span class="co"># create overall descriptives table</span></span>
+<span id="cb11-47"><a href="#cb11-47" aria-hidden="true" tabindex="-1"></a>descriptives <span class="ot">&lt;-</span> statemeans <span class="sc">|&gt;</span> <span class="fu">left_join</span>(statemeann, <span class="at">by =</span> <span class="st">"State"</span>)</span>
+<span id="cb11-48"><a href="#cb11-48" aria-hidden="true" tabindex="-1"></a>descriptives <span class="ot">&lt;-</span> descriptives <span class="sc">|&gt;</span></span>
+<span id="cb11-49"><a href="#cb11-49" aria-hidden="true" tabindex="-1"></a>  <span class="fu">rename</span>(</span>
+<span id="cb11-50"><a href="#cb11-50" aria-hidden="true" tabindex="-1"></a>    <span class="at">minss =</span> <span class="st">`</span><span class="at">Mean minutes (SD).x</span><span class="st">`</span>,</span>
+<span id="cb11-51"><a href="#cb11-51" aria-hidden="true" tabindex="-1"></a>    <span class="at">percs =</span> <span class="st">`</span><span class="at">% of Day.x</span><span class="st">`</span>,</span>
+<span id="cb11-52"><a href="#cb11-52" aria-hidden="true" tabindex="-1"></a>    <span class="at">minsn =</span> <span class="st">`</span><span class="at">Mean minutes (SD).y</span><span class="st">`</span>,</span>
+<span id="cb11-53"><a href="#cb11-53" aria-hidden="true" tabindex="-1"></a>    <span class="at">percn =</span> <span class="st">`</span><span class="at">% of Day.y</span><span class="st">`</span>,</span>
+<span id="cb11-54"><a href="#cb11-54" aria-hidden="true" tabindex="-1"></a>  )</span>
+<span id="cb11-55"><a href="#cb11-55" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb11-56"><a href="#cb11-56" aria-hidden="true" tabindex="-1"></a>descriptives_tbl <span class="ot">&lt;-</span> descriptives <span class="sc">|&gt;</span> <span class="fu">flextable</span>()</span>
+<span id="cb11-57"><a href="#cb11-57" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb11-58"><a href="#cb11-58" aria-hidden="true" tabindex="-1"></a>typology <span class="ot">&lt;-</span> <span class="fu">data.frame</span>(</span>
+<span id="cb11-59"><a href="#cb11-59" aria-hidden="true" tabindex="-1"></a>  <span class="at">col_keys =</span> <span class="fu">names</span>(descriptives_tbl<span class="sc">$</span>body<span class="sc">$</span>dataset),</span>
+<span id="cb11-60"><a href="#cb11-60" aria-hidden="true" tabindex="-1"></a>  <span class="at">head =</span> <span class="fu">c</span>(<span class="st">""</span>, <span class="fu">rep</span>(<span class="st">"School days"</span>, <span class="dv">2</span>), <span class="fu">rep</span>(<span class="st">"Non-school days"</span>, <span class="dv">2</span>)),</span>
+<span id="cb11-61"><a href="#cb11-61" aria-hidden="true" tabindex="-1"></a>  <span class="at">head2 =</span> <span class="fu">c</span>(</span>
+<span id="cb11-62"><a href="#cb11-62" aria-hidden="true" tabindex="-1"></a>    <span class="st">"Activity"</span>,</span>
+<span id="cb11-63"><a href="#cb11-63" aria-hidden="true" tabindex="-1"></a>    <span class="fu">rep</span>(<span class="fu">c</span>(<span class="st">"Mean minutes (SD)"</span>, <span class="st">"% of Day"</span>), <span class="dv">2</span>)</span>
+<span id="cb11-64"><a href="#cb11-64" aria-hidden="true" tabindex="-1"></a>  )</span>
+<span id="cb11-65"><a href="#cb11-65" aria-hidden="true" tabindex="-1"></a>)</span>
+<span id="cb11-66"><a href="#cb11-66" aria-hidden="true" tabindex="-1"></a>descriptives_tbl <span class="ot">&lt;-</span> descriptives_tbl <span class="sc">|&gt;</span></span>
+<span id="cb11-67"><a href="#cb11-67" aria-hidden="true" tabindex="-1"></a>  <span class="fu">set_header_df</span>(<span class="at">mapping =</span> typology, <span class="at">key =</span> <span class="st">"col_keys"</span>) <span class="sc">|&gt;</span></span>
+<span id="cb11-68"><a href="#cb11-68" aria-hidden="true" tabindex="-1"></a>  <span class="fu">merge_at</span>(<span class="at">i =</span> <span class="dv">1</span>, <span class="at">j =</span> <span class="fu">c</span>(<span class="dv">2</span><span class="sc">:</span><span class="dv">3</span>), <span class="at">part =</span> <span class="st">"header"</span>) <span class="sc">|&gt;</span></span>
+<span id="cb11-69"><a href="#cb11-69" aria-hidden="true" tabindex="-1"></a>  <span class="fu">merge_at</span>(<span class="at">i =</span> <span class="dv">1</span>, <span class="at">j =</span> <span class="fu">c</span>(<span class="dv">4</span><span class="sc">:</span><span class="dv">5</span>), <span class="at">part =</span> <span class="st">"header"</span>) <span class="sc">|&gt;</span></span>
+<span id="cb11-70"><a href="#cb11-70" aria-hidden="true" tabindex="-1"></a>  <span class="fu">align</span>(<span class="at">align =</span> <span class="st">"center"</span>, <span class="at">j =</span> <span class="fu">c</span>(<span class="dv">2</span><span class="sc">:</span><span class="dv">5</span>), <span class="at">part =</span> <span class="st">"all"</span>) <span class="sc">|&gt;</span></span>
+<span id="cb11-71"><a href="#cb11-71" aria-hidden="true" tabindex="-1"></a>  <span class="fu">my_flextable</span>() <span class="sc">|&gt;</span></span>
+<span id="cb11-72"><a href="#cb11-72" aria-hidden="true" tabindex="-1"></a>  <span class="fu">hline</span>(<span class="at">i =</span> <span class="fu">c</span>(<span class="dv">1</span>, <span class="dv">2</span>), <span class="at">part =</span> <span class="st">"header"</span>, <span class="at">border =</span> <span class="fu">fp_border</span>(<span class="at">color =</span> <span class="st">"black"</span>)) <span class="sc">%&gt;%</span></span>
+<span id="cb11-73"><a href="#cb11-73" aria-hidden="true" tabindex="-1"></a>  <span class="fu">hline_top</span>(<span class="at">border =</span> <span class="fu">fp_border</span>(<span class="at">color =</span> <span class="st">"black"</span>), <span class="at">part =</span> <span class="st">"all"</span>) <span class="sc">|&gt;</span></span>
+<span id="cb11-74"><a href="#cb11-74" aria-hidden="true" tabindex="-1"></a>  <span class="fu">hline_bottom</span>(<span class="at">border =</span> <span class="fu">fp_border</span>(<span class="at">color =</span> <span class="st">"black"</span>), <span class="at">part =</span> <span class="st">"all"</span>)</span>
+<span id="cb11-75"><a href="#cb11-75" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb11-76"><a href="#cb11-76" aria-hidden="true" tabindex="-1"></a>descriptives_tbl</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </details>
 <div class="cell-output-display">
-<div class="tabwid"><style>.cl-eb1f4e06{table-layout:auto;width:100%;}.cl-eb1bcb8c{font-family:'Times New Roman';font-size:12pt;font-weight:normal;font-style:normal;text-decoration:none;color:rgba(0, 0, 0, 1.00);background-color:transparent;}.cl-eb1d4002{margin:0;text-align:center;border-bottom: 0 solid rgba(0, 0, 0, 1.00);border-top: 0 solid rgba(0, 0, 0, 1.00);border-left: 0 solid rgba(0, 0, 0, 1.00);border-right: 0 solid rgba(0, 0, 0, 1.00);padding-bottom:5pt;padding-top:5pt;padding-left:5pt;padding-right:5pt;line-height: 1;background-color:transparent;}.cl-eb1d4e8a{background-color:transparent;vertical-align: middle;border-bottom: 1pt solid rgba(0, 0, 0, 1.00);border-top: 1pt solid rgba(0, 0, 0, 1.00);border-left: 0 solid rgba(0, 0, 0, 1.00);border-right: 0 solid rgba(0, 0, 0, 1.00);margin-bottom:0;margin-top:0;margin-left:0;margin-right:0;}.cl-eb1d4e8b{background-color:transparent;vertical-align: middle;border-bottom: 1pt solid rgba(0, 0, 0, 1.00);border-top: 1pt solid rgba(0, 0, 0, 1.00);border-left: 0 solid rgba(0, 0, 0, 1.00);border-right: 0 solid rgba(0, 0, 0, 1.00);margin-bottom:0;margin-top:0;margin-left:0;margin-right:0;}.cl-eb1d4e8c{background-color:transparent;vertical-align: middle;border-bottom: 0 solid rgba(0, 0, 0, 1.00);border-top: 0 solid rgba(0, 0, 0, 1.00);border-left: 0 solid rgba(0, 0, 0, 1.00);border-right: 0 solid rgba(0, 0, 0, 1.00);margin-bottom:0;margin-top:0;margin-left:0;margin-right:0;}.cl-eb1d4e94{background-color:transparent;vertical-align: middle;border-bottom: 1pt solid rgba(0, 0, 0, 1.00);border-top: 0 solid rgba(0, 0, 0, 1.00);border-left: 0 solid rgba(0, 0, 0, 1.00);border-right: 0 solid rgba(0, 0, 0, 1.00);margin-bottom:0;margin-top:0;margin-left:0;margin-right:0;}</style><table data-quarto-disable-processing="true" class="cl-eb1f4e06"><thead><tr style="overflow-wrap:break-word;"><th class="cl-eb1d4e8a"><p class="cl-eb1d4002"><span class="cl-eb1bcb8c"></span></p></th><th colspan="2" class="cl-eb1d4e8a"><p class="cl-eb1d4002"><span class="cl-eb1bcb8c">School days</span></p></th><th colspan="2" class="cl-eb1d4e8a"><p class="cl-eb1d4002"><span class="cl-eb1bcb8c">Non-school days</span></p></th></tr><tr style="overflow-wrap:break-word;"><th class="cl-eb1d4e8b"><p class="cl-eb1d4002"><span class="cl-eb1bcb8c">Activity</span></p></th><th class="cl-eb1d4e8b"><p class="cl-eb1d4002"><span class="cl-eb1bcb8c">Mean minutes (SD)</span></p></th><th class="cl-eb1d4e8b"><p class="cl-eb1d4002"><span class="cl-eb1bcb8c">% of Day</span></p></th><th class="cl-eb1d4e8b"><p class="cl-eb1d4002"><span class="cl-eb1bcb8c">Mean minutes (SD)</span></p></th><th class="cl-eb1d4e8b"><p class="cl-eb1d4002"><span class="cl-eb1bcb8c">% of Day</span></p></th></tr></thead><tbody><tr style="overflow-wrap:break-word;"><td class="cl-eb1d4e8c"><p class="cl-eb1d4002"><span class="cl-eb1bcb8c">Sleep</span></p></td><td class="cl-eb1d4e8c"><p class="cl-eb1d4002"><span class="cl-eb1bcb8c">528.8 (65.3)</span></p></td><td class="cl-eb1d4e8c"><p class="cl-eb1d4002"><span class="cl-eb1bcb8c">36.7%</span></p></td><td class="cl-eb1d4e8c"><p class="cl-eb1d4002"><span class="cl-eb1bcb8c">617.1 (108.0)</span></p></td><td class="cl-eb1d4e8c"><p class="cl-eb1d4002"><span class="cl-eb1bcb8c">42.9%</span></p></td></tr><tr style="overflow-wrap:break-word;"><td class="cl-eb1d4e8c"><p class="cl-eb1d4002"><span class="cl-eb1bcb8c">Education</span></p></td><td class="cl-eb1d4e8c"><p class="cl-eb1d4002"><span class="cl-eb1bcb8c">326.5 (112.2)</span></p></td><td class="cl-eb1d4e8c"><p class="cl-eb1d4002"><span class="cl-eb1bcb8c">22.7%</span></p></td><td class="cl-eb1d4e8c"><p class="cl-eb1d4002"><span class="cl-eb1bcb8c">28.5 (77.6)</span></p></td><td class="cl-eb1d4e8c"><p class="cl-eb1d4002"><span class="cl-eb1bcb8c">2%</span></p></td></tr><tr style="overflow-wrap:break-word;"><td class="cl-eb1d4e8c"><p class="cl-eb1d4002"><span class="cl-eb1bcb8c">Work (paid/unpaid)</span></p></td><td class="cl-eb1d4e8c"><p class="cl-eb1d4002"><span class="cl-eb1bcb8c">33.0 (52.4)</span></p></td><td class="cl-eb1d4e8c"><p class="cl-eb1d4002"><span class="cl-eb1bcb8c">2.3%</span></p></td><td class="cl-eb1d4e8c"><p class="cl-eb1d4002"><span class="cl-eb1bcb8c">70.9 (103.5)</span></p></td><td class="cl-eb1d4e8c"><p class="cl-eb1d4002"><span class="cl-eb1bcb8c">4.9%</span></p></td></tr><tr style="overflow-wrap:break-word;"><td class="cl-eb1d4e8c"><p class="cl-eb1d4002"><span class="cl-eb1bcb8c">Personal care</span></p></td><td class="cl-eb1d4e8c"><p class="cl-eb1d4002"><span class="cl-eb1bcb8c">61.3 (50.8)</span></p></td><td class="cl-eb1d4e8c"><p class="cl-eb1d4002"><span class="cl-eb1bcb8c">4.3%</span></p></td><td class="cl-eb1d4e8c"><p class="cl-eb1d4002"><span class="cl-eb1bcb8c">75.5 (80.6)</span></p></td><td class="cl-eb1d4e8c"><p class="cl-eb1d4002"><span class="cl-eb1bcb8c">5.2%</span></p></td></tr><tr style="overflow-wrap:break-word;"><td class="cl-eb1d4e8c"><p class="cl-eb1d4002"><span class="cl-eb1bcb8c">Eating and drinking</span></p></td><td class="cl-eb1d4e8c"><p class="cl-eb1d4002"><span class="cl-eb1bcb8c">57.8 (86.6)</span></p></td><td class="cl-eb1d4e8c"><p class="cl-eb1d4002"><span class="cl-eb1bcb8c">4%</span></p></td><td class="cl-eb1d4e8c"><p class="cl-eb1d4002"><span class="cl-eb1bcb8c">54.8 (75.3)</span></p></td><td class="cl-eb1d4e8c"><p class="cl-eb1d4002"><span class="cl-eb1bcb8c">3.8%</span></p></td></tr><tr style="overflow-wrap:break-word;"><td class="cl-eb1d4e8c"><p class="cl-eb1d4002"><span class="cl-eb1bcb8c">Sedentary behaviour</span></p></td><td class="cl-eb1d4e8c"><p class="cl-eb1d4002"><span class="cl-eb1bcb8c">149.1 (126.8)</span></p></td><td class="cl-eb1d4e8c"><p class="cl-eb1d4002"><span class="cl-eb1bcb8c">10.4%</span></p></td><td class="cl-eb1d4e8c"><p class="cl-eb1d4002"><span class="cl-eb1bcb8c">290.5 (187.4)</span></p></td><td class="cl-eb1d4e8c"><p class="cl-eb1d4002"><span class="cl-eb1bcb8c">20.2%</span></p></td></tr><tr style="overflow-wrap:break-word;"><td class="cl-eb1d4e8c"><p class="cl-eb1d4002"><span class="cl-eb1bcb8c">Physical activity</span></p></td><td class="cl-eb1d4e8c"><p class="cl-eb1d4002"><span class="cl-eb1bcb8c">60.5 (75.9)</span></p></td><td class="cl-eb1d4e8c"><p class="cl-eb1d4002"><span class="cl-eb1bcb8c">4.2%</span></p></td><td class="cl-eb1d4e8c"><p class="cl-eb1d4002"><span class="cl-eb1bcb8c">74.6 (98.3)</span></p></td><td class="cl-eb1d4e8c"><p class="cl-eb1d4002"><span class="cl-eb1bcb8c">5.2%</span></p></td></tr><tr style="overflow-wrap:break-word;"><td class="cl-eb1d4e8c"><p class="cl-eb1d4002"><span class="cl-eb1bcb8c">Leisure</span></p></td><td class="cl-eb1d4e8c"><p class="cl-eb1d4002"><span class="cl-eb1bcb8c">36.9 (60.2)</span></p></td><td class="cl-eb1d4e8c"><p class="cl-eb1d4002"><span class="cl-eb1bcb8c">2.6%</span></p></td><td class="cl-eb1d4e8c"><p class="cl-eb1d4002"><span class="cl-eb1bcb8c">58.2 (90.6)</span></p></td><td class="cl-eb1d4e8c"><p class="cl-eb1d4002"><span class="cl-eb1bcb8c">4%</span></p></td></tr><tr style="overflow-wrap:break-word;"><td class="cl-eb1d4e8c"><p class="cl-eb1d4002"><span class="cl-eb1bcb8c">Socialising</span></p></td><td class="cl-eb1d4e8c"><p class="cl-eb1d4002"><span class="cl-eb1bcb8c">118.2 (110.9)</span></p></td><td class="cl-eb1d4e8c"><p class="cl-eb1d4002"><span class="cl-eb1bcb8c">8.2%</span></p></td><td class="cl-eb1d4e8c"><p class="cl-eb1d4002"><span class="cl-eb1bcb8c">115.4 (139.7)</span></p></td><td class="cl-eb1d4e8c"><p class="cl-eb1d4002"><span class="cl-eb1bcb8c">8%</span></p></td></tr><tr style="overflow-wrap:break-word;"><td class="cl-eb1d4e94"><p class="cl-eb1d4002"><span class="cl-eb1bcb8c">Travel</span></p></td><td class="cl-eb1d4e94"><p class="cl-eb1d4002"><span class="cl-eb1bcb8c">67.9 (61.4)</span></p></td><td class="cl-eb1d4e94"><p class="cl-eb1d4002"><span class="cl-eb1bcb8c">4.7%</span></p></td><td class="cl-eb1d4e94"><p class="cl-eb1d4002"><span class="cl-eb1bcb8c">54.4 (81.2)</span></p></td><td class="cl-eb1d4e94"><p class="cl-eb1d4002"><span class="cl-eb1bcb8c">3.8%</span></p></td></tr></tbody></table></div>
+<div class="tabwid"><style>.cl-3ddc037e{table-layout:auto;width:100%;}.cl-3dd88334{font-family:'Times New Roman';font-size:12pt;font-weight:normal;font-style:normal;text-decoration:none;color:rgba(0, 0, 0, 1.00);background-color:transparent;}.cl-3dd9fb6a{margin:0;text-align:left;border-bottom: 0 solid rgba(0, 0, 0, 1.00);border-top: 0 solid rgba(0, 0, 0, 1.00);border-left: 0 solid rgba(0, 0, 0, 1.00);border-right: 0 solid rgba(0, 0, 0, 1.00);padding-bottom:5pt;padding-top:5pt;padding-left:5pt;padding-right:5pt;line-height: 1;background-color:transparent;}.cl-3dd9fb6b{margin:0;text-align:center;border-bottom: 0 solid rgba(0, 0, 0, 1.00);border-top: 0 solid rgba(0, 0, 0, 1.00);border-left: 0 solid rgba(0, 0, 0, 1.00);border-right: 0 solid rgba(0, 0, 0, 1.00);padding-bottom:5pt;padding-top:5pt;padding-left:5pt;padding-right:5pt;line-height: 1;background-color:transparent;}.cl-3dda08da{background-color:transparent;vertical-align: middle;border-bottom: 1pt solid rgba(0, 0, 0, 1.00);border-top: 1pt solid rgba(0, 0, 0, 1.00);border-left: 0 solid rgba(0, 0, 0, 1.00);border-right: 0 solid rgba(0, 0, 0, 1.00);margin-bottom:0;margin-top:0;margin-left:0;margin-right:0;}.cl-3dda08e4{background-color:transparent;vertical-align: middle;border-bottom: 1pt solid rgba(0, 0, 0, 1.00);border-top: 1pt solid rgba(0, 0, 0, 1.00);border-left: 0 solid rgba(0, 0, 0, 1.00);border-right: 0 solid rgba(0, 0, 0, 1.00);margin-bottom:0;margin-top:0;margin-left:0;margin-right:0;}.cl-3dda08e5{background-color:transparent;vertical-align: middle;border-bottom: 1pt solid rgba(0, 0, 0, 1.00);border-top: 1pt solid rgba(0, 0, 0, 1.00);border-left: 0 solid rgba(0, 0, 0, 1.00);border-right: 0 solid rgba(0, 0, 0, 1.00);margin-bottom:0;margin-top:0;margin-left:0;margin-right:0;}.cl-3dda08e6{background-color:transparent;vertical-align: middle;border-bottom: 1pt solid rgba(0, 0, 0, 1.00);border-top: 1pt solid rgba(0, 0, 0, 1.00);border-left: 0 solid rgba(0, 0, 0, 1.00);border-right: 0 solid rgba(0, 0, 0, 1.00);margin-bottom:0;margin-top:0;margin-left:0;margin-right:0;}.cl-3dda08ee{background-color:transparent;vertical-align: middle;border-bottom: 0 solid rgba(0, 0, 0, 1.00);border-top: 0 solid rgba(0, 0, 0, 1.00);border-left: 0 solid rgba(0, 0, 0, 1.00);border-right: 0 solid rgba(0, 0, 0, 1.00);margin-bottom:0;margin-top:0;margin-left:0;margin-right:0;}.cl-3dda08ef{background-color:transparent;vertical-align: middle;border-bottom: 0 solid rgba(0, 0, 0, 1.00);border-top: 0 solid rgba(0, 0, 0, 1.00);border-left: 0 solid rgba(0, 0, 0, 1.00);border-right: 0 solid rgba(0, 0, 0, 1.00);margin-bottom:0;margin-top:0;margin-left:0;margin-right:0;}.cl-3dda08f0{background-color:transparent;vertical-align: middle;border-bottom: 1pt solid rgba(0, 0, 0, 1.00);border-top: 0 solid rgba(0, 0, 0, 1.00);border-left: 0 solid rgba(0, 0, 0, 1.00);border-right: 0 solid rgba(0, 0, 0, 1.00);margin-bottom:0;margin-top:0;margin-left:0;margin-right:0;}.cl-3dda08f8{background-color:transparent;vertical-align: middle;border-bottom: 1pt solid rgba(0, 0, 0, 1.00);border-top: 0 solid rgba(0, 0, 0, 1.00);border-left: 0 solid rgba(0, 0, 0, 1.00);border-right: 0 solid rgba(0, 0, 0, 1.00);margin-bottom:0;margin-top:0;margin-left:0;margin-right:0;}</style><table data-quarto-disable-processing="true" class="cl-3ddc037e"><thead><tr style="overflow-wrap:break-word;"><th class="cl-3dda08da"><p class="cl-3dd9fb6a"><span class="cl-3dd88334"></span></p></th><th colspan="2" class="cl-3dda08e4"><p class="cl-3dd9fb6b"><span class="cl-3dd88334">School days</span></p></th><th colspan="2" class="cl-3dda08e4"><p class="cl-3dd9fb6b"><span class="cl-3dd88334">Non-school days</span></p></th></tr><tr style="overflow-wrap:break-word;"><th class="cl-3dda08e5"><p class="cl-3dd9fb6a"><span class="cl-3dd88334">Activity</span></p></th><th class="cl-3dda08e6"><p class="cl-3dd9fb6b"><span class="cl-3dd88334">Mean minutes (SD)</span></p></th><th class="cl-3dda08e6"><p class="cl-3dd9fb6b"><span class="cl-3dd88334">% of Day</span></p></th><th class="cl-3dda08e6"><p class="cl-3dd9fb6b"><span class="cl-3dd88334">Mean minutes (SD)</span></p></th><th class="cl-3dda08e6"><p class="cl-3dd9fb6b"><span class="cl-3dd88334">% of Day</span></p></th></tr></thead><tbody><tr style="overflow-wrap:break-word;"><td class="cl-3dda08ee"><p class="cl-3dd9fb6a"><span class="cl-3dd88334">Sleep</span></p></td><td class="cl-3dda08ef"><p class="cl-3dd9fb6b"><span class="cl-3dd88334">528.8 (65.3)</span></p></td><td class="cl-3dda08ef"><p class="cl-3dd9fb6b"><span class="cl-3dd88334">36.7%</span></p></td><td class="cl-3dda08ef"><p class="cl-3dd9fb6b"><span class="cl-3dd88334">617.1 (108.0)</span></p></td><td class="cl-3dda08ef"><p class="cl-3dd9fb6b"><span class="cl-3dd88334">42.9%</span></p></td></tr><tr style="overflow-wrap:break-word;"><td class="cl-3dda08ee"><p class="cl-3dd9fb6a"><span class="cl-3dd88334">Education</span></p></td><td class="cl-3dda08ef"><p class="cl-3dd9fb6b"><span class="cl-3dd88334">326.5 (112.2)</span></p></td><td class="cl-3dda08ef"><p class="cl-3dd9fb6b"><span class="cl-3dd88334">22.7%</span></p></td><td class="cl-3dda08ef"><p class="cl-3dd9fb6b"><span class="cl-3dd88334">28.5 (77.6)</span></p></td><td class="cl-3dda08ef"><p class="cl-3dd9fb6b"><span class="cl-3dd88334">2%</span></p></td></tr><tr style="overflow-wrap:break-word;"><td class="cl-3dda08ee"><p class="cl-3dd9fb6a"><span class="cl-3dd88334">Work (paid/unpaid)</span></p></td><td class="cl-3dda08ef"><p class="cl-3dd9fb6b"><span class="cl-3dd88334">33.0 (52.4)</span></p></td><td class="cl-3dda08ef"><p class="cl-3dd9fb6b"><span class="cl-3dd88334">2.3%</span></p></td><td class="cl-3dda08ef"><p class="cl-3dd9fb6b"><span class="cl-3dd88334">70.9 (103.5)</span></p></td><td class="cl-3dda08ef"><p class="cl-3dd9fb6b"><span class="cl-3dd88334">4.9%</span></p></td></tr><tr style="overflow-wrap:break-word;"><td class="cl-3dda08ee"><p class="cl-3dd9fb6a"><span class="cl-3dd88334">Personal care</span></p></td><td class="cl-3dda08ef"><p class="cl-3dd9fb6b"><span class="cl-3dd88334">61.3 (50.8)</span></p></td><td class="cl-3dda08ef"><p class="cl-3dd9fb6b"><span class="cl-3dd88334">4.3%</span></p></td><td class="cl-3dda08ef"><p class="cl-3dd9fb6b"><span class="cl-3dd88334">75.5 (80.6)</span></p></td><td class="cl-3dda08ef"><p class="cl-3dd9fb6b"><span class="cl-3dd88334">5.2%</span></p></td></tr><tr style="overflow-wrap:break-word;"><td class="cl-3dda08ee"><p class="cl-3dd9fb6a"><span class="cl-3dd88334">Eating and drinking</span></p></td><td class="cl-3dda08ef"><p class="cl-3dd9fb6b"><span class="cl-3dd88334">57.8 (86.6)</span></p></td><td class="cl-3dda08ef"><p class="cl-3dd9fb6b"><span class="cl-3dd88334">4%</span></p></td><td class="cl-3dda08ef"><p class="cl-3dd9fb6b"><span class="cl-3dd88334">54.8 (75.3)</span></p></td><td class="cl-3dda08ef"><p class="cl-3dd9fb6b"><span class="cl-3dd88334">3.8%</span></p></td></tr><tr style="overflow-wrap:break-word;"><td class="cl-3dda08ee"><p class="cl-3dd9fb6a"><span class="cl-3dd88334">Sedentary behaviour</span></p></td><td class="cl-3dda08ef"><p class="cl-3dd9fb6b"><span class="cl-3dd88334">149.1 (126.8)</span></p></td><td class="cl-3dda08ef"><p class="cl-3dd9fb6b"><span class="cl-3dd88334">10.4%</span></p></td><td class="cl-3dda08ef"><p class="cl-3dd9fb6b"><span class="cl-3dd88334">290.5 (187.4)</span></p></td><td class="cl-3dda08ef"><p class="cl-3dd9fb6b"><span class="cl-3dd88334">20.2%</span></p></td></tr><tr style="overflow-wrap:break-word;"><td class="cl-3dda08ee"><p class="cl-3dd9fb6a"><span class="cl-3dd88334">Physical activity</span></p></td><td class="cl-3dda08ef"><p class="cl-3dd9fb6b"><span class="cl-3dd88334">60.5 (75.9)</span></p></td><td class="cl-3dda08ef"><p class="cl-3dd9fb6b"><span class="cl-3dd88334">4.2%</span></p></td><td class="cl-3dda08ef"><p class="cl-3dd9fb6b"><span class="cl-3dd88334">74.6 (98.3)</span></p></td><td class="cl-3dda08ef"><p class="cl-3dd9fb6b"><span class="cl-3dd88334">5.2%</span></p></td></tr><tr style="overflow-wrap:break-word;"><td class="cl-3dda08ee"><p class="cl-3dd9fb6a"><span class="cl-3dd88334">Leisure</span></p></td><td class="cl-3dda08ef"><p class="cl-3dd9fb6b"><span class="cl-3dd88334">36.9 (60.2)</span></p></td><td class="cl-3dda08ef"><p class="cl-3dd9fb6b"><span class="cl-3dd88334">2.6%</span></p></td><td class="cl-3dda08ef"><p class="cl-3dd9fb6b"><span class="cl-3dd88334">58.2 (90.6)</span></p></td><td class="cl-3dda08ef"><p class="cl-3dd9fb6b"><span class="cl-3dd88334">4%</span></p></td></tr><tr style="overflow-wrap:break-word;"><td class="cl-3dda08ee"><p class="cl-3dd9fb6a"><span class="cl-3dd88334">Socialising</span></p></td><td class="cl-3dda08ef"><p class="cl-3dd9fb6b"><span class="cl-3dd88334">118.2 (110.9)</span></p></td><td class="cl-3dda08ef"><p class="cl-3dd9fb6b"><span class="cl-3dd88334">8.2%</span></p></td><td class="cl-3dda08ef"><p class="cl-3dd9fb6b"><span class="cl-3dd88334">115.4 (139.7)</span></p></td><td class="cl-3dda08ef"><p class="cl-3dd9fb6b"><span class="cl-3dd88334">8%</span></p></td></tr><tr style="overflow-wrap:break-word;"><td class="cl-3dda08f0"><p class="cl-3dd9fb6a"><span class="cl-3dd88334">Travel</span></p></td><td class="cl-3dda08f8"><p class="cl-3dd9fb6b"><span class="cl-3dd88334">67.9 (61.4)</span></p></td><td class="cl-3dda08f8"><p class="cl-3dd9fb6b"><span class="cl-3dd88334">4.7%</span></p></td><td class="cl-3dda08f8"><p class="cl-3dd9fb6b"><span class="cl-3dd88334">54.4 (81.2)</span></p></td><td class="cl-3dda08f8"><p class="cl-3dd9fb6b"><span class="cl-3dd88334">3.8%</span></p></td></tr></tbody></table></div>
+</div>
+</div>
+</section>
+<section id="sequence-plots" class="level2">
+<h2 class="anchored" data-anchor-id="sequence-plots">Sequence Plots</h2>
+<div class="cell">
+<details class="code-fold">
+<summary>Show/hide the code</summary>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb12"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb12-1"><a href="#cb12-1" aria-hidden="true" tabindex="-1"></a><span class="co"># set colour palette for plots</span></span>
+<span id="cb12-2"><a href="#cb12-2" aria-hidden="true" tabindex="-1"></a>colourCount <span class="ot">=</span> <span class="fu">length</span>(labels)</span>
+<span id="cb12-3"><a href="#cb12-3" aria-hidden="true" tabindex="-1"></a>getPalette <span class="ot">=</span> <span class="fu">colorRampPalette</span>(<span class="fu">brewer.pal</span>(<span class="dv">10</span>, <span class="st">"Set3"</span>))</span>
+<span id="cb12-4"><a href="#cb12-4" aria-hidden="true" tabindex="-1"></a>colours <span class="ot">&lt;-</span> <span class="fu">getPalette</span>(colourCount)</span>
+<span id="cb12-5"><a href="#cb12-5" aria-hidden="true" tabindex="-1"></a>colours <span class="ot">&lt;-</span> <span class="fu">c</span>(<span class="st">"#8DD3C7"</span>, <span class="st">"#FFFFB3"</span>, <span class="st">"#BEBADA"</span>, <span class="st">"#FB8072"</span>, <span class="st">"#80B1D3"</span>, <span class="st">"#FDB462"</span>, <span class="st">"#B3DE69"</span>, <span class="st">"#D9D9D9"</span>, <span class="st">"#FCCDE5"</span>,  <span class="st">"#BC80BD"</span>)</span>
+<span id="cb12-6"><a href="#cb12-6" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb12-7"><a href="#cb12-7" aria-hidden="true" tabindex="-1"></a><span class="fu">cpal</span>(seqs) <span class="ot">&lt;-</span> colours</span>
+<span id="cb12-8"><a href="#cb12-8" aria-hidden="true" tabindex="-1"></a><span class="fu">cpal</span>(seqn) <span class="ot">&lt;-</span> colours</span>
+<span id="cb12-9"><a href="#cb12-9" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb12-10"><a href="#cb12-10" aria-hidden="true" tabindex="-1"></a><span class="co"># create labels</span></span>
+<span id="cb12-11"><a href="#cb12-11" aria-hidden="true" tabindex="-1"></a>behaviour_labs <span class="ot">&lt;-</span> <span class="fu">c</span>(</span>
+<span id="cb12-12"><a href="#cb12-12" aria-hidden="true" tabindex="-1"></a>  <span class="st">"1"</span> <span class="ot">=</span> <span class="st">"Sleep"</span>,</span>
+<span id="cb12-13"><a href="#cb12-13" aria-hidden="true" tabindex="-1"></a>  <span class="st">"2"</span> <span class="ot">=</span> <span class="st">"Education"</span>,</span>
+<span id="cb12-14"><a href="#cb12-14" aria-hidden="true" tabindex="-1"></a>  <span class="st">"3"</span> <span class="ot">=</span> <span class="st">"Work (paid/unpaid)"</span>,</span>
+<span id="cb12-15"><a href="#cb12-15" aria-hidden="true" tabindex="-1"></a>  <span class="st">"4"</span> <span class="ot">=</span> <span class="st">"Personal care"</span>,</span>
+<span id="cb12-16"><a href="#cb12-16" aria-hidden="true" tabindex="-1"></a>  <span class="st">"5"</span> <span class="ot">=</span> <span class="st">"Eating and drinking"</span>,</span>
+<span id="cb12-17"><a href="#cb12-17" aria-hidden="true" tabindex="-1"></a>  <span class="st">"6"</span> <span class="ot">=</span> <span class="st">"Sedentary behaviour"</span>,</span>
+<span id="cb12-18"><a href="#cb12-18" aria-hidden="true" tabindex="-1"></a>  <span class="st">"7"</span> <span class="ot">=</span> <span class="st">"Physical activity"</span>,</span>
+<span id="cb12-19"><a href="#cb12-19" aria-hidden="true" tabindex="-1"></a>  <span class="st">"8"</span> <span class="ot">=</span> <span class="st">"Leisure"</span>,</span>
+<span id="cb12-20"><a href="#cb12-20" aria-hidden="true" tabindex="-1"></a>  <span class="st">"9"</span> <span class="ot">=</span> <span class="st">"Socialising"</span>,</span>
+<span id="cb12-21"><a href="#cb12-21" aria-hidden="true" tabindex="-1"></a>  <span class="st">"10"</span> <span class="ot">=</span> <span class="st">"Travel"</span></span>
+<span id="cb12-22"><a href="#cb12-22" aria-hidden="true" tabindex="-1"></a>)</span>
+<span id="cb12-23"><a href="#cb12-23" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb12-24"><a href="#cb12-24" aria-hidden="true" tabindex="-1"></a>plot_labs <span class="ot">&lt;-</span> <span class="fu">c</span>(</span>
+<span id="cb12-25"><a href="#cb12-25" aria-hidden="true" tabindex="-1"></a>  <span class="st">"Sleep"</span>,</span>
+<span id="cb12-26"><a href="#cb12-26" aria-hidden="true" tabindex="-1"></a>  <span class="st">"Education"</span>,</span>
+<span id="cb12-27"><a href="#cb12-27" aria-hidden="true" tabindex="-1"></a>  <span class="st">"Work"</span>,</span>
+<span id="cb12-28"><a href="#cb12-28" aria-hidden="true" tabindex="-1"></a>  <span class="st">"Personal</span><span class="sc">\n</span><span class="st">care"</span>,</span>
+<span id="cb12-29"><a href="#cb12-29" aria-hidden="true" tabindex="-1"></a>  <span class="st">"Eating and</span><span class="sc">\n</span><span class="st">drinking"</span>,</span>
+<span id="cb12-30"><a href="#cb12-30" aria-hidden="true" tabindex="-1"></a>  <span class="st">"Sedentary</span><span class="sc">\n</span><span class="st">behaviour"</span>,</span>
+<span id="cb12-31"><a href="#cb12-31" aria-hidden="true" tabindex="-1"></a>  <span class="st">"Physical</span><span class="sc">\n</span><span class="st">activity"</span>,</span>
+<span id="cb12-32"><a href="#cb12-32" aria-hidden="true" tabindex="-1"></a>  <span class="st">"Leisure"</span>,</span>
+<span id="cb12-33"><a href="#cb12-33" aria-hidden="true" tabindex="-1"></a>  <span class="st">"Socialising"</span>,</span>
+<span id="cb12-34"><a href="#cb12-34" aria-hidden="true" tabindex="-1"></a>  <span class="st">"Travel"</span></span>
+<span id="cb12-35"><a href="#cb12-35" aria-hidden="true" tabindex="-1"></a>)</span>
+<span id="cb12-36"><a href="#cb12-36" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb12-37"><a href="#cb12-37" aria-hidden="true" tabindex="-1"></a>common_theme <span class="ot">&lt;-</span> <span class="fu">theme</span>(<span class="at">plot.margin =</span> <span class="fu">margin</span>(<span class="dv">8</span>, <span class="dv">10</span>, <span class="dv">12</span>, <span class="dv">12</span>))</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</details>
+</div>
+<section id="transversal-plots" class="level3">
+<h3 class="anchored" data-anchor-id="transversal-plots">Transversal plots</h3>
+<p>Mean time plot displaying the average amount of time in each activity state</p>
+<div class="cell">
+<details class="code-fold">
+<summary>Show/hide the code</summary>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb13"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb13-1"><a href="#cb13-1" aria-hidden="true" tabindex="-1"></a>meantimeplot1 <span class="ot">&lt;-</span> <span class="fu">ggseqmtplot</span>(seqs, <span class="at">weighted =</span> <span class="cn">TRUE</span>) <span class="sc">+</span></span>
+<span id="cb13-2"><a href="#cb13-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">scale_y_continuous</span>(<span class="at">breaks =</span> <span class="fu">seq</span>(<span class="dv">0</span>, <span class="dv">700</span>, <span class="dv">50</span>), <span class="at">limits =</span> <span class="fu">c</span>(<span class="dv">0</span>, <span class="dv">700</span>)) <span class="sc">+</span></span>
+<span id="cb13-3"><a href="#cb13-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">labs</span>(<span class="at">title =</span> <span class="st">"School days"</span>, <span class="at">y =</span> <span class="st">"Mean minutes per day"</span>) <span class="sc">+</span></span>
+<span id="cb13-4"><a href="#cb13-4" aria-hidden="true" tabindex="-1"></a>  <span class="fu">scale_x_discrete</span>(<span class="at">labels =</span> plot_labs) <span class="sc">+</span></span>
+<span id="cb13-5"><a href="#cb13-5" aria-hidden="true" tabindex="-1"></a>  <span class="fu">labs_pubr</span>() <span class="sc">+</span></span>
+<span id="cb13-6"><a href="#cb13-6" aria-hidden="true" tabindex="-1"></a>  <span class="fu">theme_pubclean</span>() <span class="sc">+</span></span>
+<span id="cb13-7"><a href="#cb13-7" aria-hidden="true" tabindex="-1"></a>   <span class="fu">theme</span>(</span>
+<span id="cb13-8"><a href="#cb13-8" aria-hidden="true" tabindex="-1"></a>    <span class="at">plot.title =</span> <span class="fu">element_text</span>(<span class="at">size =</span> <span class="dv">12</span>, <span class="at">hjust =</span> <span class="fl">0.5</span>, <span class="at">face =</span> <span class="st">"bold"</span>),</span>
+<span id="cb13-9"><a href="#cb13-9" aria-hidden="true" tabindex="-1"></a>    <span class="at">legend.position =</span> <span class="st">"none"</span>,</span>
+<span id="cb13-10"><a href="#cb13-10" aria-hidden="true" tabindex="-1"></a>    <span class="at">axis.title =</span> <span class="fu">element_text</span>(<span class="at">size =</span> <span class="dv">10</span>, <span class="at">face =</span> <span class="st">"bold"</span>),</span>
+<span id="cb13-11"><a href="#cb13-11" aria-hidden="true" tabindex="-1"></a>    <span class="at">axis.text =</span> <span class="fu">element_text</span>(<span class="at">size =</span> <span class="dv">9</span>, <span class="at">face =</span> <span class="st">"bold"</span>),</span>
+<span id="cb13-12"><a href="#cb13-12" aria-hidden="true" tabindex="-1"></a>    <span class="at">panel.border =</span> <span class="fu">element_rect</span>(<span class="at">colour =</span> <span class="st">"black"</span>, <span class="at">fill =</span> <span class="cn">NA</span>, <span class="at">linewidth =</span> <span class="fl">0.8</span>)</span>
+<span id="cb13-13"><a href="#cb13-13" aria-hidden="true" tabindex="-1"></a>  </span>
+<span id="cb13-14"><a href="#cb13-14" aria-hidden="true" tabindex="-1"></a>   ) <span class="sc">+</span> common_theme</span>
+<span id="cb13-15"><a href="#cb13-15" aria-hidden="true" tabindex="-1"></a> </span>
+<span id="cb13-16"><a href="#cb13-16" aria-hidden="true" tabindex="-1"></a>meantimeplot2 <span class="ot">&lt;-</span> <span class="fu">ggseqmtplot</span>(seqn, <span class="at">weighted =</span> <span class="cn">TRUE</span>) <span class="sc">+</span></span>
+<span id="cb13-17"><a href="#cb13-17" aria-hidden="true" tabindex="-1"></a>  <span class="fu">scale_y_continuous</span>(<span class="at">breaks =</span> <span class="fu">seq</span>(<span class="dv">0</span>, <span class="dv">700</span>, <span class="dv">50</span>), <span class="at">limits =</span> <span class="fu">c</span>(<span class="dv">0</span>, <span class="dv">700</span>)) <span class="sc">+</span></span>
+<span id="cb13-18"><a href="#cb13-18" aria-hidden="true" tabindex="-1"></a>  <span class="fu">labs</span>(<span class="at">title =</span> <span class="st">"Non-school days"</span>, <span class="at">y =</span> <span class="st">"Mean minutes per day"</span>) <span class="sc">+</span></span>
+<span id="cb13-19"><a href="#cb13-19" aria-hidden="true" tabindex="-1"></a> <span class="fu">scale_x_discrete</span>(<span class="at">labels =</span> plot_labs) <span class="sc">+</span></span>
+<span id="cb13-20"><a href="#cb13-20" aria-hidden="true" tabindex="-1"></a>   <span class="fu">labs_pubr</span>() <span class="sc">+</span></span>
+<span id="cb13-21"><a href="#cb13-21" aria-hidden="true" tabindex="-1"></a>  <span class="fu">theme_pubclean</span>() <span class="sc">+</span></span>
+<span id="cb13-22"><a href="#cb13-22" aria-hidden="true" tabindex="-1"></a>   <span class="fu">theme</span>(</span>
+<span id="cb13-23"><a href="#cb13-23" aria-hidden="true" tabindex="-1"></a>    <span class="at">plot.title =</span> <span class="fu">element_text</span>(<span class="at">size =</span> <span class="dv">12</span>, <span class="at">hjust =</span> <span class="fl">0.5</span>, <span class="at">face =</span> <span class="st">"bold"</span>),</span>
+<span id="cb13-24"><a href="#cb13-24" aria-hidden="true" tabindex="-1"></a>    <span class="at">legend.position =</span> <span class="st">"none"</span>,</span>
+<span id="cb13-25"><a href="#cb13-25" aria-hidden="true" tabindex="-1"></a>    <span class="at">axis.title =</span> <span class="fu">element_text</span>(<span class="at">size =</span> <span class="dv">10</span>, <span class="at">face =</span> <span class="st">"bold"</span>),</span>
+<span id="cb13-26"><a href="#cb13-26" aria-hidden="true" tabindex="-1"></a>    <span class="at">axis.text =</span> <span class="fu">element_text</span>(<span class="at">size =</span> <span class="dv">9</span>, <span class="at">face =</span> <span class="st">"bold"</span>),</span>
+<span id="cb13-27"><a href="#cb13-27" aria-hidden="true" tabindex="-1"></a>    <span class="at">panel.border =</span> <span class="fu">element_rect</span>(<span class="at">colour =</span> <span class="st">"black"</span>, <span class="at">fill =</span> <span class="cn">NA</span>, <span class="at">linewidth =</span> <span class="fl">0.8</span>)</span>
+<span id="cb13-28"><a href="#cb13-28" aria-hidden="true" tabindex="-1"></a>  </span>
+<span id="cb13-29"><a href="#cb13-29" aria-hidden="true" tabindex="-1"></a>   ) <span class="sc">+</span> common_theme</span>
+<span id="cb13-30"><a href="#cb13-30" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb13-31"><a href="#cb13-31" aria-hidden="true" tabindex="-1"></a>meantimeplot <span class="ot">&lt;-</span> <span class="fu">wrap_elements</span>(<span class="at">full =</span> meantimeplot1) <span class="sc">/</span> <span class="fu">wrap_elements</span>(<span class="at">full =</span> meantimeplot2)</span>
+<span id="cb13-32"><a href="#cb13-32" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb13-33"><a href="#cb13-33" aria-hidden="true" tabindex="-1"></a>meantimeplot</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</details>
+<div class="cell-output-display">
+<div id="fig-1" class="quarto-float quarto-figure quarto-figure-center anchored">
+<figure class="quarto-float quarto-float-fig figure">
+<div aria-describedby="fig-1-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+<img src="index_files/figure-html/fig-1-1.png" class="img-fluid figure-img" width="768">
+</div>
+<figcaption class="quarto-float-caption-bottom quarto-float-caption quarto-float-fig" id="fig-1-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+Figure&nbsp;1: Mean time plots on school and non-school days
+</figcaption>
+</figure>
+</div>
 </div>
 </div>
 <p><em>to be continued</em></p>
 
 
+</section>
 </section>
 
 </main> <!-- /main -->
