@@ -1,19 +1,19 @@
 [
   {
+    "listing": "/extras.html",
+    "items": [
+      "/extras/flextablefunction/index.html",
+      "/extras/project-setup/index.html",
+      "/extras/conventions/index.html"
+    ]
+  },
+  {
     "listing": "/projects.html",
     "items": [
       "/projects/engagement/index.html",
       "/projects/mixedeffects/index.html",
       "/projects/hurdles/index.html",
       "/projects/sequenceandcluster/index.html"
-    ]
-  },
-  {
-    "listing": "/extras.html",
-    "items": [
-      "/extras/flextablefunction/index.html",
-      "/extras/project-setup/index.html",
-      "/extras/conventions/index.html"
     ]
   }
 ]

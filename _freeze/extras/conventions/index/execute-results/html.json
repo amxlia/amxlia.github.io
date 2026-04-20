@@ -1,0 +1,15 @@
+{
+  "hash": "ae26f7437cbd3a7e92bd17389f564143",
+  "result": {
+    "engine": "knitr",
+    "markdown": "---\ntitle: \"Script Conventions\"\ndescription: \"Conventions I try to follow\"\ncode-fold: false\ncategories: [Project Management, Workflow, Organisation]\ndate: \"2026-03-31\"\nimage: scripts.avif\ngrid:\n    margin-width: 50px\n---\n\n## Scripts\n- one script = one purpose \n- keep scripts short \n\nExample layout of script folder:\n```\nR/\n├── 01_data_processing.R   # scripts for cleaning and processing data\n├── 02_linear_models.R     # scripts for running linear models \n├── utilities.R           # scripts for functions that are used across multiple analyses\n├── functions_data_processing.R  # scripts for functions that are specific to data processing\n```\n\n## Functions \n- any repeated logic gets moved to functions \n- if repeated across different tasks -> `utilities.R`\n- if task-specific -> `functions_01_data_cleaning.R`\n\n## Style conventions \n- Use pipes: `|>`\n- one step per line \n\n\n::: {.cell run='false'}\n\n```{.r .cell-code}\ndf |>\n    dplyr::filter(age > 18) |>  \n    dplyr::mutate(age_group = ifelse(age < 30, \"young\", \"old\")) |>\n    dplyr::group_by(age_group) |>\n    dplyr::summarise(mean_income = mean(income))\n```\n:::\n\n\n## Naming Conventions \n- use `snake_case` for everything\n- objects start with noun (e.g., `df_*` or `mod_*`)\n- functions start with verb (e.g., `clean_`, `fit_`)\n\n## Ordering and Flow \nif structure begins to exist (e.g., order of scripts) use `targets` to remove manual ordering/execution\n\n\n::: {.cell run='false'}\n\n```{.r .cell-code}\nlist(\n  tar_target(raw, get_data()),\n  tar_target(cleaned, clean_data(raw)),\n  tar_target(model, fit_linear_model(cleaned)),\n  tar_target(plot, create_plot(model))\n)\n```\n:::\n\n",
+    "supporting": [],
+    "filters": [
+      "rmarkdown/pagebreak.lua"
+    ],
+    "includes": {},
+    "engineDependencies": {},
+    "preserve": {},
+    "postProcess": true
+  }
+}

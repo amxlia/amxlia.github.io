@@ -1,0 +1,15 @@
+{
+  "hash": "98a57ca6f707746c985df08b1e1c9922",
+  "result": {
+    "engine": "knitr",
+    "markdown": "---\ntitle: \"How I Set Up Projects\"\ndescription: \"Notes on keeping everything organised with a clear work flow and file organisation.\" \ncode-fold: false\ncategories: [Project Management, Workflow, Organisation]\ndate: \"2026-03-31\"\nimage: files.jpg\ngrid:\n    margin-width: 50px\n---\n## Structure \n- create project root folder\n- open in software \n```\nproject/\n\n├── R/\n├── data/\n│   ├── raw/        # source data (never edited)\n│   ├── versions/   # timestamped snapshots\n│   ├── processed/  # cleaned / merged\n│   └── final/      # datasets used for analysis / sharing\n├── outputs/        # figures, tables, model objects\n├── docs/           # protocols, codebooks, notes\n├── renv.lock\n```\n**notes**:\n- root folder always treated as root \n- no `setwd()`\n- all paths relative \n- never change raw data \n\n## Environment \ninitialise on first open: \n\n::: {.cell}\n\n```{.r .cell-code}\n# create renv and lockfile in root folder \nrenv::init()\n\n# install packages \ninstall.packages(c(\"tidyverse\", \"here\", \"renv\", \"usethis\", \"devtools\"))\n\n# snapshot to save in lockfile for reproducibility and collaboration\nrenv::snapshot()\n```\n:::\n\n\n**notes**: \n- `renv.lockfile` tracks package versions \n- collaborators use `renv::restore()` to get same environment  \n\n## Paths \n- anchor scripts using `here` package \n- avoid using absolute paths \n\n::: {.cell run='false'}\n\n```{.r .cell-code}\n# shows where file is saved relative to root \nhere::i_am(\"R/01_data_processing.R\")\n\n# import data using relative paths\nreadr::read_csv(here::here(\"data/raw/survey_data_raw.csv\"))\n```\n:::\n\n\n## Secrets \n- use `usethis` to create `.Renviron` file in root folder and add secrets in there \n- for example: API keys, database credentials etc. \n- github will ignore this file so its not shared with collaborators \n\n\n::: {.cell run='false'}\n\n```{.r .cell-code}\nusethis::edit_r_environ()\n```\n:::\n\n- after running, edit `.Renviron` file \n- format specifically: \n```\nAPI_KEY=\"your_api_key_here\"\nDB_USERNAME=\"your_db_username_here\"\nDB_PASSWORD=\"your_db_password_here\"\n```\nafter saving the `.Renviron` file, access the secrets in your R code:\n\n::: {.cell run='false' evaluate='false'}\n\n```{.r .cell-code}\napi_key <- Sys.getenv(\"API_KEY\")\ndb_username <- Sys.getenv(\"DB_USERNAME\")\ndb_password <- Sys.getenv(\"DB_PASSWORD\")\n```\n:::\n\n",
+    "supporting": [],
+    "filters": [
+      "rmarkdown/pagebreak.lua"
+    ],
+    "includes": {},
+    "engineDependencies": {},
+    "preserve": {},
+    "postProcess": true
+  }
+}

@@ -65,3 +65,10 @@ knitr:
     message: false
     warning: false
 
+execute:
+  echo: true
+  warning: false
+  message: false
+  cache: true         
+  freeze: auto
+

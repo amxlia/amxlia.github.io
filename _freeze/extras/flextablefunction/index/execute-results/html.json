@@ -1,0 +1,15 @@
+{
+  "hash": "99b050941198dbb90f4fc6929547a345",
+  "result": {
+    "engine": "knitr",
+    "markdown": "---\ntitle: Custom Function for Publication-Ready Tables\ndescription: This is the code I use to make my tables ready for publication. \ncode-fold: false\ncategories: [Functions, Formatting, Tables]\ndate: \"2026-04-01\"\nimage: tbl1.png\ntoc: false\ngrid:\n    sidebar-width: 10px\n    margin-width: 10px\n---\n*Purpose:* Styling functions for producing publication-ready tables. All tables follow APA-adjacent formatting\n\n*Usage:* Pipe any flextable into `my_flextable()` as the final styling step. Works with both native flextables, and gtsummary tables converted via `as_flex_table()`\n\nCall this function as the *last* step in a flextable pipeline. \n\n\n::: {.cell}\n\n```{.r .cell-code}\n#' apply consistent styling to a flex table\n#'\n#' @param ft - a flextable object (either via `flextable()` or `gtsummary::as_flex_table()`)\n#' @param font_size - numeric. font size applied to all parts. default = 12\n#' @param spacing - numeric. line spacing multiplier applied to all parts. default = 1\n#' @param font_name - character. font family applied to all parts. default = times new roman\n#'\n#' @return - styled flextable object\n#'\nmy_flextable <- function(\n  ft,\n  font_size = 12,\n  spacing = 1,\n  font_name = \"Times New Roman\"\n) {\n  n_cols <- ncol_keys(ft)\n\n  ft |>\n    # remove existing borders\n    border_remove() |>\n    # fix borders to black\n    hline_top(border = fp_border(color = \"black\", width = 1), part = \"all\") |>\n    hline_bottom(\n      border = fp_border(color = \"black\", width = 1),\n      part = \"all\"\n    ) |>\n    hline_bottom(\n      border = fp_border(color = \"black\", width = 1),\n      part = \"header\"\n    ) |>\n    # tight padding for compact tables\n    #flextable::padding(padding = 1, part = \"all\") |>\n    # compact row height (default = 1)\n    flextable::line_spacing(space = spacing, part = \"all\") |>\n    # uniform font size (default = 12)\n    flextable::fontsize(size = font_size, part = \"all\") |>\n    # uniform font family (default = times new roman)\n    flextable::font(fontname = font_name, part = \"all\") |>\n    # table layout/properties:\n    flextable::set_table_properties(\n      # stretch columns to fill available width\n      layout = \"autofit\",\n      # use 100% of text area width (0-1 scale)\n      width = 1\n    )\n}\n```\n:::\n\n\n### Examples \n\n::: {.cell}\n\n```{.r .cell-code}\n# Native flextable \nmtcars |> head() |> flextable() |> my_flextable() \n\n# GT summary table \ngtsummary::tbl_summary(mtcars) |> as_flex_table() |> my_flextable()\n\n# Override defaults \nflextable(mtcars) |> my_flextable(font_size = 9, font_name = \"Arial\") \n```\n:::\n\n\n",
+    "supporting": [],
+    "filters": [
+      "rmarkdown/pagebreak.lua"
+    ],
+    "includes": {},
+    "engineDependencies": {},
+    "preserve": {},
+    "postProcess": true
+  }
+}
