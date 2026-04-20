@@ -20,12 +20,11 @@ Subsequently, I explored membership in these clusters and their associations wit
 
 All analyses are split by day type (school day vs non school day)
 
-## Set-Up 
 ```{r}
 #| label: setup-packages
 #| results: hide
 #| message: false
-#|
+#| echo: false
 # load packages
 pacman::p_load(
   here,
@@ -42,7 +41,8 @@ pacman::p_load(
   ggseqplot,
   ggpubr,
   patchwork,
-  officer
+  officer,
+  cowplot
 )
 
 # set wd
@@ -55,11 +55,8 @@ act_dict <- readRDS(here("R/act_dict.RDS"))
 
 # source custom flextable function
 source(here("R/customflextable.R"))
-```
 
-## Data processing 
-Filter for accurate diaries and flag school/non-school days. 
-```{r}
+
 # filter for accurate diaries
 data1 <- data0 |>
   # group by individual
@@ -87,14 +84,7 @@ id_daytype <- data1 |>
     ),
     .groups = "drop"
   )
-```
 
-At this stage, we have 1321 valid diaries on school days and 1435 on non-school days. 
-
-Convert episode start times and wake/sleep times and deal with the PM-to-AM transition after midnight as diaries run from 4am to 4am the following day. 
-
-```{r}
-# function for converting times 
 convert_time <- function(time_vector) {
   time_vector <- parse_date_time(time_vector, "%I %M %p")
   transitions <- which(
@@ -123,11 +113,7 @@ data2$sleept <- if_else(
   data2$sleept
 )
 
-```
 
-Sleep episodes aren't captured as diariy entries. Incorporate wake and sleep times as explicit episodes force a fixed 4:00AM start and 4:00AM finish. 
-
-```{r}
 # select subset of data to use with sequence analysis
 data3 <- data2 |>
   select(hicid, stimet, mainact) |>
@@ -144,9 +130,9 @@ awake_times <- data2 |>
   ) |>
   left_join(id_daytype, by = "hicid")
 
-sleep_times <- data2 %>%
-  group_by(hicid) %>%
-  summarise(stimet = first(sleept), mainact = 0, .groups = "drop") %>%
+sleep_times <- data2 |>
+  group_by(hicid) |>
+  summarise(stimet = first(sleept), mainact = 0, .groups = "drop") |>
   left_join(id_daytype, by = "hicid")
 
 # bind the data
@@ -154,89 +140,64 @@ data4 <- bind_rows(data3, awake_times, sleep_times) |>
   arrange(hicid, stimet)
 
 # add start and stop times (4am to 4am next day) for each id
-start_time <- data2 %>%
-  group_by(hicid) %>%
+start_time <- data2 |>
+  group_by(hicid) |>
   summarise(
     stimet = parse_date_time("04:00 AM", "%I:%M: %p"),
     mainact = 0,
     .groups = "drop"
-  ) %>%
+  ) |>
   left_join(id_daytype, by = "hicid")
 
-stop_times <- data2 %>%
-  group_by(hicid) %>%
+stop_times <- data2 |>
+  group_by(hicid) |>
   summarise(
     stimet = parse_date_time("04:00 AM", "%I:%M: %p") + days(1),
     mainact = 0,
     .groups = "drop"
-  ) %>%
+  ) |>
   left_join(id_daytype, by = "hicid")
 
 # bind to data
 data5 <- bind_rows(data4, start_time, stop_times) |>
   arrange(hicid, stimet)
-```
 
-Compute durations of each activity 
-```{r}
 # filter out stop and start times that are the same for each id
-# calculate the duration between start_time and stop_time 
-data6 <- data5 %>%
-  group_by(hicid) %>%
-  mutate(stop_time = if_else(row_number() == n(), stimet, lead(stimet))) %>%
-  ungroup() %>%
-  group_by(hicid) %>%
-  filter(stimet != stop_time) %>%
-  ungroup() %>%
+# calculate the duration between start_time and stop_time
+data6 <- data5 |>
+  group_by(hicid) |>
+  mutate(stop_time = if_else(row_number() == n(), stimet, lead(stimet))) |>
+  ungroup() |>
+  group_by(hicid) |>
+  filter(stimet != stop_time) |>
+  ungroup() |>
   mutate(duration = difftime(stop_time, stimet, units = "mins"))
 
-```
-
-Original activity codes were mapped to ten aggregate activity categories (in `act_dict`). The ten categories are: 
-
-| Code | Category              |
-|------|-----------------------|
-| 1    | Sleep                 |
-| 2    | Education             |
-| 3    | Work (paid/unpaid)    |
-| 4    | Personal care         |
-| 5    | Eating and drinking   |
-| 6    | Sedentary behaviour   |
-| 7    | Physical activity     |
-| 8    | Leisure               |
-| 9    | Socialising           |
-| 10   | Travel                |
-
-```{r}
+#| label: recode-activities
 # recode the activities into a smaller number of grouped activities
 data6$act_rec <- recode(data6$mainact, !!!act_dict)
 
 # remove cases with NA codes for recoded activities
-filtered_data6 <- data6 %>%
-  group_by(hicid) %>%
-  filter(!any(is.na(act_rec))) %>%
+filtered_data6 <- data6 |>
+  group_by(hicid) |>
+  filter(!any(is.na(act_rec))) |>
   ungroup()
 
 # check that all cases sum to 1440 mins (24 hours)
-sumtime <- filtered_data6 %>%
-  group_by(hicid) %>%
+sumtime <- filtered_data6 |>
+  group_by(hicid) |>
   summarise(sumtime = sum(duration))
 
 # remove cases with sum of the duration longer than 1440
-filtered_data7 <- filtered_data6 %>%
-  group_by(hicid) %>%
-  filter(sum(duration) <= 1440) %>%
+filtered_data7 <- filtered_data6 |>
+  group_by(hicid) |>
+  filter(sum(duration) <= 1440) |>
   ungroup()
 # check that all cases sum to 1440 mins (24 hours)
-sumtime <- filtered_data7 %>%
-  group_by(hicid) %>%
+sumtime <- filtered_data7 |>
+  group_by(hicid) |>
   summarise(sumtime = sum(duration))
-```
 
-Final analytic sample n = 2641. n = 1270 on school days and n = 1371 on non school days 
-
-## Sequence Construction 
-```{r}
 # create the sequence dataframe with one long vector of activities repeated by their duration (minutes)
 sequences <- rep(
   as.numeric(filtered_data7$act_rec),
@@ -291,14 +252,11 @@ labels <- c(
   "Socialising",
   "Travel"
 )
-```
 
-Join to survey data 
-```{r}
 # get the day from the main data set
-day_week <- data2 %>%
-  select(hicid, day, school, nosch) %>%
-  group_by(hicid) %>%
+day_week <- data2 |>
+  select(hicid, day, school, nosch) |>
+  group_by(hicid) |>
   summarise(day = first(day), school = first(school), nosch = first(nosch))
 # link data back to the ids in the sequence matrix
 data_day <- data.frame(hicid = as.numeric(rownames(data)))
@@ -344,10 +302,7 @@ stopifnot(nrow(n_data) == length(n_w))
 # Make `activities` match the s_data columns
 activities <- colnames(s_data)
 stopifnot(length(activities) == ncol(s_data))
-```
 
-Create sequence objects
-```{r}
 # create sequence objects
 seqs <- seqdef(
   s_data,
@@ -368,11 +323,7 @@ seqn <- seqdef(
   xtstep = 18,
   id = rownames(n_data)
 )
-```
 
-Collapse into 5minute intervals for computation purposes and get substitution cost matrix based on observed transition rates 
-```{r}
-#| eval: false 
 # collapse into 5-min intervals (from 1 minute intervals);
 seqs5 <- seqgranularity(seqs, tspan = 5, method = "mostfreq")
 seqn5 <- seqgranularity(seqn, tspan = 5, method = "mostfreq")
@@ -384,16 +335,13 @@ scostn <- seqsubm(seqn5, method = "TRATE")
 # optimal matching; indel cost = 1,
 om_times <- seqdist(seqs5, method = "OM", indel = 1, sm = scosts)
 om_timen <- seqdist(seqn5, method = "OM", indel = 1, sm = scostn)
-```
 
-```{r}
-#| echo: false
 # sequence_objects <- list(
-#     seqs5 = seqs5, 
-#     seqn5 = seqn5, 
-#     scosts = scosts, 
-#     scostn = scostn, 
-#     om_times = om_times, 
+#     seqs5 = seqs5,
+#     seqn5 = seqn5,
+#     scosts = scosts,
+#     scostn = scostn,
+#     om_times = om_times,
 #     om_timen = om_timen
 #     )
 # saveRDS(sequence_objects, here("R/sequence_objects.RDS"))
@@ -403,6 +351,8 @@ sequence_objects <- readRDS(here("R/sequence_objects.RDS"))
 ## Descriptives of Sequences 
 Across both day types, sleep made up the largest proportion of daily time, ranging from 6 – 10.5 hours. 
 ```{r}
+#| label: tbl-desc
+#| tbl-cap: "Descriptives of sequences on school and non school days"
 # school days
 statemeans <- as_tibble(
   round(seqmeant(seqs, serr = TRUE), 1),
@@ -474,7 +424,7 @@ descriptives_tbl <- descriptives_tbl |>
   merge_at(i = 1, j = c(4:5), part = "header") |>
   align(align = "center", j = c(2:5), part = "all") |>
   my_flextable() |>
-  hline(i = c(1, 2), part = "header", border = fp_border(color = "black")) %>%
+  hline(i = c(1, 2), part = "header", border = fp_border(color = "black")) |>
   hline_top(border = fp_border(color = "black"), part = "all") |>
   hline_bottom(border = fp_border(color = "black"), part = "all")
 
@@ -483,11 +433,24 @@ descriptives_tbl
 
 ## Sequence Plots 
 ```{r}
+#| label: sequence-plots-setup
+#| echo: false 
 # set colour palette for plots
 colourCount = length(labels)
 getPalette = colorRampPalette(brewer.pal(10, "Set3"))
 colours <- getPalette(colourCount)
-colours <- c("#8DD3C7", "#FFFFB3", "#BEBADA", "#FB8072", "#80B1D3", "#FDB462", "#B3DE69", "#D9D9D9", "#FCCDE5",  "#BC80BD")
+colours <- c(
+  "#8DD3C7",
+  "#FFFFB3",
+  "#BEBADA",
+  "#FB8072",
+  "#80B1D3",
+  "#FDB462",
+  "#B3DE69",
+  "#D9D9D9",
+  "#FCCDE5",
+  "#BC80BD"
+)
 
 cpal(seqs) <- colours
 cpal(seqn) <- colours
@@ -522,10 +485,9 @@ plot_labs <- c(
 common_theme <- theme(plot.margin = margin(8, 10, 12, 12))
 ```
 
-### Transversal plots
 Mean time plot displaying the average amount of time in each activity state
 ```{r}
-#| label: fig-1
+#| label: fig-mean
 #| fig-cap: "Mean time plots on school and non-school days"
 #| fig-width: 8
 #| fig-height: 8
@@ -535,33 +497,935 @@ meantimeplot1 <- ggseqmtplot(seqs, weighted = TRUE) +
   scale_x_discrete(labels = plot_labs) +
   labs_pubr() +
   theme_pubclean() +
-   theme(
+  theme(
     plot.title = element_text(size = 12, hjust = 0.5, face = "bold"),
     legend.position = "none",
     axis.title = element_text(size = 10, face = "bold"),
     axis.text = element_text(size = 9, face = "bold"),
     panel.border = element_rect(colour = "black", fill = NA, linewidth = 0.8)
-  
-   ) + common_theme
- 
+  ) +
+  common_theme
+
 meantimeplot2 <- ggseqmtplot(seqn, weighted = TRUE) +
   scale_y_continuous(breaks = seq(0, 700, 50), limits = c(0, 700)) +
   labs(title = "Non-school days", y = "Mean minutes per day") +
- scale_x_discrete(labels = plot_labs) +
-   labs_pubr() +
+  scale_x_discrete(labels = plot_labs) +
+  labs_pubr() +
   theme_pubclean() +
-   theme(
+  theme(
     plot.title = element_text(size = 12, hjust = 0.5, face = "bold"),
     legend.position = "none",
     axis.title = element_text(size = 10, face = "bold"),
     axis.text = element_text(size = 9, face = "bold"),
     panel.border = element_rect(colour = "black", fill = NA, linewidth = 0.8)
-  
-   ) + common_theme
+  ) +
+  common_theme
 
-meantimeplot <- wrap_elements(full = meantimeplot1) / wrap_elements(full = meantimeplot2)
+meantimeplot <- wrap_elements(full = meantimeplot1) /
+  wrap_elements(full = meantimeplot2)
 
 meantimeplot
+```
+
+Modal state sequence plots displaying the sequence of the modal states with each mode proportional to its frequency at the given time 
+
+```{r}
+#| label: fig-modal
+#| fig-cap: "Modal state sequence plots on school and non-school days"
+#| fig-width: 8
+#| fig-height: 8
+hrly <- as.character(seq(1, 1440, by = 120))
+hrly_labs <- c(
+  "04:00",
+  "06:00",
+  "08:00",
+  "10:00",
+  "12:00",
+  "14:00",
+  "16:00",
+  "18:00",
+  "20:00",
+  "22:00",
+  "00:00",
+  "02:00"
+)
+
+modalstatesequences <- ggseqmsplot(seqs, weighted = TRUE) +
+  labs(
+    title = "School days",
+    y = "Relative Frequency (Weighted)",
+    x = "Time of Day"
+  ) +
+  scale_x_discrete(breaks = hrly, labels = hrly_labs) +
+  labs_pubr() +
+  theme_pubclean() +
+  theme(
+    panel.border = element_rect(colour = "black", fill = NA, linewidth = 0.8),
+    panel.grid.major = element_blank(),
+    panel.grid.minor = element_blank(),
+    #panel.border = element_blank(),
+    legend.title = element_blank(),
+    legend.position = "bottom",
+    plot.title = element_text(size = 12, hjust = 0.5, face = "bold"),
+    axis.text = element_text(size = 9, colour = "black", face = "bold"),
+    axis.title = element_text(size = 10, colour = "black", face = "bold")
+  ) +
+  common_theme
+
+legend_plot <- modalstatesequences +
+  theme(
+    legend.position = "bottom",
+    legend.title = element_blank(),
+    legend.text = element_text(size = 9, face = "bold"),
+    legend.spacing.x = unit(0.6, "cm"),
+    legend.key.width = unit(1.2, "cm"),
+    legend.box.margin = margin(0, 0, 0, 0),
+    legend.margin = margin(0, 0, 0, 0)
+  )
+
+legend <- get_legend(legend_plot)
+modalstatesequencen <- ggseqmsplot(seqn, weighted = TRUE) +
+  labs(
+    title = "Non-school days",
+    y = "Relative Frequency (Weighted)",
+    x = "Time of Day"
+  ) +
+  scale_x_discrete(breaks = hrly, labels = hrly_labs) +
+  labs_pubr() +
+  theme_pubclean() +
+  theme(
+    panel.border = element_rect(colour = "black", fill = NA, linewidth = 0.8),
+    panel.grid.major = element_blank(),
+    panel.grid.minor = element_blank(),
+    #panel.border = element_blank(),
+    legend.title = element_blank(),
+    legend.position = "bottom",
+    plot.title = element_text(size = 12, hjust = 0.5, face = "bold"),
+    axis.text = element_text(size = 9, colour = "black", face = "bold"),
+    axis.title = element_text(size = 10, colour = "black", face = "bold")
+  ) +
+  common_theme
+
+modalstatesequences <- modalstatesequences + theme(legend.position = "none")
+modalstatesequencen <- modalstatesequencen + theme(legend.position = "none")
+
+modalstatesequencess <- wrap_elements(full = modalstatesequences) /
+  wrap_elements(full = modalstatesequencen)
+modalstatesequencess <- plot_grid(
+  modalstatesequencess,
+  legend,
+  ncol = 1,
+  rel_heights = c(1, 0.1)
+)
+modalstatesequencess
+```
+
+State distribution plot representing the sequence of the state frequencies by time point (chronograms)
+
+```{r}
+#| label: fig-chron
+#| fig-cap: "State distribution plots on school and non-school days"
+#| fig-width: 8
+#| fig-height: 10
+statedistributions <- ggseqdplot(seqs) +
+  labs(title = "School days", y = "Relative Frequency", x = "Time of Day") +
+  scale_x_discrete(breaks = hrly, labels = hrly_labs) +
+  labs_pubr() +
+  theme_pubclean() +
+  theme(
+    panel.border = element_rect(colour = "black", fill = NA, linewidth = 0.8),
+    panel.grid.major = element_blank(),
+    panel.grid.minor = element_blank(),
+    #panel.border = element_blank(),
+    legend.title = element_blank(),
+    legend.position = "bottom",
+    plot.title = element_text(size = 12, hjust = 0.5, face = "bold"),
+    axis.text = element_text(size = 9, colour = "black", face = "bold"),
+    axis.title = element_text(size = 10, colour = "black", face = "bold")
+  ) +
+  common_theme
+
+
+statedistributionn <- ggseqdplot(seqn) +
+  labs(title = "Non-school days", y = "Relative Frequency", x = "Time of Day") +
+  scale_x_discrete(breaks = hrly, labels = hrly_labs) +
+  labs_pubr() +
+  theme_pubclean() +
+  theme(
+    panel.border = element_rect(colour = "black", fill = NA, linewidth = 0.8),
+    panel.grid.major = element_blank(),
+    panel.grid.minor = element_blank(),
+    #panel.border = element_blank(),
+    legend.title = element_blank(),
+    legend.position = "bottom",
+    plot.title = element_text(size = 12, hjust = 0.5, face = "bold"),
+    axis.text = element_text(size = 9, colour = "black", face = "bold"),
+    axis.title = element_text(size = 10, colour = "black", face = "bold")
+  ) +
+  common_theme
+
+
+statedistributions <- statedistributions + theme(legend.position = "none")
+statedistributionn <- statedistributionn + theme(legend.position = "none")
+
+statedistributionplot <- wrap_elements(full = statedistributions) /
+  wrap_elements(full = statedistributionn)
+statedistributionplot <- plot_grid(
+  statedistributionplot,
+  legend,
+  ncol = 1,
+  rel_heights = c(1, 0.1)
+)
+
+
+statedistributionplot
+```
+
+## Cluster Analysis 
+Hierarchical clustering using ward method on school days 
+```{r}
+#| label: fig-school-ward
+#| fig-cap: "Hierarchical ward clustering ranges on school days"
+#| fig-width: 8
+#| fig-height: 8
+
+set.seed(123)
+# get weights in the right order 
+sw <- data_day |> 
+  filter(hicid %in% s_id) |> 
+  mutate(.ord = match(hicid, as.numeric(rownames(s_data)))) |> 
+  arrange(.ord) |> pull(hweights)
+nw <- data_day |> 
+  filter(hicid %in% n_id) |> 
+  mutate(.ord = match(hicid, as.numeric(rownames(n_data)))) |> 
+  arrange(.ord) |> pull(hweights)
+stopifnot(length(sw) == nrow(s_data))
+stopifnot(length(nw) == nrow(n_data))
+
+om_times <- sequence_objects$om_times
+# turn off scientfic notation
+options(scipen = 99)
+# ward hierarchical clustering; unweighted and weighted versions
+clusterwards <- hclust(as.dist(om_times), method = "ward.D")
+clusterward_wtds <- hclust(as.dist(om_times), method = "ward.D", members = sw)
+
+# weighted cluster range diagnostics up to 15 clusters.
+wardRanges <- as.clustrange(
+  clusterwards,
+  diss = om_times,
+  weights = sw,
+  ncluster = 15
+)
+
+plot(wardRanges, stat = c("ASWw", "HG", "PBC", "HC"))
+```
+
+Partitioning around medioids 
+```{r}
+#| label: fig-school-pam
+#| fig-cap: "Partitioning around medioids ward clustering ranges on school days"
+#| fig-width: 8
+#| fig-height: 8
+# weighted k medoids range diagnostics.
+pamwardRanges <- wcKMedRange(
+  om_times,
+  kvals = 2:15,
+  weights = sw
+)
+
+plot(pamwardRanges, stat = c("ASWw", "HG", "PBC", "HC"))
+```
+
+Final solution is four clusters on school days. 
+```{r}
+#| label: final-school
+# final solution;
+pamclust4s <- wcKMedoids(
+  om_times,
+  k = 4,
+  weights = sw,
+  initialclust = clusterward_wtds
+)
+
+pamclust4s$stats
+
+# final cluster membership table for joining.
+data_fins <- data.frame(
+  hicid = as.numeric(rownames(s_data)),
+  cluster = as.numeric(pamclust4s$clustering)
+)
+
+
+# per person minute totals; compute on the state columns only.
+data_times <- s_data |>
+  mutate(
+    hicid = as.numeric(rownames(s_data)),
+    cluster = as.numeric(pamclust4s$clustering),
+    hweights = sw,
+    sleepsum = rowSums(s_data == 1),
+    edusum = rowSums(s_data == 2),
+    worksum = rowSums(s_data == 3),
+    caresum = rowSums(s_data == 4),
+    eatsum = rowSums(s_data == 5),
+    sedsum = rowSums(s_data == 6),
+    actsum = rowSums(s_data == 7),
+    leisum = rowSums(s_data == 8),
+    socsum = rowSums(s_data == 9),
+    trasum = rowSums(s_data == 10)
+  )
+```
+
+Hierarchical ward clustering on non school days 
+```{r}
+#| label: fig-nonschool-ward
+#| fig-cap: "Hierarchical ward clustering ranges on non school days"
+#| fig-width: 8
+#| fig-height: 8
+# non school clustering
+om_timen <- sequence_objects$om_timen
+clusterwardn <- hclust(as.dist(om_timen), method = "ward.D")
+clusterward_wtdn <- hclust(as.dist(om_timen), method = "ward.D", members = nw)
+
+wardRangen <- as.clustrange(
+  clusterwardn,
+  diss = om_timen,
+  weights = nw,
+  ncluster = 15
+)
+
+plot(wardRangen, stat = c("ASWw", "HG", "PBC", "HC"))
+```
+Partitioning around medioids 
+```{r}
+#| label: fig-nonschool-pam
+#| fig-cap: "Partitioning around medioids ward clustering ranges on non school days"
+#| fig-width: 8
+#| fig-height: 8
+# weighted k medoids range diagnostics.
+pamwardRangen <- wcKMedRange(
+  om_timen,
+  kvals = 2:15,
+  weights = nw
+)
+
+plot(pamwardRangen, stat = c("ASWw", "HG", "PBC", "HC"))
+```
+Final solution is five clusters on non school days 
+```{r}
+#| label: final-nonschool
+pamclust5n <- wcKMedoids(
+  om_timen,
+  k = 5,
+  weights = nw,
+  initialclust = clusterward_wtdn
+)
+pamclust5n$stats
+
+data_finn <- data.frame(
+  hicid = as.numeric(rownames(n_data)),
+  cluster = as.numeric(pamclust5n$clustering)
+)
+
+data_timen <- n_data |>
+  mutate(
+    hicid = as.numeric(rownames(n_data)),
+    cluster = as.numeric(pamclust5n$clustering),
+    hweights = nw,
+    sleepsum = rowSums(n_data == 1),
+    edusum = rowSums(n_data == 2),
+    worksum = rowSums(n_data == 3),
+    caresum = rowSums(n_data == 4),
+    eatsum = rowSums(n_data == 5),
+    sedsum = rowSums(n_data == 6),
+    actsum = rowSums(n_data == 7),
+    leisum = rowSums(n_data == 8),
+    socsum = rowSums(n_data == 9),
+    trasum = rowSums(n_data == 10)
+  )
+```
+
+```{r}
+#| echo: false
+datalsac_sel <- datalsac |>
+  select(
+    hicid,
+    stratum,
+    pcodes,
+    hweights,
+    sex = zf02m1,
+    region = hregion,
+    age = hf03m1,
+    indstat = zf12m1,
+    cob = zf09m1,
+    parmon = haparmonb,
+    trust = hippatrust,
+    comm = hippacomm,
+    alc4 = hhb16c9,
+    alccon = hhb16c10,
+    anx = hspenceanx,
+    smfq = hsmfq,
+    disadv_dec = hcnfsda2d,
+    disadv_sc = hcnfsda2,
+    remoteness = habsra
+  )
+
+
+# create a stable id keyed cluster table for school and non school
+cluster_map_s <- data.frame(
+  hicid = as.numeric(rownames(s_data)),
+  cluster = paste0("Group ", pamclust4s$clustering),
+  stringsAsFactors = FALSE
+)
+
+cluster_map_n <- data.frame(
+  hicid = as.numeric(rownames(n_data)),
+  cluster = paste0("Group ", pamclust5n$clustering),
+  stringsAsFactors = FALSE
+)
+
+# add day information and lsac covariates for modelling and tables
+
+data_joins <- cluster_map_s |>
+  left_join(data_day, by = "hicid") |>
+  left_join(datalsac_sel, by = "hicid")
+
+data_joinn <- cluster_map_n |>
+  left_join(data_day, by = "hicid") |>
+  left_join(datalsac_sel, by = "hicid")
+```
+```{r}
+#| echo: false 
+# apply the old, day specific cluster labels for plots
+data_joins <- data_joins |>
+  mutate(
+    cluster2 = case_when(
+      cluster == "Group 1024" ~ "Group 1\n(Physically Engaged)",
+      cluster == "Group 1069" ~ "Group 2\n(Socially Connected)",
+      cluster == "Group 41" ~ "Group 3\n(Routine Based)",
+      cluster == "Group 675" ~ "Group 4\n(Sedentary Oriented)",
+      TRUE ~ cluster
+    ),
+    cluster2 = factor(cluster2),
+    cluster_number = factor(cluster2, labels = c(1, 2, 3, 4))
+  )
+
+data_joinn <- data_joinn |>
+  mutate(
+    cluster2 = case_when(
+      cluster == "Group 713" ~ "Group 1\n(Physically Engaged)",
+      cluster == "Group 624" ~ "Group 2\n(Socially Connected)",
+      cluster == "Group 437" ~ "Group 3\n(Routine Based)",
+      cluster == "Group 1170" ~ "Group 4\n(Sedentary Oriented)",
+      cluster == "Group 452" ~ "Group 5\n(Work Focused)",
+      TRUE ~ cluster
+    ))
+
+data_joinn <- data_joinn |> 
+  mutate(
+    cluster2 = factor(cluster2, 
+      levels = c(
+        "Group 1\n(Physically Engaged)",
+        "Group 2\n(Socially Connected)",
+        "Group 3\n(Routine Based)",
+        "Group 4\n(Sedentary Oriented)",
+        "Group 5\n(Work Focused)"), ordered = TRUE), 
+        cluster_number = factor(cluster2, levels = levels(cluster2), labels = c(1, 2, 3, 4, 5), ordered = TRUE)
+      )
+
+
+# attach cluster2 activity (long)
+filtered_data_with_clusters_s <- filtered_data7 |>
+  filter(hicid %in% cluster_map_s$hicid) |>
+  left_join(data_joins |> select(hicid, cluster, cluster2, cluster_number), by = "hicid")
+
+filtered_data_with_clusters_n <- filtered_data7 |>
+  filter(hicid %in% cluster_map_n$hicid) |>
+  left_join(data_joinn |> select(hicid, cluster, cluster2, cluster_number), by = "hicid")
+
+# compute per person minute based totals from the wide minute matrices, using only var0:var1439
+minute_vars <- paste0("var", 0:1439)
+
+data_times_s <- s_data |>
+  mutate(hicid = as.numeric(rownames(s_data))) |>
+  select(hicid, all_of(minute_vars))
+
+data_times_n <- n_data |>
+  mutate(hicid = as.numeric(rownames(n_data))) |>
+  select(hicid, all_of(minute_vars))
+```
+
+## Cluster descriptives 
+```{r}
+#| echo: false
+# calculate total minutes spent in each activity
+data_times_s <- data_times_s |>
+  mutate(
+    sleepsum = rowSums(across(all_of(minute_vars), ~ .x == 1)),
+    edusum = rowSums(across(all_of(minute_vars), ~ .x == 2)),
+    worksum = rowSums(across(all_of(minute_vars), ~ .x == 3)),
+    caresum = rowSums(across(all_of(minute_vars), ~ .x == 4)),
+    eatsum = rowSums(across(all_of(minute_vars), ~ .x == 5)),
+    sedsum = rowSums(across(all_of(minute_vars), ~ .x == 6)),
+    actsum = rowSums(across(all_of(minute_vars), ~ .x == 7)),
+    leisum = rowSums(across(all_of(minute_vars), ~ .x == 8)),
+    socsum = rowSums(across(all_of(minute_vars), ~ .x == 9)),
+    trasum = rowSums(across(all_of(minute_vars), ~ .x == 10))
+  )
+
+data_times_n <- data_times_n |>
+  mutate(
+    sleepsum = rowSums(across(all_of(minute_vars), ~ .x == 1)),
+    edusum = rowSums(across(all_of(minute_vars), ~ .x == 2)),
+    worksum = rowSums(across(all_of(minute_vars), ~ .x == 3)),
+    caresum = rowSums(across(all_of(minute_vars), ~ .x == 4)),
+    eatsum = rowSums(across(all_of(minute_vars), ~ .x == 5)),
+    sedsum = rowSums(across(all_of(minute_vars), ~ .x == 6)),
+    actsum = rowSums(across(all_of(minute_vars), ~ .x == 7)),
+    leisum = rowSums(across(all_of(minute_vars), ~ .x == 8)),
+    socsum = rowSums(across(all_of(minute_vars), ~ .x == 9)),
+    trasum = rowSums(across(all_of(minute_vars), ~ .x == 10))
+  )
+
+# join minute level data back to long activity spells to create the wide duration by activity table
+activities_s <- filtered_data_with_clusters_s |>
+  left_join(data_times_s, by = "hicid")
+
+activities_n <- filtered_data_with_clusters_n |>
+  left_join(data_times_n, by = "hicid")
+
+# apply consistent labels for act_rec and mainact, then pivot to duration summaries
+act_rec_labels <- c(
+  "1" = "Sleep",
+  "2" = "Education",
+  "3" = "Work (paid/unpaid)",
+  "4" = "Personal care",
+  "5" = "Eating/drinking",
+  "6" = "Sedentary behaviour",
+  "7" = "Physical activity",
+  "8" = "Leisure",
+  "9" = "Socialising",
+  "10" = "Travel"
+)
+```
+
+```{r}
+#| echo: false
+
+mainact_labels <- c(
+  "0" = "Sleeping",
+  "1" = "Retailing",
+  "11" = "Hospitality (including fast food)",
+  "21" = "Clerical/office",
+  "31" = "Labourers and related workers",
+  "41" = "Gardening / lawn mowing",
+  "51" = "Babysitting",
+  "61" = "Apprenticeships/trades persons",
+  "71" = "Working in a family business or farm",
+  "81" = "Work Other",
+  "82" = "Umpiring (work)",
+  "83" = "Car washing (work)",
+  "84" = "Animal care (work)",
+  "91" = "Volunteering (work)",
+  "101" = "Eating/drinking",
+  "201" = "Cleaning teeth",
+  "211" = "Showering/bathing",
+  "221" = "Getting dressed / getting ready",
+  "231" = "Personal care nec",
+  "241" = "Doctor",
+  "251" = "Dentist/Orthodontist",
+  "261" = "Physiotherapist / Chiropractor",
+  "271" = "Medical/Health care",
+  "281" = "Personal care/Medical/Health Care nec.",
+  "301" = "Cleaning/tidying",
+  "311" = "Laundry/clothes care",
+  "312" = "Clothes making",
+  "321" = "Food/drink preparation",
+  "331" = "Food/drink clean up",
+  "341" = "Gardening (maintenance chores)",
+  "342" = "Cleaning grounds/garage/shed/outside of house (chores)",
+  "344" = "Pool care (chores)",
+  "351" = "Animal care",
+  "361" = "Home maintenance",
+  "362" = "Design/Home Improvement",
+  "363" = "Heat/water/power upkeep",
+  "364" = "Car/boat/bike care",
+  "365" = "Selling/disposing of household assets",
+  "366" = "Rubbish/Recycling",
+  "367" = "Packing",
+  "368" = "Household management Other",
+  "371" = "Taking care of siblings (chores)",
+  "381" = "Chores nec",
+  "401" = "Archery / Shooting sports",
+  "402" = "Athletics / Gymnastics",
+  "403" = "Fitness / Gym / Exercise",
+  "404" = "Ball Sports",
+  "405" = "Martial arts / Dancing",
+  "406" = "Motor Sports / Roller Sports / Cycling",
+  "407" = "Water/Ice/Snow Sports",
+  "408" = "Organised team sports and training other",
+  "411" = "Archery / Shooting sports (individual)",
+  "412" = "Athletics / Gymnastics (individual)",
+  "413" = "Fitness / Gym / Exercise (individual)",
+  "414" = "Martial arts / Dancing (individual)",
+  "415" = "Motor Sports / Roller Sports / Cycling (individual)",
+  "416" = "Ball Sports (individual)",
+  "417" = "Water/Ice/Snow Sports (individual)",
+  "418" = "Organised individual sport and training other",
+  "421" = "Archery / Shooting sports (unstructured)",
+  "422" = "Athletics / Gymnastics (unstructured)",
+  "423" = "Fitness / Gym / Exercise (unstructured)",
+  "424" = "Ball Sports (unstructured)",
+  "425" = "Martial arts / Dancing (unstructured)",
+  "426" = "Motor Sports / Roller Sports / Cycling (unstructured)",
+  "427" = "Water/Ice/Snow Sports (unstructured)",
+  "428" = "Unstructured active play Other",
+  "430" = "Walking pets/playing with pets",
+  "440" = "Active club activities",
+  "450" = "Shopping",
+  "451" = "Shopping",
+  "452" = "Purchasing consumer goods",
+  "453" = "Purchasing durable goods",
+  "454" = "Window shopping",
+  "455" = "Purchasing repair services",
+  "456" = "Purchasing administrative services",
+  "457" = "Purchasing personal care services",
+  "458" = "Purchasing other services",
+  "461" = "Attendance at movies / cinema",
+  "462" = "Attendance at concert/theatre",
+  "463" = "Attendance at museum / exhibition / art gallery",
+  "464" = "Attendance at zoo / animal park / botanic garden",
+  "465" = "Attendance at other mass events",
+  "466" = "Going out nec",
+  "471" = "Religious practice",
+  "472" = "Weddings, funerals, rites of passage",
+  "473" = "Religious activities / ritual ceremonies nec",
+  "481" = "Attending live sporting events",
+  "491" = "Active activities nec",
+  "501" = "Private music lessons/practice, academic tutoring",
+  "511" = "Listening to music",
+  "521" = "Playing musical instruments or singing for leisure",
+  "531" = "Reading or being read to for leisure",
+  "541" = "Chess, card, paper and board games / crosswords",
+  "542" = "Games of chance / gambling",
+  "543" = "Hobbies, collections",
+  "544" = "Handwork crafts (excl. clothes making)",
+  "545" = "Arts",
+  "548" = "Unstructured non-active play nec",
+  "551" = "Attend courses (excluding s/university)",
+  "552" = "Clubs",
+  "555" = "Religious groups",
+  "561" = "Doing nothing",
+  "571" = "Sleeping/napping (not end of day bed-time)",
+  "581" = "Doing homework (not via electronic devices)",
+  "591" = "Non-active activities nec",
+  "601" = "Doing homework (electronic device)",
+  "611" = "Playing games (electronic device)",
+  "612" = "Playing games (Electronic device) nfd",
+  "621" = "Watching TV programs or movies/videos",
+  "631" = "Spending time on social networking sites",
+  "641" = "Downloading/posting media",
+  "651" = "Internet shopping",
+  "661" = "General Internet browsing",
+  "671" = "Creating/maintaining websites",
+  "681" = "General application use",
+  "691" = "Electronic device use nec",
+  "701" = "s lessons",
+  "802" = "Talking face-to-face",
+  "811" = "Talking on a landline phone",
+  "821" = "Talking on a mobile phone",
+  "831" = "Video chatting",
+  "841" = "Texting/emailing",
+  "851" = "Online chatting / Instant messaging",
+  "861" = "Non-verbal interaction",
+  "871" = "Negative face-to-face communication",
+  "881" = "Communication nec",
+  "901" = "By foot",
+  "911" = "By bike, scooter, skateboard etc",
+  "921" = "By private motor vehicle/bike",
+  "931" = "By public/chartered transport",
+  "941" = "Travel nec",
+  "971" = "Illegal activities",
+  "981" = "Filling out the diary",
+  "991" = "Other",
+  "998" = "Uncodeable activity"
+)
+```
+```{r}
+#| echo: false
+#| 
+activities_s2 <- activities_s |>
+  mutate(
+    act_rec_label = recode(as.character(act_rec), !!!act_rec_labels),
+    main_act_label = recode(as.character(mainact), !!!mainact_labels),
+    duration2 = as.numeric(duration)
+  )
+
+activities_n2 <- activities_n |>
+  mutate(
+    act_rec_label = recode(as.character(act_rec), !!!act_rec_labels),
+    main_act_label = recode(as.character(mainact), !!!mainact_labels),
+    duration2 = as.numeric(duration)
+  )
+
+# wide table of summed minutes by act_rec_label and main_act_label, plus the minute based totals and raw minute columns
+activities_s3 <- activities_s2 |>
+  select(
+    hicid,
+    cluster2,
+    cluster_number,
+    act_rec_label,
+    main_act_label,
+    duration2,
+    sleepsum:trasum,
+    all_of(minute_vars)
+  )
+
+activities_n3 <- activities_n2 |>
+  select(
+    hicid,
+    cluster2,
+    cluster_number,
+    act_rec_label,
+    main_act_label,
+    duration2,
+    sleepsum:trasum,
+    all_of(minute_vars)
+  )
+
+activities_s4 <- activities_s3 |>
+  group_by(hicid) |>
+  pivot_wider(
+    id_cols = c(
+      hicid,
+      cluster2,
+      cluster_number,
+      sleepsum,
+      edusum,
+      worksum,
+      caresum,
+      eatsum,
+      sedsum,
+      actsum,
+      leisum,
+      socsum,
+      trasum
+    ),
+    names_from = c(act_rec_label, main_act_label),
+    names_sep = "_",
+    values_from = duration2,
+    values_fn = sum
+  )
+
+activities_n4 <- activities_n3 |>
+  group_by(hicid) |>
+  pivot_wider(
+    id_cols = c(
+      hicid,
+      cluster2,
+      cluster_number,
+      sleepsum,
+      edusum,
+      worksum,
+      caresum,
+      eatsum,
+      sedsum,
+      actsum,
+      leisum,
+      socsum,
+      trasum
+    ),
+    names_from = c(act_rec_label, main_act_label),
+    names_sep = "_",
+    values_from = duration2,
+    values_fn = sum
+  )
+
+activities_s5 <- activities_s4 |>
+  relocate(
+    c(
+      hicid,
+      cluster2,
+      cluster_number,
+      sleepsum,
+      edusum,
+      worksum,
+      caresum,
+      eatsum,
+      sedsum,
+      actsum,
+      leisum,
+      socsum,
+      trasum
+    ),
+    .before = everything()
+  ) |>
+  select(
+    hicid:cluster_number,
+    starts_with("Sleep"),
+    starts_with("Education"),
+    starts_with("Work"),
+    starts_with("Personal"),
+    starts_with("Eat"),
+    starts_with("Sedentary"),
+    starts_with("Physical"),
+    starts_with("Leisure"),
+    starts_with("Social"),
+    starts_with("Travel")
+  ) |>
+  ungroup() |>
+  mutate(across(
+    -all_of(c("hicid", "cluster2", "cluster_number")),
+    ~ replace_na(.x, 0)
+  ))
+
+activities_n5 <- activities_n4 |>
+  relocate(
+    c(
+      hicid,
+      cluster2,
+      cluster_number,
+      sleepsum,
+      edusum,
+      worksum,
+      caresum,
+      eatsum,
+      sedsum,
+      actsum,
+      leisum,
+      socsum,
+      trasum
+    ),
+    .before = everything()
+  ) |>
+  select(
+    hicid:cluster_number,
+    starts_with("Sleep"),
+    starts_with("Education"),
+    starts_with("Work"),
+    starts_with("Personal"),
+    starts_with("Eat"),
+    starts_with("Sedentary"),
+    starts_with("Physical"),
+    starts_with("Leisure"),
+    starts_with("Social"),
+    starts_with("Travel")
+  ) |>
+  ungroup() |>
+  mutate(across(
+    -all_of(c("hicid", "cluster2", "cluster_number")),
+    ~ replace_na(.x, 0)
+  ))
+
+# clean survey variables and attach activity wide table,
+data_joins <- data_joins |>
+  mutate(
+    alc4rec = recode(alc4, `-9` = 0L, `1` = 1L, `2` = 0L),
+    smfqc = factor(case_when(smfq >= 8 ~ 1, smfq < 8 ~ 0, TRUE ~ smfq)),
+    alc4rec = factor(alc4rec),
+    comor = factor(case_when(
+      smfqc == 0 & alc4rec == 0 ~ "No probable depression & No alcohol use",
+      smfqc == 0 & alc4rec == 1 ~ "No probable depression & Alcohol use",
+      smfqc == 1 & alc4rec == 0 ~ "Probable depression & No alcohol use",
+      smfqc == 1 & alc4rec == 1 ~ "Probable depression & Alcohol use"
+    ))
+  ) |>
+  select(
+    hicid,
+    cluster,
+    cluster2,
+    cluster_number,
+    day:comm,
+    anx,
+    alc4,
+    alccon,
+    alc4rec,
+    smfq,
+    smfqc,
+    comor,
+    disadv_dec:remoteness
+  )
+
+data_joinn <- data_joinn |>
+  mutate(
+    alc4rec = recode(alc4, `-9` = 0L, `1` = 1L, `2` = 0L),
+    smfqc = factor(case_when(smfq >= 8 ~ 1, smfq < 8 ~ 0, TRUE ~ smfq)),
+    alc4rec = factor(alc4rec),
+    comor = factor(case_when(
+      smfqc == 0 & alc4rec == 0 ~ "No probable depression & No alcohol use",
+      smfqc == 0 & alc4rec == 1 ~ "No probable depression & Alcohol use",
+      smfqc == 1 & alc4rec == 0 ~ "Probable depression & No alcohol use",
+      smfqc == 1 & alc4rec == 1 ~ "Probable depression & Alcohol use"
+    ))
+  ) |>
+  select(
+    hicid,
+    cluster,
+    cluster2,
+    cluster_number,
+    day:comm,
+    anx,
+    alc4,
+    alccon,
+    alc4rec,
+    smfq,
+    smfqc,
+    comor,
+    disadv_dec:remoteness
+  )
+
+# harmonise factors
+clean_core_vars <- function(df) {
+  df |>
+    mutate(
+      sex = factor(sex, levels = c(1, 2), labels = c("Male", "Female")),
+      region = factor(region),
+      indstat = factor(
+        indstat,
+        levels = c(1, 2, 3, 4),
+        labels = c(
+          "No",
+          "Yes, Aboriginal",
+          "Yes, Torres Strait Islander",
+          "Yes, both"
+        )
+      ),
+      remoteness = factor(
+        remoteness,
+        levels = c(0, 1, 2, 3, 4, 5),
+        labels = c(
+          "Major city",
+          "Inner regional",
+          "Outer regional",
+          "Remote",
+          "Very remote",
+          "Migratory"
+        )
+      ),
+      remoteness = factor(case_when(
+        remoteness %in% c("Inner regional", "Outer regional") ~ "Regional",
+        remoteness %in% c("Remote", "Very remote", "Migratory") ~ "Remote",
+        TRUE ~ remoteness
+      )),
+      remoteness = factor(case_when(
+        remoteness == "Major city" ~ "Major city",
+        TRUE ~ "Regional/Remote"
+      ))
+    )
+}
+
+data_joins <- clean_core_vars(data_joins)
+data_joinn <- clean_core_vars(data_joinn)
+
+# final analysis datasets
+data_final_s <- data_joins |>
+  left_join(activities_s5, by = "hicid") |>
+  rename(hweights = hweights.x) |>
+  mutate(hweights.y = NULL)
+
+data_final_n <- data_joinn |>
+  left_join(activities_n5, by = "hicid") |>
+  rename(hweights = hweights.x) |>
+  mutate(hweights.y = NULL)
 ```
 
 _to be continued_
