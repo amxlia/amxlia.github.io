@@ -11,7 +11,7 @@ grid:
 
 - **Co-Occurring Psychological Distress and Alcohol Use Among Australian Adults with ADHD: A scoping review**
 - **The descriptive epidemiology of generalised anxiety disorder in Australia 2020-22** 
-- The Triple E Project: A factorial randomised controlled trial to enhance engagement with eHealth approaches to improve health risk behaviours among adolescents (**lead analyst/biostatistician**): [code here](https://amxlia.github.io/tripleE)
+- The Triple E Project: A factorial randomised controlled trial to enhance engagement with eHealth approaches to improve health risk behaviours among adolescents (**lead analyst/biostatistician**): [code here](https://amxlia.github.io/tripleEproject)
 - Psychometric properties of instruments used to measure psychological distress in Australia: A systematic review
 - Harmonising and equating psychological distress data from
 Australian population based surveys
