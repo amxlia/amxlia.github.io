@@ -13,13 +13,13 @@ website:
     right:
       - text: "Home"
         href: index.qmd
-      - href: aboutme.qmd
+      # - href: aboutme.qmd
       - text: "Portfolio"
         href: portfolio.qmd
       - text: "Projects"
         href: projects.qmd
-      - text: "Extras"
-        href: extras.qmd
+      # - text: "Extras"
+      #   href: extras.qmd
   sidebar: 
       # - title: "Projects"
       #   contents:

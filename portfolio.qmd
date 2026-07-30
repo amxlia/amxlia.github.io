@@ -7,44 +7,42 @@ grid:
 
 ## Current Research
 
-**bolded titles indicate lead or senior role**
+Bolded titles indicate lead or senior role
 
+- The Triple E Project: A factorial randomised controlled trial to enhance engagement with eHealth approaches to improve health risk behaviours among adolescents (**lead analyst/biostatistician**): [code here](https://amxlia.github.io/tripleE)
+- A RE-AIM 
 - **Co-Occurring Psychological Distress and Alcohol Use Among Australian Adults with ADHD: A scoping review**
-- **The descriptive epidemiology of generalised anxiety disorder in Australia 2020-22** 
-- The Triple E Project: A factorial randomised controlled trial to enhance engagement with eHealth approaches to improve health risk behaviours among adolescents (**lead analyst/biostatistician**): [code here](https://amxlia.github.io/tripleEproject)
+- **The descriptive epidemiology of generalised anxiety disorder in Australia 2020-22**
 - Psychometric properties of instruments used to measure psychological distress in Australia: A systematic review
-- Harmonising and equating psychological distress data from
-Australian population based surveys
+- Harmonising and equating psychological distress data from Australian population based surveys
 - Shifting profiles of distress and drinking: Life course and cohort trends in psychological distress and risky alcohol consumption among adults in Australia
 
 
 ### Current Research Under Review
 
-**bolded titles indicate lead or senior role**
+Bolded titles indicate lead or senior role.
 
 - **Daily time use and co-occurring depression and alcohol consumption - results from a representative sample of Australian adolescents**: [partial code here](https://amxlia.github.io/projects/sequenceandcluster)
 - **Alcohol and other drug use, psychological distress, and occupational functioning in Australian public safety personnel**: [code here](https://amxlia.github.io/projects/hurdles/)
 - **EHealth approaches to reduce depression and alcohol use among older adults: A randomised controlled trial of online cognitive behaviour therapy and social networking among Australians over 60**: [code here](https://amxlia.github.io/projects/mixedeffects/)
-- The descriptive epidemiology of panic attacks and panic
-disorder in Australia 2020-22: Prevalence, correlates, age of onset, and changes over time
--  **Barriers and facilitators to help-seeking for alcohol and other drug use among Australian public safety personnel**
+- The descriptive epidemiology of panic attacks and panic disorder in Australia 2020-22: Prevalence, correlates, age of onset, and changes over time
 
 
 ## Peer-Reviewed Publications 
+Bolded titles indicate lead or senior role.
 
-**bolded titles indicate lead or senior role**
-
+- **Barriers and facilitators to help-seeking for alcohol and other drug use among Australian public safety personnel**; [link](https://onlinelibrary.wiley.com/doi/10.1111/dar.70176)
 - Identifying psychological distress data available in nationally representative surveys: A scoping review and case study of Australian surveys: [link](https://pmc.ncbi.nlm.nih.gov/articles/PMC12855228/)
 - **Trauma exposure, post-traumatic stress disorder and alcohol and other drug use among Australian public safety personnel**: [link](https://pmc.ncbi.nlm.nih.gov/articles/PMC12022364/)
 - Media representation of methamphetamine-related deaths: Exploring links to public stigma and support for harm reduction: [link](https://pubmed.ncbi.nlm.nih.gov/40913896/)
 
 
 ## Other Research Outputs 
-
-**bolded titles indicate lead or senior role**
+Bolded titles indicate lead or senior role.
 
 - **[Stable Ground](https://stableground.org.au): Providing free resources and support information for NSW government agencies**
 - [A searchable repository](https://deannavarley.shinyapps.io/the_australian_psychological_distress_data_search_tool/) of metadata for psychological distress datasets 
+- **Being there: Young people supporting their friends through tough times**: [link](https://researchers-admin.westernsydney.edu.au/ws/portalfiles/portal/341564352/Being_there_open_access.pdf)
 - **You’ve got a friend. Young people help each other with their mental health for 3.5 hours every week. [The Conversation](https://theconversation.com/youve-got-a-friend-young-people-help-each-other-with-their-mental-health-for-3-5-hours-every-week-194530)**
 - NSW Youth Health and Wellbeing Strategy: Consultation Report. NSW Ministry of Health
 - NSW Youth Health and Wellbeing Strategy: An Evidence Summary. NSW Ministry of Health
