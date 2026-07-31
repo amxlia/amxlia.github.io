@@ -8,7 +8,7 @@ grid:
     margin-width: 50px
 ---
 ![](triplee.png)
-*Ongoing research. The details will be available soon*. However, my working notes can be found [here](https://amxlia.github.io/tripleE)
+*Ongoing research. The details will be available soon*. However, my working notes can be found [here](https://amxlia.github.io/triple-e)
 
 I am the lead analyst/biostatistician on the Triple E project. The published protocol can be viewed [here @ BMC Public Health](https://link.springer.com/article/10.1186/s12889-024-20124-5) 
 
