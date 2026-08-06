@@ -14,26 +14,26 @@ website:
       - text: "Home"
         href: index.qmd
       # - href: aboutme.qmd
-      - text: "Portfolio"
-        href: portfolio.qmd
       - text: "Projects"
         href: projects.qmd
+      - text: "Portfolio"
+        href: portfolio.qmd
       # - text: "Extras"
       #   href: extras.qmd
-  sidebar: 
-      # - title: "Projects"
+  # sidebar: 
+      # # - title: "Projects"
+      # #   contents:
+      # #   - posts/projects/hurdles.qmd
+      # #   - posts/projects/sequenceandcluster.qmd
+      # - title: "Extras"
       #   contents:
-      #   - posts/projects/hurdles.qmd
-      #   - posts/projects/sequenceandcluster.qmd
-      - title: "Extras"
-        contents:
-          - section: "Custom Functions"
-            contents: 
-            - posts/extras/customflextable.qmd
-          - section: "Notes"
-            contents:
-            - posts/extras/scripts_and_workflow.qmd
-            - posts/extras/project_setup.qmd
+      #     - section: "Custom Functions"
+      #       contents: 
+      #       - posts/extras/customflextable.qmd
+      #     - section: "Notes"
+      #       contents:
+      #       - posts/extras/scripts_and_workflow.qmd
+      #       - posts/extras/project_setup.qmd
 
 ## APPEARANCE 
 
